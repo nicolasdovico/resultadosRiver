@@ -1,103 +1,29 @@
-# Plan de Ejecución: Fase 2 - Backend Core y Contratos de API
+# Plan de Ejecución: Fase 4 - Desarrollo Frontend y Mobile
 
-El objetivo de esta fase es transformar la base de datos histórica importada en una API funcional, documentada y segura bajo el estándar OpenAPI.
+El objetivo es construir las interfaces Web y Mobile consumiendo la API de forma tipada y desarrollando los componentes exclusivos para usuarios Premium.
 
+## 4.1. Generación de Clientes y Tipado (Agent-First: Paso 3)
 
+- [ ] **Autogeneración de SDK:** Utilizar el archivo `swagger.json` generado en la Fase 2 para crear automáticamente los servicios, hooks (SWR o React Query) y tipos de TypeScript en `/frontend-web` y `/frontend-mobile`.
+- [ ] **Capa de Abstracción de API:** Configurar los interceptores de Axios/Fetch para manejar automáticamente el token de **Sanctum** y la renovación de sesiones.
+- [ ] **Sincronización de Modelos:** Asegurar que las interfaces de TypeScript coincidan exactamente con los modelos de Eloquent (Jugadores, Partidos, etc.).
 
-## 2.1. Refactorización y Extensión de Base de Datos (PostgreSQL)
+## 4.2. Desarrollo Web (Next.js)
 
-- [ ] **Migraciones de Adaptación:** Crear migraciones en Laravel para las tablas históricas existentes a fin de que el framework las reconozca (agregando `timestamps` si es necesario).
+- [ ] **Estructura de Rutas y SEO:** Configurar el enrutamiento dinámico para partidos y torneos, implementando **Server-Side Rendering (SSR)** para maximizar el posicionamiento en buscadores.
+- [ ] **Dashboard de Resultados:** Crear la vista principal con el motor de filtros (Nivel de torneo, Rival, Técnico, etc.).
+- [ ] **Implementación de PWA:** Configurar el `manifest.json` y Service Workers para permitir la instalación de la web como una aplicación en el escritorio.
+- [ ] **Sección Premium (Gráficos):** Desarrollar los componentes de gráficos interactivos (rendimiento, posesión histórica, efectividad) utilizando librerías como Chart.js o Recharts.
 
-  
+## 4.3. Desarrollo Mobile (Expo / React Native)
 
-  
+- [ ] **Navegación Mobile:** Configurar React Navigation (Tabs y Stack) para una navegación fluida entre resultados, posiciones y perfil.
+- [ ] **Vistas Nativas:** Adaptar los componentes de filtrado y búsqueda para una experiencia táctil óptima.
+- [ ] **Integración de MercadoPago (Mobile):** Implementar el flujo de pago dentro de la app (Webview o integración nativa) para la suscripción Premium.
+- [ ] **Gráficos Mobile:** Implementar versiones optimizadas de los gráficos de rendimiento para pantallas pequeñas.
 
-- [ ] **Tablas de Seguridad (RBAC):** Implementar las tablas para Roles (Super Admin, Data Entry, Free, Premium) y Permisos.
+## 4.4. Panel Administrativo (Frontend)
 
-  
-
-  
-
-- [ ] **Tabla de Auditoría OTP:** Crear la estructura para almacenar los códigos OTP, su timestamp de creación y contador de intentos fallidos.
-
-  
-
-  
-
-- [ ] **Tablas de Suscripción:** Crear las tablas `subscriptions` y `payments` para registrar las transacciones de MercadoPago y la vigencia semestral.
-
-  
-
-  
-
-## 2.2. API Contract: Modelos y Relaciones (Agent-First: Paso 1)
-
-- [ ] **Modelos Eloquent:** Definir los modelos para Árbitros, Estadios, Jugadores, Rivales, Torneos, Técnicos, Fases y Partidos, asegurando que reflejen fielmente la estructura histórica.
-
-  
-
-  
-
-- [ ] **Definición de Relaciones:** Establecer las relaciones `hasMany`, `belongsTo` y `belongsToMany` (ej. Jugadores en un Partido, Torneos y sus Fases).
-
-  
-
-  
-
-- [ ] **Resources (Transformación):** Crear Laravel API Resources para estandarizar la salida JSON de cada entidad hacia el frontend.
-
-## 2.3. Endpoints de Gestión y Consulta
-
-- [ ] **Endpoints Administrativos (CRUD):** Desarrollar los controladores con los métodos `index`, `store`, `update` y `destroy` para todos los catálogos (solo accesibles para Super Admin/Data Entry).
-
-  
-
-  
-
-- [ ] **Endpoints de Búsqueda y Filtros:** Implementar la lógica de filtrado para los usuarios:
-
-  - Por nivel de torneo, nombre, fechas, rival, árbitro, estadio y técnico.
-
-    
-
-    
-
-- [ ] **Lógica de Acceso Diferenciado:** Implementar Middleware para restringir la profundidad de la información y la visualización de gráficos según el rol (Free vs. Premium).
-
-  
-
-  
-
-## 2.4. Documentación Automática (Agent-First: Paso 2)
-
-- [ ] **Anotaciones OpenAPI:** Integrar las etiquetas de **L5-Swagger** en los controladores y modelos para definir parámetros, tipos de datos y respuestas esperadas.
-
-  
-
-  
-
-- [ ] **Generación del JSON/YAML:** Ejecutar el comando de generación para producir el archivo `swagger.json` que servirá de insumo para los agentes de IA del frontend.
-
-  
-
-  
-
-- [ ] **Publicación de UI Swagger:** Habilitar la ruta `/api/documentation` para que el equipo (o agentes) puedan testear los endpoints en tiempo real.
-
-  
-
-  
-
-## 2.5. Configuración de Seguridad y API Auth
-
-- [ ] **Sanctum Setup:** Configurar **Laravel Sanctum** para el manejo de tokens de API persistentes.
-
-  
-
-  
-
-- [ ] **CORS Policy:** Configurar las políticas de acceso para permitir peticiones únicamente desde los dominios del frontend web y mobile.
-
-  
-
-  
+- [ ] **Módulo Data Entry:** Construir los formularios de carga y edición para todos los catálogos (Árbitros, Estadios, Jugadores, etc.) con validaciones en tiempo real.
+- [ ] **Gestión de Partidos:** Desarrollar la interfaz compleja para la carga de eventos detallados de cada encuentro.
+- [ ] **Control de Usuarios:** Crear la tabla de administración para que el Super Administrador gestione roles y precios.

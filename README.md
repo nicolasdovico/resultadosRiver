@@ -9,39 +9,53 @@ Sistema integral para el seguimiento de resultados históricos y en tiempo real 
 - `/frontend-mobile`: Aplicación móvil multiplataforma con Expo (React Native).
 - `/docs`: Documentación técnica, PRD y guías de desarrollo.
 
-## Requisitos Previos
-
-- Docker & Docker Compose
-- Node.js (v18+)
-- PHP 8.2+ & Composer (opcional para desarrollo local fuera de Docker)
-
 ## Levantamiento del Entorno Local
 
 Para iniciar todos los servicios con Docker:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-### Configuración del Backend
+## Acceso al Backend (API)
 
-1. Entrar al contenedor: `docker-compose exec backend bash`
-2. Instalar dependencias: `composer install`
-3. Generar App Key: `php artisan key:generate`
-4. Ejecutar migraciones: `php artisan migrate`
+El backend está configurado para ser accesible desde el host a través de los siguientes parámetros:
 
-### Configuración del Frontend Web
+- **URL Base:** `http://localhost:8000`
+- **Prefijo API:** `/api/v1`
+- **Documentación Swagger:** `http://localhost:8000/api/documentation` (Actualmente en revisión)
+- **Estado de Salud:** `http://localhost:8000/up`
 
-1. Entrar al contenedor o directorio: `cd frontend-web`
+### Endpoints Principales
+
+| Recurso | Método | Endpoint | Acceso |
+| :--- | :--- | :--- | :--- |
+| Registro | POST | `/api/v1/auth/register` | Público |
+| Login | POST | `/api/v1/auth/login` | Público |
+| Verificación OTP | POST | `/api/v1/auth/verify-otp` | Público |
+| Crear Pago (MP) | POST | `/api/v1/payments/create-preference` | Autenticado |
+| Webhook Pagos | POST | `/api/v1/payments/webhook` | Público |
+| Usuarios | GET/PUT | `/api/v1/users` | Admin |
+
+### Comandos Útiles (Docker Compose)
+
+- **Ver logs del backend:** `docker compose logs -f backend`
+- **Ejecutar Artisan:** `docker compose exec backend php artisan [comando]`
+- **Reiniciar worker de colas:** `docker compose exec backend php artisan queue:restart`
+- **Acceder a la base de datos (PSQL):** `docker compose exec db psql -U river_user -d resultados_river`
+
+## Configuración del Frontend Web
+
+1. Entrar al directorio: `cd frontend-web`
 2. Instalar dependencias: `npm install`
-3. Iniciar desarrollo: `npm run dev`
+3. Iniciar desarrollo: `npm run dev` (Disponible en `http://localhost:3000`)
 
-### Configuración del Frontend Mobile
+## Configuración del Frontend Mobile
 
 1. Entrar al directorio: `cd frontend-mobile`
 2. Instalar dependencias: `npm install`
 3. Iniciar Expo: `npx expo start`
 
-## Documentación
+## Documentación Técnica
 
-Consulta la carpeta `/docs` para más detalles sobre la metodología de trabajo y requerimientos del producto.
+Consulta la carpeta `/docs` para más detalles sobre la metodología de trabajo, PRD y el loop de tareas.

@@ -11,17 +11,45 @@ use App\Http\Controllers\Api\TecnicoController;
 use App\Http\Controllers\Api\FaseController;
 use App\Http\Controllers\Api\PartidoController;
 
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\SettingController;
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
+    // Auth routes
+    Route::prefix('auth')->group(function () {
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('login', [AuthController::class, 'login'])->name('login');
+        Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+        Route::post('resend-otp', [AuthController::class, 'resendOtp']);
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    });
+
+    // Public payment routes
+    Route::post('payments/webhook', [PaymentController::class, 'webhook']);
+
     // Public/Free access (might be restricted by middleware inside controllers if needed, 
     // but here we define the general access)
     Route::middleware(['auth:sanctum'])->group(function () {
         
+        // Payment routes (Authenticated)
+        Route::post('payments/create-preference', [PaymentController::class, 'createPreference']);
+
         // Administrative routes (CRUD)
         Route::middleware(['subscription:Admin'])->group(function () {
+            // User Management
+            Route::apiResource('users', UserController::class);
+
+            // Settings Management
+            Route::get('settings', [SettingController::class, 'index']);
+            Route::post('settings', [SettingController::class, 'update']);
+
             Route::post('arbitros', [ArbitroController::class, 'store']);
             Route::put('arbitros/{id}', [ArbitroController::class, 'update']);
             Route::delete('arbitros/{id}', [ArbitroController::class, 'destroy']);

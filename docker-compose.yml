@@ -46,6 +46,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    ports:
+      - "8000:80"
     volumes:
       - ./backend:/var/www/html
     environment:
