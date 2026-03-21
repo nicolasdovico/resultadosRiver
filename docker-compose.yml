@@ -1,0 +1,86 @@
+services:
+  # Database - PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: river-db
+    restart: always
+    environment:
+      POSTGRES_DB: resultados_river
+      POSTGRES_USER: river_user
+      POSTGRES_PASSWORD: river_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Volume to load initial dump if needed, but we'll do it manually as per task 1.4
+      - ./backupfulbo210326.sql:/docker-entrypoint-initdb.d/backup.sql
+    networks:
+      - river-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U river_user -d resultados_river"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Cache - Redis
+  redis:
+    image: redis:alpine
+    container_name: river-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - river-network
+
+  # Backend - Laravel
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: river-backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: resultados_river
+      DB_USERNAME: river_user
+      DB_PASSWORD: river_password
+      REDIS_HOST: redis
+    networks:
+      - river-network
+
+  # Frontend Web - Next.js
+  frontend-web:
+    build:
+      context: ./frontend-web
+      dockerfile: Dockerfile
+    container_name: river-frontend-web
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-web:/app
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - river-network
+
+networks:
+  river-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
