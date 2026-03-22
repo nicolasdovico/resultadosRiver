@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\UpperCaseStrings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rival extends Model
 {
+    use UpperCaseStrings;
+
     protected $table = 'rivales';
     protected $primaryKey = 'ri_id';
     public $timestamps = false;

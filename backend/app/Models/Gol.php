@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\UpperCaseStrings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Gol extends Model
 {
+    use UpperCaseStrings;
+
     protected $table = 'goles';
     protected $primaryKey = 'gol_id';
     public $timestamps = false;

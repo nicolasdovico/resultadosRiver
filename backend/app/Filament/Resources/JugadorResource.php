@@ -23,8 +23,8 @@ class JugadorResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Textarea::make('pl_apno')
-                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('pl_apno')
+                    ->label('Nombre'),
             ]);
     }
 
@@ -32,7 +32,10 @@ class JugadorResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('pl_apno')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //

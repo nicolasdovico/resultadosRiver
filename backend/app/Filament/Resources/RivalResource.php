@@ -23,8 +23,8 @@ class RivalResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Textarea::make('ri_desc')
-                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('ri_desc')
+                    ->label('Nombre'),
             ]);
     }
 
@@ -32,7 +32,10 @@ class RivalResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('ri_desc')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //

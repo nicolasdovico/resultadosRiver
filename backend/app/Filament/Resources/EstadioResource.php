@@ -23,8 +23,8 @@ class EstadioResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Textarea::make('es_desc')
-                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('es_desc')
+                    ->label('Nombre'),
             ]);
     }
 
@@ -32,7 +32,10 @@ class EstadioResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('es_desc')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //

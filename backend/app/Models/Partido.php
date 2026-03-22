@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\UpperCaseStrings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Partido extends Model
 {
+    use UpperCaseStrings;
+
     protected $table = 'estadisticas';
     protected $primaryKey = 'fecha';
     public $incrementing = false;
@@ -15,7 +18,7 @@ class Partido extends Model
     public $timestamps = true;
     protected $guarded = [];
 
-    public function torneo(): BelongsTo
+    public function torneo_rel(): BelongsTo
     {
         return $this->belongsTo(Torneo::class, 'torneo', 'tor_id');
     }
@@ -25,22 +28,22 @@ class Partido extends Model
         return $this->belongsTo(Rival::class, 'adversario', 'ri_id');
     }
 
-    public function arbitro(): BelongsTo
+    public function arbitro_rel(): BelongsTo
     {
         return $this->belongsTo(Arbitro::class, 'arbitro', 'ar_id');
     }
 
-    public function estadio(): BelongsTo
+    public function estadio_rel(): BelongsTo
     {
         return $this->belongsTo(Estadio::class, 'estadio', 'es_id');
     }
 
-    public function condicion(): BelongsTo
+    public function condicion_rel(): BelongsTo
     {
         return $this->belongsTo(Condicion::class, 'condicion', 'id_condicion');
     }
 
-    public function fase(): BelongsTo
+    public function fase_rel(): BelongsTo
     {
         return $this->belongsTo(Fase::class, 'fase', 'id_fase');
     }

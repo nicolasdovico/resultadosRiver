@@ -23,26 +23,43 @@ class PartidoResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('torneo')
-                    ->numeric(),
-                Forms\Components\TextInput::make('adversario')
-                    ->numeric(),
-                Forms\Components\TextInput::make('arbitro')
-                    ->numeric(),
+                Forms\Components\DatePicker::make('fecha')
+                    ->required(),
+                Forms\Components\Select::make('torneo')
+                    ->relationship('torneo_rel', 'tor_desc')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Select::make('adversario')
+                    ->relationship('rival', 'ri_desc')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Select::make('arbitro')
+                    ->relationship('arbitro_rel', 'ar_apno')
+                    ->searchable()
+                    ->preload(),
                 Forms\Components\TextInput::make('go_ri')
+                    ->label('Goles River')
                     ->numeric(),
                 Forms\Components\TextInput::make('go_ad')
+                    ->label('Goles Rival')
                     ->numeric(),
-                Forms\Components\TextInput::make('estadio')
-                    ->numeric(),
-                Forms\Components\TextInput::make('condicion')
+                Forms\Components\Select::make('estadio')
+                    ->relationship('estadio_rel', 'es_desc')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Select::make('condicion')
+                    ->relationship('condicion_rel', 'descripcion')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Select::make('fase')
+                    ->relationship('fase_rel', 'fase_desc')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\TextInput::make('fecha_nro')
+                    ->label('Fecha Nro')
                     ->numeric(),
                 Forms\Components\Textarea::make('observaciones')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('fase')
-                    ->numeric(),
-                Forms\Components\TextInput::make('fecha_nro')
-                    ->numeric(),
             ]);
     }
 
@@ -53,32 +70,26 @@ class PartidoResource extends Resource
                 Tables\Columns\TextColumn::make('fecha')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('torneo')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('torneo_rel.tor_desc')
+                    ->label('Torneo')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('adversario')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('arbitro')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('rival.ri_desc')
+                    ->label('Rival')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('go_ri')
-                    ->numeric()
+                    ->label('LP')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('go_ad')
-                    ->numeric()
+                    ->label('LV')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('estadio')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('condicion_rel.descripcion')
+                    ->label('Condición')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('condicion')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('estadio_rel.es_desc')
+                    ->label('Estadio')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('fase')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('fecha_nro')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('fase_rel.fase_desc')
+                    ->label('Fase')
                     ->sortable(),
             ])
             ->filters([

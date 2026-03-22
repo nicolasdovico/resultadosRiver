@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\UpperCaseStrings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Estadio extends Model
 {
+    use UpperCaseStrings;
+
     protected $table = 'estadios';
     protected $primaryKey = 'es_id';
     public $timestamps = false;

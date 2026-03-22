@@ -23,8 +23,8 @@ class ArbitroResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Textarea::make('ar_apno')
-                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('ar_apno')
+                    ->label('Nombre'),
             ]);
     }
 
@@ -32,7 +32,10 @@ class ArbitroResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('ar_apno')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //

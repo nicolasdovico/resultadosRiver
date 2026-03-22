@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\UpperCaseStrings;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, UpperCaseStrings;
 
     /**
      * The attributes that are mass assignable.
@@ -69,7 +70,7 @@ class User extends Authenticatable
      */
     public function hasRole(string $role): bool
     {
-        return $this->roles()->where('name', $role)->exists();
+        return $this->roles()->where('name', mb_strtoupper($role, 'UTF-8'))->exists();
     }
 
     /**
@@ -77,7 +78,7 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return $this->hasRole('Super Admin');
+        return $this->hasRole('SUPER ADMIN');
     }
 
     /**
@@ -85,6 +86,6 @@ class User extends Authenticatable
      */
     public function isPremium(): bool
     {
-        return $this->hasRole('Premium') || $this->isSuperAdmin();
+        return $this->hasRole('PREMIUM') || $this->isSuperAdmin();
     }
 }

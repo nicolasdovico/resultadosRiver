@@ -23,10 +23,14 @@ class TorneoResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Textarea::make('tor_desc')
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('tor_nivel')
-                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('tor_desc')
+                    ->label('Nombre'),
+                Forms\Components\Select::make('tor_nivel')
+                    ->label('Nivel')
+                    ->options([
+                        'Nacional' => 'Nacional',
+                        'Internacional' => 'Internacional',
+                    ]),
             ]);
     }
 
@@ -34,7 +38,14 @@ class TorneoResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('tor_desc')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('tor_nivel')
+                    ->label('Nivel')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //
