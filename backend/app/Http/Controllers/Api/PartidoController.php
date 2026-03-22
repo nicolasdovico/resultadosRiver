@@ -6,30 +6,31 @@ use App\Http\Controllers\Controller;
 use App\Models\Partido;
 use App\Http\Resources\PartidoResource;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class PartidoController extends Controller
 {
+    #[OA\Get(
+        path: '/v1/partidos',
+        summary: 'List and filter partidos',
+        operationId: 'getPartidos',
+        security: [['sanctum' => []]],
+        tags: ['Partidos'],
+        parameters: [
+            new OA\Parameter(name: 'torneo', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'adversario', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'arbitro', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'estadio', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'fase', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'fecha_desde', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'fecha_hasta', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'torneo_nivel', in: 'query', schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Successful operation')
+        ]
+    )]
     /**
-     * @OA\Get(
-     *     path="/v1/partidos",
-     *     tags={"Partidos"},
-     *     summary="List and filter partidos",
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="torneo",
-     *         in="query",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Parameter(
-     *         name="fecha_desde",
-     *         in="query",
-     *         @OA\Schema(type="string", format="date")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation"
-     *     )
-     * )
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -76,6 +77,16 @@ class PartidoController extends Controller
         return PartidoResource::collection($partidos);
     }
 
+    #[OA\Post(
+        path: '/v1/partidos',
+        summary: 'Create a new partido',
+        operationId: 'createPartido',
+        security: [['sanctum' => []]],
+        tags: ['Partidos'],
+        responses: [
+            new OA\Response(response: 201, description: 'Created successfully')
+        ]
+    )]
     /**
      * Store a newly created resource in storage.
      */
@@ -85,23 +96,20 @@ class PartidoController extends Controller
         return new PartidoResource($partido->load(['torneo', 'rival', 'arbitro', 'estadio', 'condicion', 'fase', 'goles.jugador']));
     }
 
+    #[OA\Get(
+        path: '/v1/partidos/{fecha}',
+        summary: 'Get partido by fecha',
+        operationId: 'getPartidoByFecha',
+        security: [['sanctum' => []]],
+        tags: ['Partidos'],
+        parameters: [
+            new OA\Parameter(name: 'fecha', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'date'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Successful operation')
+        ]
+    )]
     /**
-     * @OA\Get(
-     *     path="/v1/partidos/{fecha}",
-     *     tags={"Partidos"},
-     *     summary="Get partido by fecha",
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(
-     *         name="fecha",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="string", format="date")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation"
-     *     )
-     * )
      * Display the specified resource.
      */
     public function show(string $fecha)
@@ -110,6 +118,19 @@ class PartidoController extends Controller
         return new PartidoResource($partido);
     }
 
+    #[OA\Put(
+        path: '/v1/partidos/{fecha}',
+        summary: 'Update a partido',
+        operationId: 'updatePartido',
+        security: [['sanctum' => []]],
+        tags: ['Partidos'],
+        parameters: [
+            new OA\Parameter(name: 'fecha', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'date'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Updated successfully')
+        ]
+    )]
     /**
      * Update the specified resource in storage.
      */
@@ -120,6 +141,19 @@ class PartidoController extends Controller
         return new PartidoResource($partido->load(['torneo', 'rival', 'arbitro', 'estadio', 'condicion', 'fase', 'goles.jugador']));
     }
 
+    #[OA\Delete(
+        path: '/v1/partidos/{fecha}',
+        summary: 'Delete a partido',
+        operationId: 'deletePartido',
+        security: [['sanctum' => []]],
+        tags: ['Partidos'],
+        parameters: [
+            new OA\Parameter(name: 'fecha', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'date'))
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Deleted successfully')
+        ]
+    )]
     /**
      * Remove the specified resource from storage.
      */

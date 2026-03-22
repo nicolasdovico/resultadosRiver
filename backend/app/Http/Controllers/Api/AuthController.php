@@ -21,6 +21,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/v1/auth/register',
         summary: 'Register a new user',
+        operationId: 'register',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -84,6 +85,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/v1/auth/login',
         summary: 'Login a user',
+        operationId: 'login',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -144,6 +146,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/v1/auth/verify-otp',
         summary: 'Verify OTP code',
+        operationId: 'verifyOtp',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -206,6 +209,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/v1/auth/resend-otp',
         summary: 'Resend OTP code',
+        operationId: 'resendOtp',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -242,6 +246,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/v1/auth/forgot-password',
         summary: 'Request a password reset OTP',
+        operationId: 'forgotPassword',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -274,6 +279,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/v1/auth/reset-password',
         summary: 'Reset password using OTP',
+        operationId: 'resetPassword',
         tags: ['Authentication'],
         requestBody: new OA\RequestBody(
             required: true,

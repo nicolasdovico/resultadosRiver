@@ -12,6 +12,7 @@ class SettingController extends Controller
     #[OA\Get(
         path: '/v1/settings',
         summary: 'List all settings (Admin only)',
+        operationId: 'getSettings',
         tags: ['Settings'],
         security: [['sanctum' => []]],
         responses: [
@@ -26,6 +27,7 @@ class SettingController extends Controller
     #[OA\Post(
         path: '/v1/settings',
         summary: 'Update a setting (Admin only)',
+        operationId: 'updateSetting',
         tags: ['Settings'],
         security: [['sanctum' => []]],
         requestBody: new OA\RequestBody(

@@ -13,17 +13,31 @@ class ArbitroController extends Controller
     #[OA\Get(
         path: '/v1/arbitros',
         summary: 'List all arbitros',
+        operationId: 'getArbitros',
         security: [['sanctum' => []]],
         tags: ['Arbitros'],
         responses: [
             new OA\Response(response: 200, description: 'Successful operation')
         ]
     )]
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
         return ArbitroResource::collection(Arbitro::all());
     }
 
+    #[OA\Post(
+        path: '/v1/arbitros',
+        summary: 'Create a new arbitro',
+        operationId: 'createArbitro',
+        security: [['sanctum' => []]],
+        tags: ['Arbitros'],
+        responses: [
+            new OA\Response(response: 201, description: 'Created successfully')
+        ]
+    )]
     /**
      * Store a newly created resource in storage.
      */
@@ -36,6 +50,7 @@ class ArbitroController extends Controller
     #[OA\Get(
         path: '/v1/arbitros/{id}',
         summary: 'Get arbitro by ID',
+        operationId: 'getArbitroById',
         security: [['sanctum' => []]],
         tags: ['Arbitros'],
         parameters: [
@@ -45,11 +60,27 @@ class ArbitroController extends Controller
             new OA\Response(response: 200, description: 'Successful operation')
         ]
     )]
+    /**
+     * Display the specified resource.
+     */
     public function show(string $id)
     {
         return new ArbitroResource(Arbitro::findOrFail($id));
     }
 
+    #[OA\Put(
+        path: '/v1/arbitros/{id}',
+        summary: 'Update an arbitro',
+        operationId: 'updateArbitro',
+        security: [['sanctum' => []]],
+        tags: ['Arbitros'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Updated successfully')
+        ]
+    )]
     /**
      * Update the specified resource in storage.
      */
@@ -60,6 +91,19 @@ class ArbitroController extends Controller
         return new ArbitroResource($record);
     }
 
+    #[OA\Delete(
+        path: '/v1/arbitros/{id}',
+        summary: 'Delete an arbitro',
+        operationId: 'deleteArbitro',
+        security: [['sanctum' => []]],
+        tags: ['Arbitros'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Deleted successfully')
+        ]
+    )]
     /**
      * Remove the specified resource from storage.
      */

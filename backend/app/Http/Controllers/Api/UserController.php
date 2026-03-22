@@ -15,6 +15,7 @@ class UserController extends Controller
     #[OA\Get(
         path: '/v1/users',
         summary: 'List all users (Admin only)',
+        operationId: 'getUsers',
         tags: ['User Management'],
         security: [['sanctum' => []]],
         responses: [
@@ -30,6 +31,7 @@ class UserController extends Controller
     #[OA\Get(
         path: '/v1/users/{id}',
         summary: 'Get user details (Admin only)',
+        operationId: 'getUserById',
         tags: ['User Management'],
         security: [['sanctum' => []]],
         parameters: [
@@ -48,6 +50,7 @@ class UserController extends Controller
     #[OA\Put(
         path: '/v1/users/{id}',
         summary: 'Update user roles and info (Admin only)',
+        operationId: 'updateUser',
         tags: ['User Management'],
         security: [['sanctum' => []]],
         parameters: [
@@ -96,6 +99,7 @@ class UserController extends Controller
     #[OA\Delete(
         path: '/v1/users/{id}',
         summary: 'Delete or deactivate user (Admin only)',
+        operationId: 'deleteUser',
         tags: ['User Management'],
         security: [['sanctum' => []]],
         parameters: [

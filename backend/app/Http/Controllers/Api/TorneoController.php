@@ -7,8 +7,20 @@ use App\Http\Resources\TorneoResource;
 use App\Models\Torneo;
 use Illuminate\Http\Request;
 
+use OpenApi\Attributes as OA;
+
 class TorneoController extends Controller
 {
+    #[OA\Get(
+        path: '/v1/torneos',
+        summary: 'List all torneos',
+        operationId: 'getTorneos',
+        security: [['sanctum' => []]],
+        tags: ['Torneos'],
+        responses: [
+            new OA\Response(response: 200, description: 'Successful operation')
+        ]
+    )]
     /**
      * Display a listing of the resource.
      */
@@ -17,6 +29,16 @@ class TorneoController extends Controller
         return TorneoResource::collection(Torneo::all());
     }
 
+    #[OA\Post(
+        path: '/v1/torneos',
+        summary: 'Create a new torneo',
+        operationId: 'createTorneo',
+        security: [['sanctum' => []]],
+        tags: ['Torneos'],
+        responses: [
+            new OA\Response(response: 201, description: 'Created successfully')
+        ]
+    )]
     /**
      * Store a newly created resource in storage.
      */
@@ -26,6 +48,19 @@ class TorneoController extends Controller
         return new TorneoResource($record);
     }
 
+    #[OA\Get(
+        path: '/v1/torneos/{id}',
+        summary: 'Get torneo by ID',
+        operationId: 'getTorneoById',
+        security: [['sanctum' => []]],
+        tags: ['Torneos'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Successful operation')
+        ]
+    )]
     /**
      * Display the specified resource.
      */
@@ -34,6 +69,19 @@ class TorneoController extends Controller
         return new TorneoResource(Torneo::findOrFail($id));
     }
 
+    #[OA\Put(
+        path: '/v1/torneos/{id}',
+        summary: 'Update a torneo',
+        operationId: 'updateTorneo',
+        security: [['sanctum' => []]],
+        tags: ['Torneos'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Updated successfully')
+        ]
+    )]
     /**
      * Update the specified resource in storage.
      */
@@ -44,6 +92,19 @@ class TorneoController extends Controller
         return new TorneoResource($record);
     }
 
+    #[OA\Delete(
+        path: '/v1/torneos/{id}',
+        summary: 'Delete a torneo',
+        operationId: 'deleteTorneo',
+        security: [['sanctum' => []]],
+        tags: ['Torneos'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Deleted successfully')
+        ]
+    )]
     /**
      * Remove the specified resource from storage.
      */

@@ -1,0 +1,16 @@
+{
+  "name": "Resultados River Plate",
+  "short_name": "Resultados River",
+  "description": "Historial completo de resultados y estadísticas de River Plate",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b91c1c",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

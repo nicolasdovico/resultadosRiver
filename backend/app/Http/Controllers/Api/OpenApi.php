@@ -20,9 +20,7 @@ use OpenApi\Attributes as OA;
     type: "http",
     scheme: "bearer",
     bearerFormat: "JWT",
-    description: "Use a Sanctum token to authenticate",
-    name: "Authorization",
-    in: "header"
+    description: "Use a Sanctum token to authenticate"
 )]
 class OpenApi
 {

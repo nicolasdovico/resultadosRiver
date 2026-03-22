@@ -21,6 +21,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
+    Route::get('/', function () {
+        return redirect('/admin');
+    });
+
     // Auth routes
     Route::prefix('auth')->group(function () {
         Route::post('register', [AuthController::class, 'register']);

@@ -28,6 +28,7 @@ class PaymentController extends Controller
     #[OA\Post(
         path: '/v1/payments/create-preference',
         summary: 'Create a MercadoPago preference for subscription',
+        operationId: 'createPreference',
         tags: ['Payments'],
         security: [['sanctum' => []]],
         responses: [
@@ -63,6 +64,7 @@ class PaymentController extends Controller
     #[OA\Post(
         path: '/v1/payments/webhook',
         summary: 'Handle MercadoPago webhooks',
+        operationId: 'handleWebhook',
         tags: ['Payments'],
         responses: [
             new OA\Response(response: 200, description: 'Webhook handled'),
