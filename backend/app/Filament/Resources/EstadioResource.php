@@ -37,6 +37,7 @@ class EstadioResource extends Resource
                     ->searchable()
                     ->sortable(),
             ])
+            ->defaultSort('es_desc')
             ->filters([
                 //
             ])

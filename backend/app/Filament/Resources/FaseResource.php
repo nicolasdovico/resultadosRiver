@@ -23,7 +23,7 @@ class FaseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('fase_desc')
+                Forms\Components\TextInput::make('fase')
                     ->maxLength(50),
             ]);
     }
@@ -32,9 +32,11 @@ class FaseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('fase_desc')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('fase')
+                    ->searchable()
+                    ->sortable(),
             ])
+            ->defaultSort('fase', 'asc')
             ->filters([
                 //
             ])

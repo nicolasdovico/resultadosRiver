@@ -37,6 +37,7 @@ class ArbitroResource extends Resource
                     ->searchable()
                     ->sortable(),
             ])
+            ->defaultSort('ar_apno')
             ->filters([
                 //
             ])

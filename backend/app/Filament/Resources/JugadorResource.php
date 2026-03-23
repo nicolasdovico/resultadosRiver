@@ -17,6 +17,10 @@ class JugadorResource extends Resource
 {
     protected static ?string $model = Jugador::class;
 
+    protected static ?string $pluralLabel = 'Jugadores';
+
+    protected static ?string $modelLabel = 'Jugador';
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -37,6 +41,7 @@ class JugadorResource extends Resource
                     ->searchable()
                     ->sortable(),
             ])
+            ->defaultSort('pl_apno')
             ->filters([
                 //
             ])

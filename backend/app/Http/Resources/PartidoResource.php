@@ -15,12 +15,12 @@ class PartidoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return array_merge(parent::toArray($request), [
-            'torneo' => new TorneoResource($this->whenLoaded('torneo')),
+            'torneo' => new TorneoResource($this->whenLoaded('torneo_rel')),
             'rival' => new RivalResource($this->whenLoaded('rival')),
-            'arbitro' => new ArbitroResource($this->whenLoaded('arbitro')),
-            'estadio' => new EstadioResource($this->whenLoaded('estadio')),
-            'condicion' => new CondicionResource($this->whenLoaded('condicion')),
-            'fase' => new FaseResource($this->whenLoaded('fase')),
+            'arbitro' => new ArbitroResource($this->whenLoaded('arbitro_rel')),
+            'estadio' => new EstadioResource($this->whenLoaded('estadio_rel')),
+            'condicion' => new CondicionResource($this->whenLoaded('condicion_rel')),
+            'fase' => new FaseResource($this->whenLoaded('fase_rel')),
             'goles' => GolResource::collection($this->whenLoaded('goles')),
         ]);
     }

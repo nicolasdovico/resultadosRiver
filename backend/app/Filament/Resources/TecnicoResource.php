@@ -47,6 +47,7 @@ class TecnicoResource extends Resource
                 Tables\Columns\TextColumn::make('cargo')
                     ->searchable(),
             ])
+            ->defaultSort('tec_ape_nom')
             ->filters([
                 //
             ])

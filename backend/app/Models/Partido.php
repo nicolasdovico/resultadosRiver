@@ -18,6 +18,10 @@ class Partido extends Model
     public $timestamps = true;
     protected $guarded = [];
 
+    protected $casts = [
+        'fecha' => 'date',
+    ];
+
     public function torneo_rel(): BelongsTo
     {
         return $this->belongsTo(Torneo::class, 'torneo', 'tor_id');

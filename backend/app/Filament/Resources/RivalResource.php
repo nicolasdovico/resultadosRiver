@@ -17,6 +17,10 @@ class RivalResource extends Resource
 {
     protected static ?string $model = Rival::class;
 
+    protected static ?string $pluralLabel = 'Rivales';
+
+    protected static ?string $modelLabel = 'Rival';
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -37,6 +41,7 @@ class RivalResource extends Resource
                     ->searchable()
                     ->sortable(),
             ])
+            ->defaultSort('ri_desc')
             ->filters([
                 //
             ])

@@ -47,6 +47,7 @@ class TorneoResource extends Resource
                     ->searchable()
                     ->sortable(),
             ])
+            ->defaultSort('tor_desc')
             ->filters([
                 //
             ])

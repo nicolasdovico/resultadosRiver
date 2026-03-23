@@ -33,6 +33,7 @@ class PartidoResource extends Resource
                     ->relationship('rival', 'ri_desc')
                     ->searchable()
                     ->preload(),
+                # El campo arbitro es 'arbitro' en la tabla estadisticas
                 Forms\Components\Select::make('arbitro')
                     ->relationship('arbitro_rel', 'ar_apno')
                     ->searchable()
@@ -52,7 +53,11 @@ class PartidoResource extends Resource
                     ->searchable()
                     ->preload(),
                 Forms\Components\Select::make('fase')
-                    ->relationship('fase_rel', 'fase_desc')
+                    ->relationship(
+                        name: 'fase_rel',
+                        titleAttribute: 'fase',
+                        modifyQueryUsing: fn (Builder $query) => $query->orderBy('fase', 'asc'),
+                    )
                     ->searchable()
                     ->preload(),
                 Forms\Components\TextInput::make('fecha_nro')
@@ -67,8 +72,12 @@ class PartidoResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('fecha_nro')
+                    ->label('Fecha')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('fecha')
-                    ->date()
+                    ->label('Día')
+                    ->date('d/m/Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('torneo_rel.tor_desc')
                     ->label('Torneo')
@@ -88,10 +97,14 @@ class PartidoResource extends Resource
                 Tables\Columns\TextColumn::make('estadio_rel.es_desc')
                     ->label('Estadio')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('fase_rel.fase_desc')
+                Tables\Columns\TextColumn::make('fase_rel.fase')
                     ->label('Fase')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('arbitro_rel.ar_apno')
+                    ->label('Arbitro')
+                    ->sortable(),
             ])
+            ->defaultSort('fecha', 'desc')
             ->filters([
                 //
             ])
