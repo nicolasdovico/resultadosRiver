@@ -67,8 +67,8 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Assign 'Free' role by default (assuming it exists or will be created)
-        $freeRole = Role::where('name', 'Free')->first();
+        // Assign 'FREE' role by default (assuming it exists or will be created)
+        $freeRole = Role::where('name', 'FREE')->first();
         if ($freeRole) {
             $user->roles()->attach($freeRole->id);
         }

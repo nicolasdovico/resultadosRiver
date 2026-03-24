@@ -76,9 +76,15 @@ class PaymentController extends Controller
         Log::info('MercadoPago Webhook received: ', $request->all());
 
         $topic = $request->get('topic') ?? $request->get('type');
+        
+        // Extraction logic for ID
         $id = $request->get('id') ?? $request->get('data_id');
+        if (!$id && $request->has('data')) {
+            $data = $request->get('data');
+            $id = $data['id'] ?? null;
+        }
 
-        if ($topic === 'payment') {
+        if ($topic === 'payment' && $id) {
             try {
                 $payment = $this->mpService->getPayment($id);
                 
@@ -114,14 +120,16 @@ class PaymentController extends Controller
         Subscription::updateOrCreate(
             ['user_id' => $user->id],
             [
+                'plan' => 'premium',
                 'status' => 'active',
+                'starts_at' => Carbon::now(),
                 'expires_at' => Carbon::now()->addMonths(6),
             ]
         );
 
         // Elevate user to Premium role
-        $premiumRole = Role::where('name', 'Premium')->first();
-        if ($premiumRole && !$user->hasRole('Premium')) {
+        $premiumRole = Role::where('name', 'PREMIUM')->first();
+        if ($premiumRole && !$user->hasRole('PREMIUM')) {
             $user->roles()->syncWithoutDetaching([$premiumRole->id]);
         }
 

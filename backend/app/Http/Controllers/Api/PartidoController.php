@@ -24,7 +24,9 @@ class PartidoController extends Controller
             new OA\Parameter(name: 'fase', in: 'query', schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'fecha_desde', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
             new OA\Parameter(name: 'fecha_hasta', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
-            new OA\Parameter(name: 'torneo_nivel', in: 'query', schema: new OA\Schema(type: 'string'))
+            new OA\Parameter(name: 'torneo_nivel', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'hoy', in: 'query', schema: new OA\Schema(type: 'boolean')),
+            new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
             new OA\Response(response: 200, description: 'Successful operation')
@@ -36,6 +38,7 @@ class PartidoController extends Controller
     public function index(Request $request)
     {
         $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador']);
+        $title = 'Resultados';
 
         if ($request->has('q')) {
             $searchTerm = $request->q;
@@ -76,6 +79,21 @@ class PartidoController extends Controller
             $query->where('fecha', '<=', $request->fecha_hasta);
         }
 
+        if ($request->boolean('hoy')) {
+            $queryHoy = clone $query;
+            $queryHoy->whereMonth('fecha', now()->month)
+                     ->whereDay('fecha', now()->day);
+            
+            if ($queryHoy->count() > 0) {
+                $query = $queryHoy;
+                $title = 'Un día como hoy...';
+            } else {
+                // Fallback to latest matches overall if nothing for today
+                $query->orderBy('fecha', 'desc');
+                $title = 'Resultados Recientes';
+            }
+        }
+
         // Filter by Torneo Nivel (requires join or whereHas)
         if ($request->has('torneo_nivel')) {
             $query->whereHas('torneo_rel', function ($q) use ($request) {
@@ -83,9 +101,14 @@ class PartidoController extends Controller
             });
         }
 
-        $partidos = $query->paginate(20);
+        $limit = $request->input('limit', 20);
+        $partidos = $query->paginate($limit);
 
-        return PartidoResource::collection($partidos);
+        return PartidoResource::collection($partidos)->additional([
+            'meta' => [
+                'title' => $title
+            ]
+        ]);
     }
 
     #[OA\Post(
