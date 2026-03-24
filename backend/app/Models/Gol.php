@@ -24,4 +24,14 @@ class Gol extends Model
     {
         return $this->belongsTo(Partido::class, 'gol_fecha', 'fecha');
     }
+
+    public function tipo_gol_rel(): BelongsTo
+    {
+        return $this->belongsTo(TipoGol::class, 'gol_penal', 'tipo_gol');
+    }
+
+    public function periodo_rel(): BelongsTo
+    {
+        return $this->belongsTo(Periodo::class, 'periodo', 'id_periodo');
+    }
 }

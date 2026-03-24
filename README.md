@@ -65,3 +65,6 @@ Consulta la carpeta `/docs` para más detalles sobre la metodología de trabajo,
 
 ## Crear usuario Admin
 'docker exec -it river-backend php artisan make:filament-user'
+
+## Backup de la base de datos
+'docker exec -t river-db pg_dump -U river_user resultados_river > backup_$(date +%Y%m%d_%H%M%S).sql'

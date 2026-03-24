@@ -15,7 +15,7 @@ class Partido extends Model
     protected $primaryKey = 'fecha';
     public $incrementing = false;
     protected $keyType = 'string';
-    public $timestamps = true;
+    public $timestamps = false;
     protected $guarded = [];
 
     protected $casts = [
@@ -54,6 +54,6 @@ class Partido extends Model
 
     public function goles(): HasMany
     {
-        return $this->hasMany(Gol::class, 'gol_fecha', 'fecha');
+        return $this->hasMany(Gol::class, 'gol_fecha', 'fecha')->orderBy('periodo')->orderBy('minutos');
     }
 }
