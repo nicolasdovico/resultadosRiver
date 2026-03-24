@@ -68,3 +68,8 @@ Consulta la carpeta `/docs` para más detalles sobre la metodología de trabajo,
 
 ## Backup de la base de datos
 'docker exec -t river-db pg_dump -U river_user resultados_river > backup_$(date +%Y%m%d_%H%M%S).sql'
+
+## URL de Mailtip
+http://localhost:8025/
+
+Tiene que estar levantado el container

@@ -26,7 +26,17 @@ export default function RegisterPage() {
       await register(formData);
       router.push(`/auth/verify-otp?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Hubo un error al registrarte');
+      console.error('Registration Error:', err);
+      // Handle Laravel validation errors (422)
+      if (err.response?.status === 422 && err.response?.data) {
+        const validationErrors = err.response.data;
+        // Take the first error message from the first field that has errors
+        const firstField = Object.keys(validationErrors)[0];
+        const firstErrorMessage = validationErrors[firstField][0];
+        setError(firstErrorMessage);
+      } else {
+        setError(err.response?.data?.message || 'Hubo un error al registrarte');
+      }
     } finally {
       setLoading(false);
     }

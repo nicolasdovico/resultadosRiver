@@ -123,11 +123,11 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid login details'], 401);
         }
-
-        $user = User::where('email', $request->email)->firstOrFail();
 
         // Check if email is verified (OTP flow)
         if (!$user->email_verified_at) {
@@ -192,7 +192,7 @@ class AuthController extends Controller
             if ($lastOtp) {
                 $lastOtp->increment('attempts');
                 if ($lastOtp->attempts >= 3) {
-                    $lastOtp->update(['is_used' => true]); // Block this OTP
+                    $lastOtp->delete(); // Delete after too many failed attempts
                     return response()->json(['message' => 'Too many failed attempts. Please request a new code.'], 400);
                 }
             }
@@ -200,7 +200,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid or expired OTP code'], 400);
         }
 
-        $otp->update(['is_used' => true]);
+        $otp->delete();
         $user->update(['email_verified_at' => Carbon::now()]);
 
         return response()->json(['message' => 'OTP verified successfully. You can now login.']);

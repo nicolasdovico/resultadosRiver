@@ -58,6 +58,22 @@ services:
       DB_USERNAME: river_user
       DB_PASSWORD: river_password
       REDIS_HOST: redis
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      MAIL_ENCRYPTION: "null"
+      MAIL_FROM_ADDRESS: "noreply@resultadosriver.com"
+    networks:
+      - river-network
+
+  # Mailpit - Email testing tool
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: river-mailpit
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
     networks:
       - river-network
 

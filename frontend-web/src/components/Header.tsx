@@ -32,14 +32,8 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-6 text-sm font-black uppercase tracking-widest">
-          {navLinks.slice(0, 4).map(link => (
+          {navLinks.map(link => (
             <Link key={link.href} href={link.href} className="hover:text-red-200 transition-colors">
-              {link.label}
-            </Link>
-          ))}
-          <div className="h-4 w-px bg-red-600 mx-2" />
-          {navLinks.slice(4).map(link => (
-            <Link key={link.href} href={link.href} className="text-[10px] opacity-80 hover:opacity-100 hover:text-red-200 transition-all">
               {link.label}
             </Link>
           ))}

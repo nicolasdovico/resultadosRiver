@@ -21,10 +21,17 @@ export default function LoginPage() {
 
     try {
       const response = await loginApi({ email, password });
-      const { access_token, user } = response.data as any;
+      // customInstance returns response.data directly, so response IS the object with access_token and user
+      const { access_token, user } = response as any;
+      
+      if (!access_token) {
+        throw new Error('No se recibió el token de acceso');
+      }
+      
       login(access_token, user);
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Credenciales inválidas';
+      console.error('Login Error:', err);
+      const message = err.response?.data?.message || err.message || 'Credenciales inválidas';
       if (message === 'Email not verified.') {
         router.push(`/auth/verify-otp?email=${encodeURIComponent(email)}`);
       } else {

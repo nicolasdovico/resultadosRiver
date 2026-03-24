@@ -28,8 +28,23 @@ export const customInstance = <T>(
   }
 
   // Ensure the URL is correctly formed by prefixing with /api if it doesn't already have it
+  // This is needed because Orval generates URLs like /v1/... but Laravel routes are under /api/v1/...
   if (config.url && !config.url.startsWith('/api')) {
     config.url = `/api${config.url}`;
+  }
+
+  // Orval passes 'body' in options for RequestInit compatibility, but Axios expects 'data'
+  if ((config as any).body && !config.data) {
+    try {
+      // If it's a string, try to parse it if it looks like JSON, otherwise use as is
+      if (typeof (config as any).body === 'string') {
+        config.data = JSON.parse((config as any).body);
+      } else {
+        config.data = (config as any).body;
+      }
+    } catch (e) {
+      config.data = (config as any).body;
+    }
   }
   
   const promise = AXIOS_INSTANCE({

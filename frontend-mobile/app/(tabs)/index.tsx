@@ -1,6 +1,7 @@
 import { StyleSheet, FlatList, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { getPartidos } from '@/api/generated/endpoints/partidos/partidos';
+import { useRouter } from 'expo-router';
 
 interface Partido {
   fecha: string;
@@ -19,6 +20,7 @@ export default function ResultadosScreen() {
   const [partidos, setPartidos] = useState<Partido[]>([]);
   const [loading, setLoading] = useState(true);
   const [sectionTitle, setSectionTitle] = useState('Resultados');
+  const router = useRouter();
 
   useEffect(() => {
     fetchPartidos();
@@ -28,7 +30,7 @@ export default function ResultadosScreen() {
     try {
       // Use 'hoy: true' to get the dynamic behavior from backend
       // @ts-expect-error - customInstance structure
-      const response = await getPartidos({ hoy: true, limit: 20 });
+      const response = await getPartidos({ hoy: true, limit: 6 });
       
       if (response && (response as any).data) {
         setPartidos((response as any).data);
@@ -47,14 +49,32 @@ export default function ResultadosScreen() {
   const renderHeader = () => (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>{sectionTitle}</Text>
-      <Text style={styles.headerSubtitle}>Explora el historial del Más Grande</Text>
+      <Text style={styles.headerSubtitle}>Inicia sesión para ver el detalle</Text>
     </View>
   );
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   const renderPartido = ({ item }: { item: Partido }) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card}
+      onPress={() => router.push('/(auth)/login')}
+    >
       <View style={styles.cardHeader}>
-        <Text style={styles.fecha}>{item.fecha}</Text>
+        <Text style={styles.fecha}>{formatDate(item.fecha)}</Text>
         <Text style={styles.torneo} numberOfLines={1} ellipsizeMode="tail">
           {item.torneo?.tor_desc || 'Torneo'}
         </Text>

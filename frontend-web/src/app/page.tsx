@@ -50,7 +50,7 @@ export default function Home() {
     async function fetchData() {
       try {
         // @ts-expect-error - customInstance returns response body directly
-        const res = await getPartidos({ limit: 5, hoy: true });
+        const res = await getPartidos({ limit: 6, hoy: true });
         
         // Ensure we are accessing the correct path in the response
         if (res && (res as any).data) {
@@ -164,7 +164,7 @@ export default function Home() {
           <div className="flex items-end justify-between mb-10">
             <div>
               <h2 className="text-3xl font-black text-zinc-900 mb-2">{sectionTitle}</h2>
-              <p className="text-zinc-500 font-medium">Información preliminar disponible para todos.</p>
+              <p className="text-zinc-500 font-medium">Registrate para acceder al detalle de cada encuentro.</p>
             </div>
             <Link href="/partidos" className="text-red-600 font-black text-sm hover:underline flex items-center">
               Ver Historial Completo <CircleArrowRight size={16} className="ml-2" />
@@ -173,13 +173,14 @@ export default function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {partidos.map((partido, index) => (
-              <div 
+              <Link 
                 key={index} 
-                className="bg-zinc-50 p-6 rounded-3xl border border-zinc-100 flex items-center shadow-sm hover:border-red-100 transition-colors"
+                href={`/partidos/${partido.fecha}`}
+                className="bg-zinc-50 p-6 rounded-3xl border border-zinc-100 flex items-center shadow-sm hover:border-red-100 transition-colors group"
               >
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-[10px] bg-zinc-200 text-zinc-600 px-2 py-0.5 rounded-full font-bold uppercase">{partido.fecha}</span>
+                    <span className="text-[10px] bg-zinc-200 text-zinc-600 px-2 py-0.5 rounded-full font-bold uppercase">{new Date(partido.fecha).toLocaleDateString('es-AR')}</span>
                     <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase">{partido.torneo?.tor_desc || 'Torneo'}</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -191,10 +192,11 @@ export default function Home() {
                       <span className={`text-3xl font-black ${partido.resultado === 'G' ? 'text-green-600' : partido.resultado === 'P' ? 'text-red-600' : 'text-zinc-400'}`}>
                         {partido.goles_river} - {partido.goles_rival}
                       </span>
+                      <ChevronRight className="text-zinc-300 group-hover:text-red-400 transition-colors" size={20} />
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
