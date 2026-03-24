@@ -74,6 +74,7 @@ services:
       - ./frontend-web:/app
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
+      API_URL: http://backend
     depends_on:
       - backend
     networks:

@@ -37,6 +37,17 @@ class PartidoController extends Controller
     {
         $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador']);
 
+        if ($request->has('q')) {
+            $searchTerm = $request->q;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->whereHas('rival', function ($r) use ($searchTerm) {
+                    $r->where('ri_desc', 'ILIKE', "%{$searchTerm}%");
+                })->orWhereHas('torneo_rel', function ($t) use ($searchTerm) {
+                    $t->where('tor_desc', 'ILIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
         if ($request->has('torneo')) {
             $query->where('torneo', $request->torneo);
         }

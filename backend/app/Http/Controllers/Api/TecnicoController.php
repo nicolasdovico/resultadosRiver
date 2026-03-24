@@ -24,9 +24,13 @@ class TecnicoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return TecnicoResource::collection(Tecnico::all());
+        $query = Tecnico::query();
+        if ($request->has('q')) {
+            $query->where('tec_ape_nom', 'ILIKE', "%{$request->q}%");
+        }
+        return TecnicoResource::collection($query->paginate(50));
     }
 
     #[OA\Post(

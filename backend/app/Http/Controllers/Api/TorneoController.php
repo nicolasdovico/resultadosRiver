@@ -66,7 +66,8 @@ class TorneoController extends Controller
      */
     public function show(string $id)
     {
-        return new TorneoResource(Torneo::findOrFail($id));
+        $torneo = Torneo::with(['partidos.rival'])->findOrFail($id);
+        return new TorneoResource($torneo);
     }
 
     #[OA\Put(

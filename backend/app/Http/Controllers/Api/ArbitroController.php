@@ -23,9 +23,13 @@ class ArbitroController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return ArbitroResource::collection(Arbitro::all());
+        $query = Arbitro::query();
+        if ($request->has('q')) {
+            $query->where('ar_apno', 'ILIKE', "%{$request->q}%");
+        }
+        return ArbitroResource::collection($query->paginate(50));
     }
 
     #[OA\Post(
@@ -65,7 +69,8 @@ class ArbitroController extends Controller
      */
     public function show(string $id)
     {
-        return new ArbitroResource(Arbitro::findOrFail($id));
+        $arbitro = Arbitro::with(['partidos.rival', 'partidos.torneo_rel'])->findOrFail($id);
+        return new ArbitroResource($arbitro);
     }
 
     #[OA\Put(

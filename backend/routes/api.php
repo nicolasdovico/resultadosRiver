@@ -38,8 +38,32 @@ Route::prefix('v1')->group(function () {
     // Public payment routes
     Route::post('payments/webhook', [PaymentController::class, 'webhook']);
 
-    // Public/Free access (might be restricted by middleware inside controllers if needed, 
-    // but here we define the general access)
+    // Public Read routes (available for all visitors)
+    Route::get('arbitros', [ArbitroController::class, 'index']);
+    Route::get('arbitros/{id}', [ArbitroController::class, 'show']);
+    
+    Route::get('estadios', [EstadioController::class, 'index']);
+    Route::get('estadios/{id}', [EstadioController::class, 'show']);
+    
+    Route::get('jugadores', [JugadorController::class, 'index']);
+    Route::get('jugadores/{id}', [JugadorController::class, 'show']);
+    
+    Route::get('rivales', [RivalController::class, 'index']);
+    Route::get('rivales/{id}', [RivalController::class, 'show']);
+    
+    Route::get('torneos', [TorneoController::class, 'index']);
+    Route::get('torneos/{id}', [TorneoController::class, 'show']);
+    
+    Route::get('tecnicos', [TecnicoController::class, 'index']);
+    Route::get('tecnicos/{id}', [TecnicoController::class, 'show']);
+    
+    Route::get('fases', [FaseController::class, 'index']);
+    Route::get('fases/{id}', [FaseController::class, 'show']);
+    
+    Route::get('partidos', [PartidoController::class, 'index']);
+    Route::get('partidos/{id}', [PartidoController::class, 'show']);
+
+    // Authenticated access
     Route::middleware(['auth:sanctum'])->group(function () {
         
         // Payment routes (Authenticated)
@@ -86,30 +110,5 @@ Route::prefix('v1')->group(function () {
             Route::put('partidos/{id}', [PartidoController::class, 'update']);
             Route::delete('partidos/{id}', [PartidoController::class, 'destroy']);
         });
-
-        // Read routes (available for all authenticated users)
-        Route::get('arbitros', [ArbitroController::class, 'index']);
-        Route::get('arbitros/{id}', [ArbitroController::class, 'show']);
-        
-        Route::get('estadios', [EstadioController::class, 'index']);
-        Route::get('estadios/{id}', [EstadioController::class, 'show']);
-        
-        Route::get('jugadores', [JugadorController::class, 'index']);
-        Route::get('jugadores/{id}', [JugadorController::class, 'show']);
-        
-        Route::get('rivales', [RivalController::class, 'index']);
-        Route::get('rivales/{id}', [RivalController::class, 'show']);
-        
-        Route::get('torneos', [TorneoController::class, 'index']);
-        Route::get('torneos/{id}', [TorneoController::class, 'show']);
-        
-        Route::get('tecnicos', [TecnicoController::class, 'index']);
-        Route::get('tecnicos/{id}', [TecnicoController::class, 'show']);
-        
-        Route::get('fases', [FaseController::class, 'index']);
-        Route::get('fases/{id}', [FaseController::class, 'show']);
-        
-        Route::get('partidos', [PartidoController::class, 'index']);
-        Route::get('partidos/{id}', [PartidoController::class, 'show']);
     });
 });

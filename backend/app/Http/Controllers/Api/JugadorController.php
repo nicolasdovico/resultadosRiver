@@ -23,9 +23,13 @@ class JugadorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return JugadorResource::collection(Jugador::all());
+        $query = Jugador::query();
+        if ($request->has('q')) {
+            $query->where('pl_apno', 'ILIKE', "%{$request->q}%");
+        }
+        return JugadorResource::collection($query->paginate(50));
     }
 
     #[OA\Post(
@@ -65,7 +69,8 @@ class JugadorController extends Controller
      */
     public function show(string $id)
     {
-        return new JugadorResource(Jugador::findOrFail($id));
+        $jugador = Jugador::with('goles')->findOrFail($id);
+        return new JugadorResource($jugador);
     }
 
     #[OA\Put(

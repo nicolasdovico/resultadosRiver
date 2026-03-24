@@ -24,9 +24,13 @@ class RivalController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return RivalResource::collection(Rival::all());
+        $query = Rival::query();
+        if ($request->has('q')) {
+            $query->where('ri_desc', 'ILIKE', "%{$request->q}%");
+        }
+        return RivalResource::collection($query->paginate(50));
     }
 
     #[OA\Post(
@@ -66,7 +70,8 @@ class RivalController extends Controller
      */
     public function show(string $id)
     {
-        return new RivalResource(Rival::findOrFail($id));
+        $rival = Rival::with(['partidos.torneo_rel'])->findOrFail($id);
+        return new RivalResource($rival);
     }
 
     #[OA\Put(

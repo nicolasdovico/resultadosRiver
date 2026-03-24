@@ -23,9 +23,13 @@ class EstadioController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return EstadioResource::collection(Estadio::all());
+        $query = Estadio::query();
+        if ($request->has('q')) {
+            $query->where('es_desc', 'ILIKE', "%{$request->q}%");
+        }
+        return EstadioResource::collection($query->paginate(50));
     }
 
     #[OA\Post(
@@ -65,7 +69,8 @@ class EstadioController extends Controller
      */
     public function show(string $id)
     {
-        return new EstadioResource(Estadio::findOrFail($id));
+        $estadio = Estadio::with(['partidos.rival', 'partidos.torneo_rel'])->findOrFail($id);
+        return new EstadioResource($estadio);
     }
 
     #[OA\Put(

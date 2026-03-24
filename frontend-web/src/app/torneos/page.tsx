@@ -1,60 +1,118 @@
-import { getTorneos } from "@/api/generated/endpoints/torneos/torneos";
 import Link from "next/link";
+import { Star, ChevronRight, Trophy, TrendingUp } from "lucide-react";
+import AccessControl from "@/components/AccessControl";
+import SearchBar from "@/components/SearchBar";
+import { customInstance } from "@/api/custom-instance";
 
 interface Torneo {
-  id: number;
-  tor_nombre: string;
+  tor_id: number;
+  tor_desc: string;
   tor_nivel: string;
-  tor_periodo: string;
 }
 
-export const metadata = {
-  title: "Torneos - Resultados River Plate",
-  description: "Listado de torneos disputados por River Plate.",
-};
+export default async function TorneosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const currentTier: 'guest' | 'registered' | 'premium' = 'registered';
+  
+  const params = await searchParams;
+  const query = typeof params.q === 'string' ? params.q : '';
 
-export default async function TorneosPage() {
-  let torneos: Torneo[] = [];
-  try {
-    const response = await getTorneos();
-    // @ts-expect-error - Resource data structure is not fully typed in SDK
-    torneos = response.data || [];
-  } catch (error) {
-    console.error("Error fetching torneos:", error);
-  }
+  const response = await customInstance<{ data: Torneo[] }>({
+    url: '/v1/torneos',
+    method: 'GET',
+    params: { q: query }
+  });
+  
+  const visibleTorneos: Torneo[] = response.data || [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Torneos</h1>
+    <div className="container mx-auto px-4 py-12 max-w-6xl">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+        <div>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center">
+              <Star size={24} />
+            </div>
+            <h1 className="text-4xl font-black text-zinc-900 tracking-tight uppercase">Torneos</h1>
+          </div>
+          <p className="text-zinc-500 font-medium max-w-xl">
+            La vitrina del Más Grande. Desde copas internacionales hasta torneos locales.
+          </p>
+        </div>
+        <div className="bg-zinc-100 text-zinc-600 px-6 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center">
+          <Trophy className="mr-2" size={14} />
+          {query ? `${visibleTorneos.length} encontrados` : `Competiciones`}
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {torneos.length > 0 ? (
-          torneos.map((torneo) => (
-            <Link 
-              key={torneo.id} 
-              href={`/torneos/${torneo.id}`}
-              className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-red-300 transition-all group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                  Nivel {torneo.tor_nivel}
+      {/* Guest View: Major Trophies Teaser */}
+      {!query && (
+        <section className="mb-16">
+          <h2 className="text-2xl font-black text-zinc-900 mb-6 flex items-center tracking-tight uppercase">
+            <Trophy className="mr-3 text-red-600" size={20} />
+            Grandes Competencias
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { name: 'COPA LIBERTADORES', count: 4, color: 'bg-zinc-900', text: 'text-white' },
+              { name: 'TORNEO LOCAL', count: 37, color: 'bg-white', text: 'text-zinc-900' },
+              { name: 'COPA ARGENTINA', count: 3, color: 'bg-red-600', text: 'text-white' },
+              { name: 'INTERCONTINENTAL', count: 1, color: 'bg-zinc-100', text: 'text-zinc-900' },
+            ].map((t) => (
+              <div key={t.name} className={`${t.color} ${t.text} p-8 rounded-[32px] border border-zinc-100 shadow-sm flex flex-col justify-between h-48 group`}>
+                <h3 className="font-black text-sm leading-tight tracking-tight uppercase">{t.name}</h3>
+                <div>
+                  <span className="text-5xl font-black group-hover:scale-110 transition-transform block">{t.count}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Títulos Ganados</span>
                 </div>
-                <span className="text-slate-400 group-hover:text-red-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">{torneo.tor_nombre}</h3>
-              <p className="text-slate-500 text-sm">Periodo: {torneo.tor_periodo}</p>
-            </Link>
-          ))
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Main List with Access Control */}
+      <section className="relative">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">Lista de Competiciones</h2>
+          {currentTier !== 'guest' && (
+            <SearchBar placeholder="Buscar torneo por nombre..." className="w-full md:max-w-md" />
+          )}
+        </div>
+        
+        {visibleTorneos.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {visibleTorneos.map((torneo) => (
+              <Link 
+                key={torneo.tor_id} 
+                href={`/torneos/${torneo.tor_id}`}
+                className="bg-white p-8 rounded-[32px] border border-zinc-100 hover:border-red-200 transition-all group shadow-sm flex flex-col"
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div className="bg-zinc-100 text-zinc-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                    {torneo.tor_nivel}
+                  </div>
+                  <div className="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:text-red-50 transition-colors">
+                    <ChevronRight size={20} />
+                  </div>
+                </div>
+                <h3 className="text-lg font-black text-zinc-900 mb-2 group-hover:text-red-600 transition-colors tracking-tight uppercase italic">{torneo.tor_desc}</h3>
+                <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-auto">ID: {torneo.tor_id}</p>
+              </Link>
+            ))}
+          </div>
         ) : (
-          <div className="col-span-full text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
-            <p className="text-slate-500">No se encontraron torneos disponibles.</p>
+          <div className="text-center py-24 bg-zinc-50 rounded-[40px] border-2 border-dashed border-zinc-200">
+            <Star className="mx-auto mb-4 text-zinc-300" size={48} />
+            <h3 className="text-xl font-black text-zinc-900 mb-2">No encontramos el torneo "{query}"</h3>
+            <p className="text-zinc-500 font-medium">Prueba con otro nombre o año.</p>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

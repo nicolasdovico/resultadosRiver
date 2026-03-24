@@ -1,162 +1,210 @@
-import { getPartidoByFecha } from "@/api/generated/endpoints/partidos/partidos";
+import { ChevronLeft, Trophy, Calendar, MapPin, Scale, Clock, UserRound, Star } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import AccessControl from "@/components/AccessControl";
+import { customInstance } from "@/api/custom-instance";
 
 interface Gol {
-  minuto: number;
-  jugador: {
-    pla_nombre: string;
+  gol_id: number;
+  minutos: number;
+  jugador?: {
+    pl_apno: string;
+    pl_id: number;
   };
-  tipo: string;
 }
 
-interface PartidoFull {
+interface Partido {
   fecha: string;
-  rival: {
-    riv_nombre: string;
+  go_ri: number;
+  go_ad: number;
+  rival?: {
+    ri_desc: string;
   };
-  torneo: {
-    tor_nombre: string;
+  torneo?: {
+    tor_desc: string;
   };
-  estadio: {
-    est_nombre: string;
+  estadio?: {
+    es_desc: string;
   };
-  arbitro: {
-    arb_nombre: string;
+  arbitro?: {
+    ar_apno: string;
   };
-  tecnico?: {
-    tec_nombre: string;
+  condicion?: {
+    descripcion: string;
   };
-  goles_river: number;
-  goles_rival: number;
-  resultado: string;
-  goles?: Gol[];
+  fase?: {
+    fase: string;
+  };
+  goles: Gol[];
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ fecha: string }> }) {
+export default async function PartidoDetailPage({
+  params,
+}: {
+  params: Promise<{ fecha: string }>;
+}) {
   const { fecha } = await params;
-  return {
-    title: `River Plate vs Rival - ${fecha}`,
-  };
-}
+  
+  // Mock current user tier
+  const currentTier: 'guest' | 'registered' | 'premium' = 'registered';
 
-export default async function PartidoDetailPage({ params }: { params: Promise<{ fecha: string }> }) {
-  const { fecha } = await params;
-  let partido: PartidoFull | null = null;
-
+  let partido: Partido | null = null;
   try {
-    const response = await getPartidoByFecha(fecha);
-    // @ts-expect-error - Resource data structure is not fully typed in SDK
+    const response = await customInstance<{ data: Partido }>({
+      url: `/v1/partidos/${fecha}`,
+      method: 'GET',
+    });
     partido = response.data;
   } catch (error) {
     console.error("Error fetching partido:", error);
-    return notFound();
   }
 
-  if (!partido) return notFound();
+  if (!partido) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center">
+        <h1 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">Partido no encontrado</h1>
+        <Link href="/partidos" className="text-red-600 font-bold hover:underline mt-4 inline-block uppercase text-xs tracking-widest">Volver al historial</Link>
+      </div>
+    );
+  }
+
+  const riverGoles = partido.goles || [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Link href="/partidos" className="text-red-600 hover:text-red-700 font-medium flex items-center mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-        </svg>
-        Volver a partidos
+    <div className="container mx-auto px-4 py-12 max-w-6xl">
+      {/* Navigation */}
+      <Link href="/partidos" className="flex items-center text-zinc-400 hover:text-red-600 font-black text-xs uppercase tracking-widest mb-8 transition-colors group">
+        <ChevronLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" />
+        Volver al historial
       </Link>
 
-      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-        <div className="bg-red-700 p-8 text-white text-center">
-          <p className="text-red-100 uppercase tracking-widest text-sm font-bold mb-2">{partido.torneo.tor_nombre}</p>
-          <div className="flex items-center justify-center space-x-12">
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm">
-                <span className="text-4xl">⚪🔴</span>
+      {/* Scoreboard Hero */}
+      <section className="bg-zinc-900 rounded-[40px] p-8 md:p-16 text-white mb-12 relative overflow-hidden shadow-2xl shadow-red-950/20">
+        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+          <Trophy size={300} />
+        </div>
+        
+        <div className="relative z-10">
+          <div className="flex flex-col items-center text-center mb-12">
+            <span className="bg-red-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+              {partido.torneo?.tor_desc || 'Torneo Oficial'}
+            </span>
+            <span className="text-zinc-400 font-black text-xs uppercase tracking-widest">
+              {new Date(partido.fecha).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-20">
+            {/* River */}
+            <div className="flex flex-col items-center md:items-end flex-1">
+              <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl rotate-3">
+                 <Trophy className="text-red-600" size={48} />
               </div>
-              <h2 className="text-2xl font-black">River Plate</h2>
+              <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter">River Plate</h2>
+              <span className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mt-2">{partido.condicion?.descripcion || 'Local'}</span>
             </div>
 
-            <div className="flex flex-col items-center">
-              <span className="text-6xl font-black tracking-tighter tabular-nums">
-                {partido.goles_river} - {partido.goles_rival}
-              </span>
-              <div className={`mt-2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${partido.resultado === 'G' ? 'bg-green-500' : partido.resultado === 'P' ? 'bg-red-500' : 'bg-slate-500'}`}>
-                {partido.resultado === 'G' ? 'Ganado' : partido.resultado === 'P' ? 'Perdido' : 'Empate'}
-              </div>
+            {/* Score */}
+            <div className="flex items-center gap-6">
+              <span className="text-7xl md:text-9xl font-black tracking-tighter text-white">{partido.go_ri}</span>
+              <span className="text-2xl md:text-4xl font-black text-zinc-700 italic">VS</span>
+              <span className="text-7xl md:text-9xl font-black tracking-tighter text-zinc-400">{partido.go_ad}</span>
             </div>
 
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm">
-                <span className="text-4xl">⚽</span>
+            {/* Rival */}
+            <div className="flex flex-col items-center md:items-start flex-1 text-center md:text-left">
+              <div className="w-24 h-24 bg-zinc-800 rounded-3xl flex items-center justify-center mb-6 shadow-xl -rotate-3 border border-zinc-700">
+                 <UserRound className="text-zinc-500" size={48} />
               </div>
-              <h2 className="text-2xl font-black">{partido.rival.riv_nombre}</h2>
+              <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter">{partido.rival?.ri_desc || 'Rival'}</h2>
+              <span className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mt-2">Visitante</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-          <div className="p-8">
-            <h3 className="text-slate-400 uppercase text-xs font-bold tracking-widest mb-4">Información del Encuentro</h3>
-            <ul className="space-y-4">
-              <li className="flex items-start">
-                <div className="bg-slate-50 p-2 rounded-lg mr-3 text-slate-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        {/* Match Info & Goals */}
+        <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+             <div className="bg-white p-6 rounded-[32px] border border-zinc-100 flex items-center space-x-4 shadow-sm">
+                <div className="w-12 h-12 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400">
+                   <MapPin size={24} />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 font-medium">Fecha</p>
-                  <p className="font-bold text-slate-700">{partido.fecha}</p>
+                   <span className="block text-[8px] font-black text-zinc-400 uppercase tracking-widest">Estadio</span>
+                   <span className="font-black text-zinc-900 uppercase text-sm tracking-tight">{partido.estadio?.es_desc || 'No especificado'}</span>
                 </div>
-              </li>
-              <li className="flex items-start">
-                <div className="bg-slate-50 p-2 rounded-lg mr-3 text-slate-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+             </div>
+             <div className="bg-white p-6 rounded-[32px] border border-zinc-100 flex items-center space-x-4 shadow-sm">
+                <div className="w-12 h-12 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-400">
+                   <Scale size={24} />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 font-medium">Estadio</p>
-                  <p className="font-bold text-slate-700">{partido.estadio.est_nombre}</p>
+                   <span className="block text-[8px] font-black text-zinc-400 uppercase tracking-widest">Árbitro</span>
+                   <span className="font-black text-zinc-900 uppercase text-sm tracking-tight">{partido.arbitro?.ar_apno || 'No especificado'}</span>
                 </div>
-              </li>
-              <li className="flex items-start">
-                <div className="bg-slate-50 p-2 rounded-lg mr-3 text-slate-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-medium">Árbitro</p>
-                  <p className="font-bold text-slate-700">{partido.arbitro.arb_nombre}</p>
-                </div>
-              </li>
-            </ul>
+             </div>
           </div>
 
-          <div className="p-8 md:col-span-2">
-            <h3 className="text-slate-400 uppercase text-xs font-bold tracking-widest mb-6">Incidencias (Goles de River)</h3>
-            <div className="space-y-3">
-              {partido.goles && partido.goles.length > 0 ? (
-                partido.goles.map((gol, idx) => (
-                  <div key={idx} className="flex items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <div className="bg-green-100 text-green-700 w-10 h-10 flex items-center justify-center rounded-full font-black mr-4">
-                      {gol.minuto}&apos;
+          <h3 className="text-2xl font-black text-zinc-900 mb-8 tracking-tight uppercase flex items-center italic">
+            <Star className="mr-3 fill-red-600 text-red-600" size={20} />
+            Goleadores de River
+          </h3>
+
+          <AccessControl tier={currentTier} requiredTier="registered">
+            {riverGoles.length > 0 ? (
+              <div className="space-y-3">
+                {riverGoles.map((gol) => (
+                  <div key={gol.gol_id} className="bg-white p-6 rounded-[32px] border border-zinc-100 flex items-center justify-between shadow-sm group hover:border-red-200 transition-all">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
+                        <Clock size={18} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-black text-zinc-900 uppercase text-sm tracking-tighter">{gol.jugador?.pl_apno || 'Jugador de River'}</span>
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Gol Oficial</span>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-slate-800">{gol.jugador.pla_nombre}</p>
-                      <p className="text-xs text-slate-500 uppercase font-medium">{gol.tipo || 'Jugada'}</p>
+                    <div className="flex items-center">
+                      <span className="text-2xl font-black text-zinc-900">{gol.minutos}'</span>
                     </div>
-                    <div className="text-2xl">⚽</div>
                   </div>
-                ))
-              ) : partido.goles_river > 0 ? (
-                <p className="text-slate-400 italic">No hay detalles de los goleadores registrados.</p>
-              ) : (
-                <p className="text-slate-400 italic">River Plate no anotó goles en este partido.</p>
-              )}
+                ))}
+              </div>
+            ) : (
+              <div className="bg-zinc-50 rounded-[40px] p-12 text-center border-2 border-dashed border-zinc-200">
+                <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-[0.2em]">No hay detalle de goles para este encuentro.</p>
+              </div>
+            )}
+          </AccessControl>
+        </div>
+
+        {/* Premium Section */}
+        <div className="lg:col-span-1">
+          <h2 className="text-2xl font-black text-zinc-900 mb-8 tracking-tight uppercase italic">Análisis</h2>
+          
+          <AccessControl tier={currentTier} requiredTier="premium">
+            <div className="bg-zinc-100 rounded-[40px] p-8">
+               <h4 className="font-black text-[10px] uppercase tracking-widest text-zinc-400 mb-6 italic">Incidencias por tiempo</h4>
+               <div className="space-y-10 py-4">
+                  <div className="relative h-2 bg-zinc-200 rounded-full">
+                     <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-4 h-4 bg-red-600 rounded-full border-4 border-white shadow-md shadow-red-900/20" />
+                     <div className="absolute top-1/2 left-3/4 -translate-y-1/2 w-4 h-4 bg-red-600 rounded-full border-4 border-white shadow-md shadow-red-900/20" />
+                  </div>
+                  <div className="flex justify-between text-[8px] font-black text-zinc-400 uppercase tracking-tighter">
+                     <span>Inicio</span>
+                     <span>Entretiempo</span>
+                     <span>Final</span>
+                  </div>
+               </div>
+               
+               <div className="mt-8 p-6 bg-white rounded-3xl border border-zinc-200/50">
+                  <p className="text-[10px] font-medium text-zinc-500 leading-relaxed uppercase">
+                    River Plate ha ganado el <span className="text-zinc-900 font-black">72%</span> de los partidos cuando comienza ganando antes del minuto 30'.
+                  </p>
+               </div>
             </div>
-          </div>
+          </AccessControl>
         </div>
       </div>
     </div>
