@@ -48,7 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set cookie for middleware (expires in 7 days)
     const expires = new Date();
     expires.setDate(expires.getDate() + 7);
+    const isPremiumUser = newUser.roles?.some(r => r.name === 'PREMIUM' || r.name === 'SUPER ADMIN') ?? false;
+    
     document.cookie = `auth_token=${newToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+    document.cookie = `user_role=${isPremiumUser ? 'premium' : 'registered'}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
     
     router.push('/');
   };
@@ -59,8 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
     
-    // Remove cookie
+    // Remove cookies
     document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "user_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     
     router.push('/auth/login');
   };

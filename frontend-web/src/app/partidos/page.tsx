@@ -1,7 +1,7 @@
 import { formatLocalDate } from "@/utils/date";
 import { getPartidos } from "@/api/generated/endpoints/partidos/partidos";
 import Link from "next/link";
-import { Trophy, ChevronRight, Calendar, BarChart3, Clock } from "lucide-react";
+import { Trophy, ChevronRight, Calendar, BarChart3, Clock, Star, Info } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { cookies } from "next/headers";
@@ -27,25 +27,46 @@ export default async function PartidosPage({
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
+  const userRole = cookieStore.get('user_role')?.value;
   const isLoggedIn = !!token;
+  const isPremium = userRole === 'premium';
   
-  // Basic tier detection from token presence for now
-  // In a real app, you might want to decode the JWT or fetch user info
-  const currentTier: 'guest' | 'registered' | 'premium' = isLoggedIn ? 'registered' : 'guest';
+  const currentTier: 'guest' | 'registered' | 'premium' = isPremium ? 'premium' : (isLoggedIn ? 'registered' : 'guest');
   
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q : '';
 
   // Pass search query directly to API
-  // Use hoy: true when no query is present to get the "Resultados Recientes" logic
   const response = await getPartidos(
-    { q: query, hoy: query ? undefined : true } as any, 
+    { 
+      q: query, 
+      hoy: (query || isLoggedIn) ? undefined : true,
+      limit: (isLoggedIn && !query) ? 10 : undefined 
+    } as any, 
     { headers: token ? { 'Authorization': `Bearer ${token}` } : {} } as any
   );
+  
   // @ts-expect-error - Resource data structure is not fully typed in SDK
-  const visiblePartidos: Partido[] = (response as { data?: Partido[] }).data || [];
+  let visiblePartidos: Partido[] = (response as { data?: Partido[] }).data || [];
+  // @ts-expect-error
+  const totalResults = (response as any).meta?.total || visiblePartidos.length;
 
-  const recentLimit = isLoggedIn ? 6 : 4;
+  // Restriction logic for non-premium users during search
+  let shownCount = visiblePartidos.length;
+  let isRestricted = false;
+
+  if (query && isLoggedIn && !isPremium) {
+    let limit = 20;
+    if (totalResults <= 20) {
+      limit = Math.max(3, Math.floor(totalResults * 0.5));
+    }
+    
+    if (totalResults > limit) {
+      visiblePartidos = visiblePartidos.slice(0, limit);
+      shownCount = limit;
+      isRestricted = true;
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -64,19 +85,19 @@ export default async function PartidosPage({
         </div>
         <div className="bg-zinc-100 text-zinc-600 px-6 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center">
           <Calendar className="mr-2" size={14} />
-          {query ? `${visiblePartidos.length} encontrados` : `Archivo Completo`}
+          {query ? `${totalResults} encontrados` : `Archivo Completo`}
         </div>
       </div>
 
-      {/* Recent Results Teaser */}
-      {!query && (
+      {/* Recent Results Teaser (ONLY for guests and when no query) */}
+      {!query && !isLoggedIn && (
         <section className="mb-16">
           <h2 className="text-2xl font-black text-zinc-900 mb-6 flex items-center tracking-tight uppercase">
             <Clock className="mr-3 text-red-600" size={20} />
             Resultados Recientes
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {visiblePartidos.slice(0, recentLimit).map((p) => (
+            {visiblePartidos.slice(0, 4).map((p) => (
               <div key={p.fecha} className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm flex items-center justify-between">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatLocalDate(p.fecha)}</span>
@@ -99,41 +120,66 @@ export default async function PartidosPage({
       {/* Main List with Access Control */}
       <section className="relative">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">Archivo Histórico</h2>
-          {currentTier !== 'guest' && (
+          <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">
+            {isLoggedIn && !query ? 'Últimos 10 Partidos' : 'Archivo Histórico'}
+          </h2>
+          {isLoggedIn && (
             <SearchBar placeholder="Buscar por rival o torneo..." className="w-full md:max-w-md" />
           )}
         </div>
 
+        {/* Premium Restriction Banner */}
+        {query && isLoggedIn && !isPremium && (
+          <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm shadow-yellow-900/5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-yellow-600 shrink-0 shadow-sm">
+                <Info size={24} />
+              </div>
+              <p className="text-yellow-900 font-medium text-sm md:text-base">
+                Mostrando <span className="font-black">{shownCount}</span> de <span className="font-black">{totalResults}</span> resultados encontrados. Los socios <span className="font-black">Premium</span> acceden al 100% de los datos y filtros avanzados.
+              </p>
+            </div>
+            <Link href="/premium" className="bg-zinc-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center whitespace-nowrap">
+              <Star className="mr-2 fill-yellow-400 text-yellow-400" size={14} />
+              Hacerme Premium
+            </Link>
+          </div>
+        )}
+
         {visiblePartidos.length > 0 ? (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {visiblePartidos.map((partido) => (
               <Link 
                 key={partido.fecha} 
                 href={`/partidos/${partido.fecha}`}
                 className="bg-white p-6 rounded-[32px] border border-zinc-100 hover:border-red-200 transition-all flex items-center group shadow-sm"
               >
-                <div className="flex flex-col w-32 shrink-0">
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
-                    {formatLocalDate(partido.fecha)}
-                  </span>
-                  <span className="text-[10px] font-black text-red-600 uppercase tracking-tight line-clamp-1">
-                    {partido.torneo?.tor_desc}
-                  </span>
-                </div>
-                
-                <div className="flex items-center flex-1 px-8">
-                  <div className="flex-1 text-right font-black text-zinc-800 tracking-tight text-xs md:text-base">River Plate</div>
-                  <div className="mx-6 flex items-center">
-                    <span className={`text-2xl font-black px-4 py-1 rounded-xl ${partido.resultado === 'G' ? 'bg-green-50 text-green-600' : partido.resultado === 'P' ? 'bg-red-50 text-red-600' : 'bg-zinc-50 text-zinc-500'}`}>
-                      {partido.goles_river} - {partido.goles_rival}
-                    </span>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">{formatLocalDate(partido.fecha)}</span>
+                    <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight line-clamp-1">{partido.torneo?.tor_desc}</span>
                   </div>
-                  <div className="flex-1 text-left font-black text-zinc-800 tracking-tight text-xs md:text-base">{partido.rival?.ri_desc}</div>
-                </div>
-
-                <div className="flex items-center text-zinc-300 group-hover:text-red-500 transition-colors">
-                  <ChevronRight size={24} />
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="font-black text-lg text-zinc-800 tracking-tight">River Plate</span>
+                      <span className="text-sm text-zinc-500 font-medium">{partido.rival?.ri_desc}</span>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex flex-col items-end mr-2">
+                        <span className={`text-2xl font-black ${partido.resultado === 'G' ? 'text-green-600' : partido.resultado === 'P' ? 'text-red-600' : 'text-zinc-400'}`}>
+                          {partido.goles_river} - {partido.goles_rival}
+                        </span>
+                      </div>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black text-white shadow-sm ${
+                        partido.resultado === 'G' ? 'bg-green-500 shadow-green-100' : 
+                        partido.resultado === 'P' ? 'bg-red-500 shadow-red-100' : 
+                        'bg-zinc-400 shadow-zinc-100'
+                      }`}>
+                        {partido.resultado}
+                      </div>
+                      <ChevronRight className="text-zinc-300 group-hover:text-red-400 transition-colors ml-2" size={20} />
+                    </div>
+                  </div>
                 </div>
               </Link>
             ))}
