@@ -1,3 +1,4 @@
+import { formatLocalDate } from "@/utils/date";
 import { ChevronLeft, Trophy, Calendar, MapPin, Scale, Clock, UserRound, Star } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
@@ -89,7 +90,7 @@ export default async function PartidoDetailPage({
               {partido.torneo?.tor_desc || 'Torneo Oficial'}
             </span>
             <span className="text-zinc-400 font-black text-xs uppercase tracking-widest">
-              {new Date(partido.fecha).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              {formatLocalDate(partido.fecha, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </span>
           </div>
 

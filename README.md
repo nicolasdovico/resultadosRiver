@@ -64,12 +64,15 @@ Consulta la carpeta `/docs` para más detalles sobre la metodología de trabajo,
 'http://localhost:8000/admin'
 
 ## Crear usuario Admin
-'docker exec -it river-backend php artisan make:filament-user'
+`docker exec -it river-backend php artisan make:filament-user`
 
 ## Backup de la base de datos
-'docker exec -t river-db pg_dump -U river_user resultados_river > backup_$(date +%Y%m%d_%H%M%S).sql'
+`docker exec -t river-db pg_dump -U river_user resultados_river > backup_$(date +%Y%m%d_%H%M%S).sql`
 
 ## URL de Mailtip
-http://localhost:8025/
+`http://localhost:8025/`
 
 Tiene que estar levantado el container
+
+## Restaurar backup en DB dentro del container
+`cat backup_20260324_192049.sql | docker compose exec -T db psql -U river_user -d resultados_river`

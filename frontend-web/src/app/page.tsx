@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
+import { formatLocalDate } from "@/utils/date";
+
 interface Partido {
   fecha: string;
   rival?: {
@@ -180,7 +182,7 @@ export default function Home() {
               >
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-[10px] bg-zinc-200 text-zinc-600 px-2 py-0.5 rounded-full font-bold uppercase">{new Date(partido.fecha).toLocaleDateString('es-AR')}</span>
+                    <span className="text-[10px] bg-zinc-200 text-zinc-600 px-2 py-0.5 rounded-full font-bold uppercase">{formatLocalDate(partido.fecha)}</span>
                     <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase">{partido.torneo?.tor_desc || 'Torneo'}</span>
                   </div>
                   <div className="flex items-center justify-between">

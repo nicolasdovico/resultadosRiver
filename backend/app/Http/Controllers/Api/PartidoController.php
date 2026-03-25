@@ -89,7 +89,6 @@ class PartidoController extends Controller
                 $title = 'Un día como hoy...';
             } else {
                 // Fallback to latest matches overall if nothing for today
-                $query->orderBy('fecha', 'desc');
                 $title = 'Resultados Recientes';
             }
         }
@@ -102,6 +101,10 @@ class PartidoController extends Controller
         }
 
         $limit = $request->input('limit', 20);
+        
+        // Always order by date descending if not specifically searching (or as a tie-breaker)
+        $query->orderBy('fecha', 'desc');
+
         $partidos = $query->paginate($limit);
 
         return PartidoResource::collection($partidos)->additional([

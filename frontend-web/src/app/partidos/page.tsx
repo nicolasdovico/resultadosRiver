@@ -1,8 +1,10 @@
+import { formatLocalDate } from "@/utils/date";
 import { getPartidos } from "@/api/generated/endpoints/partidos/partidos";
 import Link from "next/link";
 import { Trophy, ChevronRight, Calendar, BarChart3, Clock } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
+import { cookies } from "next/headers";
 
 interface Partido {
   fecha: string;
@@ -23,15 +25,27 @@ export default async function PartidosPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const currentTier: 'guest' | 'registered' | 'premium' = 'registered';
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  const isLoggedIn = !!token;
+  
+  // Basic tier detection from token presence for now
+  // In a real app, you might want to decode the JWT or fetch user info
+  const currentTier: 'guest' | 'registered' | 'premium' = isLoggedIn ? 'registered' : 'guest';
   
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q : '';
 
   // Pass search query directly to API
-  const response = await getPartidos({ q: query } as any);
+  // Use hoy: true when no query is present to get the "Resultados Recientes" logic
+  const response = await getPartidos(
+    { q: query, hoy: query ? undefined : true } as any, 
+    { headers: token ? { 'Authorization': `Bearer ${token}` } : {} } as any
+  );
   // @ts-expect-error - Resource data structure is not fully typed in SDK
   const visiblePartidos: Partido[] = (response as { data?: Partido[] }).data || [];
+
+  const recentLimit = isLoggedIn ? 6 : 4;
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -54,7 +68,7 @@ export default async function PartidosPage({
         </div>
       </div>
 
-      {/* Guest View: Recent Results Teaser */}
+      {/* Recent Results Teaser */}
       {!query && (
         <section className="mb-16">
           <h2 className="text-2xl font-black text-zinc-900 mb-6 flex items-center tracking-tight uppercase">
@@ -62,10 +76,10 @@ export default async function PartidosPage({
             Resultados Recientes
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {visiblePartidos.slice(0, 4).map((p) => (
+            {visiblePartidos.slice(0, recentLimit).map((p) => (
               <div key={p.fecha} className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{new Date(p.fecha).toLocaleDateString('es-AR')}</span>
+                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatLocalDate(p.fecha)}</span>
                   <span className="font-black text-zinc-800 tracking-tight line-clamp-1">{p.rival?.ri_desc}</span>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -101,7 +115,7 @@ export default async function PartidosPage({
               >
                 <div className="flex flex-col w-32 shrink-0">
                   <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
-                    {new Date(partido.fecha).toLocaleDateString('es-AR')}
+                    {formatLocalDate(partido.fecha)}
                   </span>
                   <span className="text-[10px] font-black text-red-600 uppercase tracking-tight line-clamp-1">
                     {partido.torneo?.tor_desc}

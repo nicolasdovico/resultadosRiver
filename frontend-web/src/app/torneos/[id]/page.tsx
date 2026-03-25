@@ -1,3 +1,4 @@
+import { formatLocalDate } from "@/utils/date";
 import { ChevronLeft, Star, Trophy, Calendar, ChevronRight, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
@@ -123,7 +124,7 @@ export default async function TorneoDetailPage({
                   >
                     <div className="flex flex-col">
                       <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-1">
-                        {new Date(p.fecha).toLocaleDateString('es-AR')}
+                        {formatLocalDate(p.fecha)}
                       </span>
                       <span className="font-black text-zinc-800 uppercase text-xs tracking-tight group-hover:text-red-600 transition-colors">
                         vs {p.rival?.ri_desc || 'Rival'}

@@ -2,6 +2,7 @@ import { ChevronLeft, ShieldAlert, Target, TrendingUp, Calendar, ChevronRight, Z
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
+import { formatLocalDate } from "@/utils/date";
 
 interface Partido {
   fecha: string;
@@ -129,7 +130,7 @@ export default async function RivalDetailPage({
                   >
                     <div className="flex flex-col">
                       <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
-                        {new Date(p.fecha).toLocaleDateString('es-AR')}
+                        {formatLocalDate(p.fecha)}
                       </span>
                       <span className="font-black text-zinc-800 uppercase text-xs tracking-tight line-clamp-1">
                         {p.torneo_rel?.tor_desc || 'Torneo Oficial'}

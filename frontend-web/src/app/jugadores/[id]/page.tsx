@@ -1,3 +1,4 @@
+import { formatLocalDate } from "@/utils/date";
 import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
@@ -107,7 +108,7 @@ export default async function JugadorDetailPage({
                       </div>
                       <div className="flex flex-col">
                         <span className="font-black text-zinc-800 uppercase text-xs tracking-tight">Gol #{index + 1}</span>
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{new Date(gol.gol_fecha).toLocaleDateString('es-AR')}</span>
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{formatLocalDate(gol.gol_fecha)}</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
