@@ -71,32 +71,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header / Nav */}
-      <nav className="bg-red-800 text-white py-4 px-6 flex justify-between items-center sticky top-0 z-50 shadow-md">
-        <Link href="/" className="text-2xl font-black italic tracking-tighter">
-          RESULTADOS<span className="text-red-300">RIVER</span>
-        </Link>
-        <div className="flex items-center gap-6">
-          {token ? (
-            <>
-              <div className="flex flex-col items-end">
-                <span className="text-sm font-bold">{user?.name}</span>
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${isPremium ? 'bg-yellow-400 text-yellow-900' : 'bg-red-700 text-red-100'}`}>
-                  {isPremium ? '👑 Premium' : 'Free'}
-                </span>
-              </div>
-              <button onClick={logout} className="p-2 hover:bg-red-700 rounded-full transition-colors" title="Cerrar Sesión">
-                <LogOut size={20} />
-              </button>
-            </>
-          ) : (
-            <Link href="/auth/login" className="bg-white text-red-800 px-4 py-2 rounded-xl font-bold text-sm hover:bg-zinc-100 transition-colors">
-              Iniciar Sesión
-            </Link>
-          )}
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-red-800 to-red-950 text-white pt-16 pb-24 px-4 overflow-hidden relative">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 opacity-10">
