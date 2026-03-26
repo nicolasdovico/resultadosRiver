@@ -37,7 +37,7 @@ class PartidoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador']);
+        $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador']);
         $title = 'Resultados';
 
         if ($request->has('q')) {
@@ -130,7 +130,7 @@ class PartidoController extends Controller
     public function store(Request $request)
     {
         $partido = Partido::create($request->all());
-        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador']));
+        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador']));
     }
 
     #[OA\Get(
@@ -151,7 +151,7 @@ class PartidoController extends Controller
      */
     public function show(string $fecha)
     {
-        $partido = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador'])->findOrFail($fecha);
+        $partido = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador'])->findOrFail($fecha);
         return new PartidoResource($partido);
     }
 
@@ -175,7 +175,7 @@ class PartidoController extends Controller
     {
         $partido = Partido::findOrFail($fecha);
         $partido->update($request->all());
-        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador']));
+        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador']));
     }
 
     #[OA\Delete(

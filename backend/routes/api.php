@@ -61,7 +61,7 @@ Route::prefix('v1')->group(function () {
     Route::get('fases/{id}', [FaseController::class, 'show']);
     
     Route::get('partidos', [PartidoController::class, 'index']);
-    Route::get('partidos/{id}', [PartidoController::class, 'show']);
+    Route::get('partidos/{fecha}', [PartidoController::class, 'show']);
 
     // Authenticated access
     Route::middleware(['auth:sanctum'])->group(function () {

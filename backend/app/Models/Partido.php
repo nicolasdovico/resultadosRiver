@@ -19,7 +19,7 @@ class Partido extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'fecha' => 'date',
+        'fecha' => 'string',
     ];
 
     public function torneo_rel(): BelongsTo
@@ -50,6 +50,11 @@ class Partido extends Model
     public function fase_rel(): BelongsTo
     {
         return $this->belongsTo(Fase::class, 'fase', 'id_fase');
+    }
+
+    public function tecnico_rel(): BelongsTo
+    {
+        return $this->belongsTo(Tecnico::class, 'tecnico', 'id_tecnicos');
     }
 
     public function goles(): HasMany

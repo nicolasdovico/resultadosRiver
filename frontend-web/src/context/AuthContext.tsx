@@ -33,8 +33,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem('auth_user');
 
     if (storedToken && storedUser) {
+      const parsedUser = JSON.parse(storedUser);
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      setUser(parsedUser);
+      
+      // Sync cookies for server-side
+      const isPremiumUser = parsedUser.roles?.some((r: any) => r.name === 'PREMIUM' || r.name === 'SUPER ADMIN') ?? false;
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 7);
+      
+      // Always refresh cookies on init to ensure they exist
+      document.cookie = `auth_token=${storedToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+      document.cookie = `user_role=${isPremiumUser ? 'premium' : 'registered'}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
     }
     setIsLoading(false);
   }, []);

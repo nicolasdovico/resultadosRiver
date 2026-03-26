@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class PartidoResource extends JsonResource
 {
@@ -15,7 +16,7 @@ class PartidoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'fecha' => $this->fecha->format('Y-m-d'),
+            'fecha' => Carbon::parse($this->fecha)->format('Y-m-d'),
             'goles_river' => $this->go_ri,
             'goles_rival' => $this->go_ad,
             'observaciones' => $this->observaciones,
@@ -30,6 +31,7 @@ class PartidoResource extends JsonResource
             'estadio' => new EstadioResource($this->whenLoaded('estadio_rel')),
             'condicion' => new CondicionResource($this->whenLoaded('condicion_rel')),
             'fase' => new FaseResource($this->whenLoaded('fase_rel')),
+            'tecnico' => new TecnicoResource($this->whenLoaded('tecnico_rel')),
             'goles' => GolResource::collection($this->whenLoaded('goles')),
         ];
     }
