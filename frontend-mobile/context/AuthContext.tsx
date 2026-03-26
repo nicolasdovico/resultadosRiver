@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 interface User {
   id: number;
@@ -31,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loadStorageData() {
     try {
-      const storedToken = await AsyncStorage.getItem('@auth_token');
+      const storedToken = await SecureStore.getItemAsync('user_token');
       const storedUser = await AsyncStorage.getItem('@auth_user');
 
       if (storedToken && storedUser) {
@@ -48,14 +49,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
-    await AsyncStorage.setItem('@auth_token', newToken);
+    await SecureStore.setItemAsync('user_token', newToken);
     await AsyncStorage.setItem('@auth_user', JSON.stringify(newUser));
   };
 
   const logout = async () => {
     setToken(null);
     setUser(null);
-    await AsyncStorage.removeItem('@auth_token');
+    await SecureStore.deleteItemAsync('user_token');
     await AsyncStorage.removeItem('@auth_user');
   };
 

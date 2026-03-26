@@ -1,7 +1,10 @@
-import { StyleSheet, FlatList, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, FlatList, View, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { useState, useEffect } from 'react';
 import { getPartidos } from '@/api/generated/endpoints/partidos/partidos';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
+import { formatLocalDate } from '@/utils/date';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface Partido {
   fecha: string;
@@ -19,25 +22,57 @@ interface Partido {
 export default function ResultadosScreen() {
   const [partidos, setPartidos] = useState<Partido[]>([]);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [totalResults, setTotalResults] = useState(0);
+  const [isRestricted, setIsRestricted] = useState(false);
   const [sectionTitle, setSectionTitle] = useState('Resultados');
+  
+  const { token, isPremium } = useAuth();
+  const isLoggedIn = !!token;
   const router = useRouter();
 
   useEffect(() => {
     fetchPartidos();
-  }, []);
+  }, [query, isLoggedIn, isPremium]);
 
   const fetchPartidos = async () => {
+    setLoading(true);
     try {
-      // Use 'hoy: true' to get the dynamic behavior from backend
-      // @ts-expect-error - customInstance structure
-      const response = await getPartidos({ hoy: true, limit: 6 });
+      // @ts-expect-error - Resource data structure is not fully typed in SDK
+      const response = await getPartidos(
+        { 
+          q: query, 
+          hoy: (query || isLoggedIn) ? undefined : true,
+          limit: (isLoggedIn && !query) ? 10 : undefined 
+        } as any
+      );
       
-      if (response && (response as any).data) {
-        setPartidos((response as any).data);
+      let data: Partido[] = (response as any).data || [];
+      const total = (response as any).meta?.total || data.length;
+      
+      setTotalResults(total);
+      
+      // Restriction logic for non-premium users during search
+      let restricted = false;
+      if (query && isLoggedIn && !isPremium) {
+        let limit = 20;
+        if (total <= 20) {
+          limit = Math.max(3, Math.floor(total * 0.5));
+        }
+        
+        if (total > limit) {
+          data = data.slice(0, limit);
+          restricted = true;
+        }
       }
       
-      if (response && (response as any).meta?.title) {
+      setPartidos(data);
+      setIsRestricted(restricted);
+      
+      if ((response as any).meta?.title) {
         setSectionTitle((response as any).meta.title);
+      } else {
+        setSectionTitle(query ? 'Resultados' : (isLoggedIn ? 'Últimos 10' : 'Partidos de Hoy'));
       }
     } catch (error) {
       console.error('Fetch Error:', error);
@@ -48,65 +83,99 @@ export default function ResultadosScreen() {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={styles.headerTitle}>{sectionTitle}</Text>
-      <Text style={styles.headerSubtitle}>Inicia sesión para ver el detalle</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.headerTitle}>{sectionTitle}</Text>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>{totalResults}</Text>
+        </View>
+      </View>
+      
+      {isLoggedIn ? (
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar por rival o torneo..."
+            value={query}
+            onChangeText={setQuery}
+            placeholderTextColor="#94a3b8"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <Ionicons name="close-circle" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <TouchableOpacity 
+          style={styles.guestBanner}
+          onPress={() => router.push('/(auth)/login')}
+        >
+          <View style={styles.guestBannerContent}>
+            <Ionicons name="log-in-outline" size={18} color="#b91c1c" />
+            <Text style={styles.guestBannerText}>Inicia sesión para ver el historial completo</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color="#b91c1c" />
+        </TouchableOpacity>
+      )}
+
+      {isRestricted && (
+        <TouchableOpacity 
+          style={styles.premiumBanner}
+          onPress={() => router.push('/premium')}
+        >
+          <View style={styles.premiumBannerLeft}>
+            <MaterialCommunityIcons name="crown" size={20} color="#b45309" />
+            <Text style={styles.premiumBannerText}>
+              Viendo {partidos.length} de {totalResults}. Sé premium para ver todo.
+            </Text>
+          </View>
+          <Text style={styles.premiumLink}>Ver más</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
-
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return dateString;
-      
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      
-      return `${day}/${month}/${year}`;
-    } catch (e) {
-      return dateString;
-    }
-  };
 
   const renderPartido = ({ item }: { item: Partido }) => (
     <TouchableOpacity 
       style={styles.card}
-      onPress={() => router.push('/(auth)/login')}
+      onPress={() => isLoggedIn ? router.push('/modal') : router.push('/(auth)/login')}
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.fecha}>{formatDate(item.fecha)}</Text>
-        <Text style={styles.torneo} numberOfLines={1} ellipsizeMode="tail">
+        <View style={styles.dateTag}>
+          <Text style={styles.fecha}>{formatLocalDate(item.fecha)}</Text>
+        </View>
+        <Text style={styles.torneo} numberOfLines={1}>
           {item.torneo?.tor_desc || 'Torneo'}
         </Text>
       </View>
-      <View style={styles.matchRow}>
-        <View style={styles.teamContainer}>
-          <Text style={styles.teamName} numberOfLines={1}>River Plate</Text>
+      
+      <View style={styles.matchBody}>
+        <View style={styles.teamsContainer}>
+          <Text style={styles.riverName}>River Plate</Text>
+          <Text style={styles.rivalName}>{item.rival?.ri_desc || 'Rival'}</Text>
         </View>
         
-        <View style={[styles.scoreBadge, 
-          item.resultado === 'G' ? styles.win : 
-          item.resultado === 'P' ? styles.loss : styles.draw
-        ]}>
-          <Text style={styles.scoreText}>{item.goles_river} - {item.goles_rival}</Text>
-        </View>
-
-        <View style={[styles.teamContainer, styles.alignRight]}>
-          <Text style={[styles.teamName, styles.textRight]} numberOfLines={1}>
-            {item.rival?.ri_desc || 'Rival'}
-          </Text>
+        <View style={styles.scoreAndStatus}>
+          <View style={styles.scoreContainer}>
+            <Text style={[styles.scoreText, 
+              item.resultado === 'G' ? styles.winText : 
+              item.resultado === 'P' ? styles.lossText : styles.drawText
+            ]}>
+              {item.goles_river} - {item.goles_rival}
+            </Text>
+          </View>
+          <View style={[styles.statusBadge, 
+            item.resultado === 'G' ? styles.winBadge : 
+            item.resultado === 'P' ? styles.lossBadge : styles.drawBadge
+          ]}>
+            <Text style={styles.statusText}>{item.resultado}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#cbd5e1" style={styles.chevron} />
         </View>
       </View>
     </TouchableOpacity>
   );
-
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#b91c1c" />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -117,11 +186,21 @@ export default function ResultadosScreen() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No se encontraron partidos para hoy.</Text>
-          </View>
+          !loading ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="football-outline" size={60} color="#e2e8f0" />
+              <Text style={styles.emptyText}>No se encontraron partidos</Text>
+            </View>
+          ) : null
         }
+        refreshing={loading && partidos.length > 0}
+        onRefresh={fetchPartidos}
       />
+      {loading && partidos.length === 0 && (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#b91c1c" />
+        </View>
+      )}
     </View>
   );
 }
@@ -129,126 +208,219 @@ export default function ResultadosScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8fafc',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  list: {
+    padding: 16,
+    paddingTop: 8,
+  },
   header: {
     marginBottom: 20,
     marginTop: 10,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#1e293b',
-    letterSpacing: -0.5,
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  headerSubtitle: {
-    fontSize: 14,
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#0f172a',
+    letterSpacing: -0.5,
+    textTransform: 'uppercase',
+  },
+  countBadge: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: '700',
     color: '#64748b',
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#1e293b',
     fontWeight: '500',
   },
-  list: {
-    padding: 20,
-    paddingTop: 60,
+  guestBanner: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+  },
+  guestBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  guestBannerText: {
+    fontSize: 13,
+    color: '#b91c1c',
+    fontWeight: '700',
+  },
+  premiumBanner: {
+    backgroundColor: '#fffbeb',
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#fef3c7',
+  },
+  premiumBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  premiumBannerText: {
+    fontSize: 12,
+    color: '#92400e',
+    fontWeight: '600',
+    flex: 1,
+  },
+  premiumLink: {
+    fontSize: 12,
+    color: '#b45309',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginLeft: 8,
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 16,
-    marginBottom: 16,
-    elevation: 3,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 10,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    paddingBottom: 10,
+    marginBottom: 12,
+  },
+  dateTag: {
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
   fecha: {
-    fontSize: 11,
-    color: '#94a3b8',
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   torneo: {
     fontSize: 10,
-    color: '#b91c1c',
+    color: '#ef4444',
     fontWeight: '800',
     textTransform: 'uppercase',
-    maxWidth: '60%',
+    maxWidth: '65%',
   },
-  matchRow: {
+  matchBody: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  teamContainer: {
+  teamsContainer: {
     flex: 1,
   },
-  alignRight: {
+  riverName: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#0f172a',
+    letterSpacing: -0.5,
+  },
+  rivalName: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  scoreAndStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  scoreContainer: {
     alignItems: 'flex-end',
   },
-  textRight: {
-    textAlign: 'right',
-  },
-  teamName: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#1e293b',
-  },
-  scoreBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 12,
-    marginHorizontal: 12,
-    minWidth: 70,
-    alignItems: 'center',
-  },
   scoreText: {
-    color: '#fff',
+    fontSize: 22,
     fontWeight: '900',
-    fontSize: 18,
+    fontVariant: ['tabular-nums'],
   },
-  win: { 
-    backgroundColor: '#10b981',
-    shadowColor: '#10b981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  loss: { 
-    backgroundColor: '#ef4444',
-    shadowColor: '#ef4444',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  draw: { 
-    backgroundColor: '#64748b',
-    shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  empty: {
-    padding: 40,
+  winText: { color: '#10b981' },
+  lossText: { color: '#ef4444' },
+  drawText: { color: '#94a3b8' },
+  statusBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  winBadge: { backgroundColor: '#10b981' },
+  lossBadge: { backgroundColor: '#ef4444' },
+  drawBadge: { backgroundColor: '#94a3b8' },
+  statusText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  chevron: {
+    marginLeft: 4,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
   },
   emptyText: {
-    color: '#94a3b8',
+    marginTop: 16,
+    fontSize: 16,
     fontWeight: '600',
-  }
+    color: '#94a3b8',
+  },
 });

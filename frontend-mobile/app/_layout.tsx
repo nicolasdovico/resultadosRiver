@@ -21,13 +21,18 @@ function RootLayoutNav() {
 
     const inAuthGroup = segments[0] === '(auth)';
 
-    if (!token && !inAuthGroup) {
-      // Redirect to login if not authenticated
-      router.replace('/(auth)/login');
-    } else if (token && inAuthGroup) {
+    if (!token && inAuthGroup) {
+      // Allow staying in auth group
+      return;
+    }
+
+    if (token && inAuthGroup) {
       // Redirect to home if already authenticated
       router.replace('/(tabs)');
     }
+    
+    // Note: We are allowing guest access to (tabs) by default now.
+    // Specific screens will handle their own access control if needed.
   }, [token, isLoading, segments]);
 
   return (
