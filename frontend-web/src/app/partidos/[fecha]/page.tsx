@@ -22,7 +22,9 @@ interface Gol {
   gol_id: number;
   minutos: number;
   tipo_gol: number;
+  tipo_gol_desc?: string;
   periodo: number;
+  periodo_desc?: string;
   gol_parariver: number; // 1: River, 2: Rival
   jugador?: {
     pl_id: number;
@@ -221,19 +223,24 @@ export default async function PartidoDetailPage({
                             }`}>
                               {gol.gol_parariver === 1 ? 'RIVER' : partido.rival?.ri_desc}
                             </span>
-                            {gol.tipo_gol === 1 && (
+                            {gol.tipo_gol_desc && (
                               <span className="text-[9px] font-black text-yellow-600 uppercase tracking-widest">
-                                • Penal
+                                • {gol.tipo_gol_desc}
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
                       
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end">
                         <span className="text-2xl font-black text-zinc-200 group-hover:text-zinc-300 transition-colors tabular-nums">
                           {gol.minutos}'
                         </span>
+                        {gol.periodo_desc && (
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-none">
+                            {gol.periodo_desc}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

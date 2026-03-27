@@ -29,7 +29,20 @@ class PartidoController extends Controller
             new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
-            new OA\Response(response: 200, description: 'Successful operation')
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/PartidoResource')
+                        )
+                    ]
+                )
+            )
         ]
     )]
     /**
@@ -37,7 +50,7 @@ class PartidoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador']);
+        $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador', 'goles.tipo_gol_rel', 'goles.periodo_rel']);
         $title = 'Resultados';
 
         if ($request->has('q')) {
@@ -130,7 +143,7 @@ class PartidoController extends Controller
     public function store(Request $request)
     {
         $partido = Partido::create($request->all());
-        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador']));
+        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador', 'goles.tipo_gol_rel', 'goles.periodo_rel']));
     }
 
     #[OA\Get(
@@ -143,7 +156,16 @@ class PartidoController extends Controller
             new OA\Parameter(name: 'fecha', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'date'))
         ],
         responses: [
-            new OA\Response(response: 200, description: 'Successful operation')
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/PartidoResource')
+                    ]
+                )
+            )
         ]
     )]
     /**
@@ -151,7 +173,7 @@ class PartidoController extends Controller
      */
     public function show(string $fecha)
     {
-        $partido = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador'])->findOrFail($fecha);
+        $partido = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador', 'goles.tipo_gol_rel', 'goles.periodo_rel'])->findOrFail($fecha);
         return new PartidoResource($partido);
     }
 
@@ -175,7 +197,7 @@ class PartidoController extends Controller
     {
         $partido = Partido::findOrFail($fecha);
         $partido->update($request->all());
-        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador']));
+        return new PartidoResource($partido->load(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'tecnico_rel', 'goles.jugador', 'goles.tipo_gol_rel', 'goles.periodo_rel']));
     }
 
     #[OA\Delete(

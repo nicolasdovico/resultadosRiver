@@ -878,11 +878,40 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "hoy",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PartidoResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -931,7 +960,19 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PartidoResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1596,6 +1637,160 @@
         }
     },
     "components": {
+        "schemas": {
+            "ArbitroResource": {
+                "properties": {
+                    "ar_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "CondicionResource": {
+                "properties": {
+                    "co_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "EstadioResource": {
+                "properties": {
+                    "es_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "FaseResource": {
+                "properties": {
+                    "fa_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "GolResource": {
+                "properties": {
+                    "gol_id": {
+                        "type": "integer"
+                    },
+                    "minutos": {
+                        "type": "integer"
+                    },
+                    "tipo_gol": {
+                        "type": "integer"
+                    },
+                    "tipo_gol_desc": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "periodo": {
+                        "type": "integer"
+                    },
+                    "periodo_desc": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "gol_parariver": {
+                        "description": "1: River, 2: Rival",
+                        "type": "integer"
+                    },
+                    "jugador": {
+                        "properties": {
+                            "pl_id": {
+                                "type": "integer"
+                            },
+                            "pl_apno": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "JugadorResource": {
+                "properties": {
+                    "pl_id": {
+                        "type": "integer"
+                    },
+                    "pl_apno": {
+                        "type": "string"
+                    },
+                    "goles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GolResource"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PartidoResource": {
+                "properties": {
+                    "fecha": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "goles_river": {
+                        "type": "integer"
+                    },
+                    "goles_rival": {
+                        "type": "integer"
+                    },
+                    "observaciones": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "resultado": {
+                        "type": "string",
+                        "enum": [
+                            "G",
+                            "E",
+                            "P"
+                        ]
+                    },
+                    "torneo": {
+                        "$ref": "#/components/schemas/TorneoResource"
+                    },
+                    "rival": {
+                        "$ref": "#/components/schemas/RivalResource"
+                    },
+                    "arbitro": {
+                        "$ref": "#/components/schemas/ArbitroResource"
+                    },
+                    "estadio": {
+                        "$ref": "#/components/schemas/EstadioResource"
+                    },
+                    "condicion": {
+                        "$ref": "#/components/schemas/CondicionResource"
+                    },
+                    "fase": {
+                        "$ref": "#/components/schemas/FaseResource"
+                    },
+                    "tecnico": {
+                        "$ref": "#/components/schemas/TecnicoResource"
+                    },
+                    "goles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GolResource"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "RivalResource": {
+                "type": "object"
+            },
+            "TecnicoResource": {
+                "type": "object"
+            },
+            "TorneoResource": {
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "sanctum": {
                 "type": "http",

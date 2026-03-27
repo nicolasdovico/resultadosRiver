@@ -6,16 +6,30 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from './arbitroResource';
+export * from './condicionResource';
+export * from './estadioResource';
+export * from './faseResource';
 export * from './forgotPasswordBody';
+export * from './getPartidoByFecha200';
+export * from './getPartidos200';
 export * from './getPartidosParams';
+export * from './golResource';
+export * from './golResourceJugador';
+export * from './jugadorResource';
 export * from './login200';
 export * from './login200User';
 export * from './loginBody';
+export * from './partidoResource';
+export * from './partidoResourceResultado';
 export * from './register201';
 export * from './register201User';
 export * from './registerBody';
 export * from './resendOtpBody';
 export * from './resetPasswordBody';
+export * from './rivalResource';
+export * from './tecnicoResource';
+export * from './torneoResource';
 export * from './updateSettingBody';
 export * from './updateUserBody';
 export * from './verifyOtpBody';

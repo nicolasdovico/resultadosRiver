@@ -1,3 +1,19 @@
-# Progress Log
+# Log de Progreso de Resultados River
 
-
+### 2026-03-25: Mejoras de Access Control y UI (Fase 1 - Finalización MVP)
+- [x] **Backend**: Corrección de filtrado por fecha en `PartidoController` para "Hoy".
+- [x] **Backend**: Configuración de supervisor para procesamiento de colas (Laravel Worker).
+- [x] **Backend**: Refactorización de tests para usar SQLite en memoria (Aislamiento de datos).
+- [x] **Frontend Web**:
+  - [x] Rediseño de Header (User info, Logout, Premium Badge).
+  - [x] Implementación de tiers de acceso (Guest/Registered/Premium) en la lista de partidos.
+  - [x] Limitación de resultados para usuarios no-premium en búsquedas.
+  - [x] Modernización de tarjetas de resultados (Badges de estado).
+  - [x] Estandarización de fechas con `formatLocalDate`.
+- [x] **Frontend Mobile**:
+  - [x] Portabilidad completa de lógica de tiers (Guest/Registered/Premium).
+  - [x] Sincronización de UI con el diseño moderno de la web.
+  - [x] Fix de Bug de Auth: Uso de `SecureStore` para tokens consistente en todo el sistema.
+  - [x] Habilitación de acceso "Guest" en la navegación principal.
+  - [x] Implementación de barra de búsqueda y banners de "Sé Premium".
+  - [x] Introducción de utilidad `formatLocalDate` para mobile.

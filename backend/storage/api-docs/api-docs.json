@@ -25,10 +25,29 @@
                     "Arbitros"
                 ],
                 "summary": "List all arbitros",
-                "operationId": "f8f5060cfc1494200b35694a4e1279b0",
+                "description": "Display a listing of the resource.",
+                "operationId": "getArbitros",
                 "responses": {
                     "200": {
                         "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Arbitros"
+                ],
+                "summary": "Create a new arbitro",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createArbitro",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
                     }
                 },
                 "security": [
@@ -44,7 +63,8 @@
                     "Arbitros"
                 ],
                 "summary": "Get arbitro by ID",
-                "operationId": "3b0a597abe6de1e2ded46a3864d25de7",
+                "description": "Display the specified resource.",
+                "operationId": "getArbitroById",
                 "parameters": [
                     {
                         "name": "id",
@@ -65,6 +85,62 @@
                         "sanctum": []
                     }
                 ]
+            },
+            "put": {
+                "tags": [
+                    "Arbitros"
+                ],
+                "summary": "Update an arbitro",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updateArbitro",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Arbitros"
+                ],
+                "summary": "Delete an arbitro",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deleteArbitro",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/v1/auth/register": {
@@ -73,7 +149,7 @@
                     "Authentication"
                 ],
                 "summary": "Register a new user",
-                "operationId": "0f7820aec3266d94b412543a433ca21e",
+                "operationId": "register",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -143,7 +219,7 @@
                     "Authentication"
                 ],
                 "summary": "Login a user",
-                "operationId": "da7de2dd1215d891341d8a66e79d5e55",
+                "operationId": "login",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -206,7 +282,7 @@
                     "Authentication"
                 ],
                 "summary": "Verify OTP code",
-                "operationId": "e0ddfcacbbdeb72f25cb355b4244b0be",
+                "operationId": "verifyOtp",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -248,7 +324,7 @@
                     "Authentication"
                 ],
                 "summary": "Resend OTP code",
-                "operationId": "bcd562794052a1120d22b427a4da9323",
+                "operationId": "resendOtp",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -282,7 +358,7 @@
                     "Authentication"
                 ],
                 "summary": "Request a password reset OTP",
-                "operationId": "051e5103bb176d437d394311b09553d7",
+                "operationId": "forgotPassword",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -316,7 +392,7 @@
                     "Authentication"
                 ],
                 "summary": "Reset password using OTP",
-                "operationId": "f17008cd25d991f547ff5a0fd0215d9d",
+                "operationId": "resetPassword",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -364,13 +440,613 @@
                 }
             }
         },
+        "/v1/estadios": {
+            "get": {
+                "tags": [
+                    "Estadios"
+                ],
+                "summary": "List all estadios",
+                "description": "Display a listing of the resource.",
+                "operationId": "getEstadios",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Estadios"
+                ],
+                "summary": "Create a new estadio",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createEstadio",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/estadios/{id}": {
+            "get": {
+                "tags": [
+                    "Estadios"
+                ],
+                "summary": "Get estadio by ID",
+                "description": "Display the specified resource.",
+                "operationId": "getEstadioById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Estadios"
+                ],
+                "summary": "Update an estadio",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updateEstadio",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Estadios"
+                ],
+                "summary": "Delete an estadio",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deleteEstadio",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/fases": {
+            "get": {
+                "tags": [
+                    "Fases"
+                ],
+                "summary": "List all fases",
+                "description": "Display a listing of the resource.",
+                "operationId": "getFases",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Fases"
+                ],
+                "summary": "Create a new fase",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createFase",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/fases/{id}": {
+            "get": {
+                "tags": [
+                    "Fases"
+                ],
+                "summary": "Get fase by ID",
+                "description": "Display the specified resource.",
+                "operationId": "getFaseById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Fases"
+                ],
+                "summary": "Update a fase",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updateFase",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Fases"
+                ],
+                "summary": "Delete a fase",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deleteFase",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/jugadores": {
+            "get": {
+                "tags": [
+                    "Jugadores"
+                ],
+                "summary": "List all jugadores",
+                "description": "Display a listing of the resource.",
+                "operationId": "getJugadores",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Jugadores"
+                ],
+                "summary": "Create a new jugador",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createJugador",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/jugadores/{id}": {
+            "get": {
+                "tags": [
+                    "Jugadores"
+                ],
+                "summary": "Get jugador by ID",
+                "description": "Display the specified resource.",
+                "operationId": "getJugadorById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Jugadores"
+                ],
+                "summary": "Update a jugador",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updateJugador",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Jugadores"
+                ],
+                "summary": "Delete a jugador",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deleteJugador",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/partidos": {
+            "get": {
+                "tags": [
+                    "Partidos"
+                ],
+                "summary": "List and filter partidos",
+                "description": "Display a listing of the resource.",
+                "operationId": "getPartidos",
+                "parameters": [
+                    {
+                        "name": "torneo",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "adversario",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "arbitro",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "estadio",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "fase",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "fecha_desde",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "fecha_hasta",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "torneo_nivel",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "hoy",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PartidoResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Partidos"
+                ],
+                "summary": "Create a new partido",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createPartido",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/partidos/{fecha}": {
+            "get": {
+                "tags": [
+                    "Partidos"
+                ],
+                "summary": "Get partido by fecha",
+                "description": "Display the specified resource.",
+                "operationId": "getPartidoByFecha",
+                "parameters": [
+                    {
+                        "name": "fecha",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PartidoResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Partidos"
+                ],
+                "summary": "Update a partido",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updatePartido",
+                "parameters": [
+                    {
+                        "name": "fecha",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Partidos"
+                ],
+                "summary": "Delete a partido",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deletePartido",
+                "parameters": [
+                    {
+                        "name": "fecha",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/v1/payments/create-preference": {
             "post": {
                 "tags": [
                     "Payments"
                 ],
                 "summary": "Create a MercadoPago preference for subscription",
-                "operationId": "e02bd636ed23fb72cbd5912092acf3b2",
+                "operationId": "createPreference",
                 "responses": {
                     "200": {
                         "description": "Preference created successfully"
@@ -392,7 +1068,7 @@
                     "Payments"
                 ],
                 "summary": "Handle MercadoPago webhooks",
-                "operationId": "96b1072f58b09df0c790d8e23b27693e",
+                "operationId": "handleWebhook",
                 "responses": {
                     "200": {
                         "description": "Webhook handled"
@@ -403,13 +1079,137 @@
                 }
             }
         },
+        "/v1/rivales": {
+            "get": {
+                "tags": [
+                    "Rivales"
+                ],
+                "summary": "List all rivales",
+                "description": "Display a listing of the resource.",
+                "operationId": "getRivales",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Rivales"
+                ],
+                "summary": "Create a new rival",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createRival",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/rivales/{id}": {
+            "get": {
+                "tags": [
+                    "Rivales"
+                ],
+                "summary": "Get rival by ID",
+                "description": "Display the specified resource.",
+                "operationId": "getRivalById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Rivales"
+                ],
+                "summary": "Update a rival",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updateRival",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Rivales"
+                ],
+                "summary": "Delete a rival",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deleteRival",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/v1/settings": {
             "get": {
                 "tags": [
                     "Settings"
                 ],
                 "summary": "List all settings (Admin only)",
-                "operationId": "bf61d70bbd15b70b418eff26325eba1a",
+                "operationId": "getSettings",
                 "responses": {
                     "200": {
                         "description": "List of settings"
@@ -426,7 +1226,7 @@
                     "Settings"
                 ],
                 "summary": "Update a setting (Admin only)",
-                "operationId": "54a8d89ff7b132a1b5e18d9fdea5e984",
+                "operationId": "updateSetting",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -463,13 +1263,261 @@
                 ]
             }
         },
+        "/v1/tecnicos": {
+            "get": {
+                "tags": [
+                    "Tecnicos"
+                ],
+                "summary": "List all tecnicos",
+                "description": "Display a listing of the resource.",
+                "operationId": "getTecnicos",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tecnicos"
+                ],
+                "summary": "Create a new tecnico",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createTecnico",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/tecnicos/{id}": {
+            "get": {
+                "tags": [
+                    "Tecnicos"
+                ],
+                "summary": "Get tecnico by ID",
+                "description": "Display the specified resource.",
+                "operationId": "getTecnicoById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Tecnicos"
+                ],
+                "summary": "Update a tecnico",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updateTecnico",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tecnicos"
+                ],
+                "summary": "Delete a tecnico",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deleteTecnico",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/torneos": {
+            "get": {
+                "tags": [
+                    "Torneos"
+                ],
+                "summary": "List all torneos",
+                "description": "Display a listing of the resource.",
+                "operationId": "getTorneos",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Torneos"
+                ],
+                "summary": "Create a new torneo",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "createTorneo",
+                "responses": {
+                    "201": {
+                        "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/torneos/{id}": {
+            "get": {
+                "tags": [
+                    "Torneos"
+                ],
+                "summary": "Get torneo by ID",
+                "description": "Display the specified resource.",
+                "operationId": "getTorneoById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Torneos"
+                ],
+                "summary": "Update a torneo",
+                "description": "Update the specified resource in storage.",
+                "operationId": "updateTorneo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Torneos"
+                ],
+                "summary": "Delete a torneo",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "deleteTorneo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/v1/users": {
             "get": {
                 "tags": [
                     "User Management"
                 ],
                 "summary": "List all users (Admin only)",
-                "operationId": "3ee3ac20e5898a9c56ecf8276c3b883c",
+                "operationId": "getUsers",
                 "responses": {
                     "200": {
                         "description": "List of users"
@@ -488,7 +1536,7 @@
                     "User Management"
                 ],
                 "summary": "Get user details (Admin only)",
-                "operationId": "e08ff4211a88191c98eece69d9615117",
+                "operationId": "getUserById",
                 "parameters": [
                     {
                         "name": "id",
@@ -515,7 +1563,7 @@
                     "User Management"
                 ],
                 "summary": "Update user roles and info (Admin only)",
-                "operationId": "2e8559aa929089f28c27c0124a5dd622",
+                "operationId": "updateUser",
                 "parameters": [
                     {
                         "name": "id",
@@ -564,7 +1612,7 @@
                     "User Management"
                 ],
                 "summary": "Delete or deactivate user (Admin only)",
-                "operationId": "b2d719658da72b214581056a18cd45e3",
+                "operationId": "deleteUser",
                 "parameters": [
                     {
                         "name": "id",
@@ -589,12 +1637,164 @@
         }
     },
     "components": {
+        "schemas": {
+            "ArbitroResource": {
+                "properties": {
+                    "ar_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "CondicionResource": {
+                "properties": {
+                    "co_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "EstadioResource": {
+                "properties": {
+                    "es_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "FaseResource": {
+                "properties": {
+                    "fa_desc": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "GolResource": {
+                "properties": {
+                    "gol_id": {
+                        "type": "integer"
+                    },
+                    "minutos": {
+                        "type": "integer"
+                    },
+                    "tipo_gol": {
+                        "type": "integer"
+                    },
+                    "tipo_gol_desc": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "periodo": {
+                        "type": "integer"
+                    },
+                    "periodo_desc": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "gol_parariver": {
+                        "description": "1: River, 2: Rival",
+                        "type": "integer"
+                    },
+                    "jugador": {
+                        "properties": {
+                            "pl_id": {
+                                "type": "integer"
+                            },
+                            "pl_apno": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "JugadorResource": {
+                "properties": {
+                    "pl_id": {
+                        "type": "integer"
+                    },
+                    "pl_apno": {
+                        "type": "string"
+                    },
+                    "goles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GolResource"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PartidoResource": {
+                "properties": {
+                    "fecha": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "goles_river": {
+                        "type": "integer"
+                    },
+                    "goles_rival": {
+                        "type": "integer"
+                    },
+                    "observaciones": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "resultado": {
+                        "type": "string",
+                        "enum": [
+                            "G",
+                            "E",
+                            "P"
+                        ]
+                    },
+                    "torneo": {
+                        "$ref": "#/components/schemas/TorneoResource"
+                    },
+                    "rival": {
+                        "$ref": "#/components/schemas/RivalResource"
+                    },
+                    "arbitro": {
+                        "$ref": "#/components/schemas/ArbitroResource"
+                    },
+                    "estadio": {
+                        "$ref": "#/components/schemas/EstadioResource"
+                    },
+                    "condicion": {
+                        "$ref": "#/components/schemas/CondicionResource"
+                    },
+                    "fase": {
+                        "$ref": "#/components/schemas/FaseResource"
+                    },
+                    "tecnico": {
+                        "$ref": "#/components/schemas/TecnicoResource"
+                    },
+                    "goles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GolResource"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "RivalResource": {
+                "type": "object"
+            },
+            "TecnicoResource": {
+                "type": "object"
+            },
+            "TorneoResource": {
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "sanctum": {
                 "type": "http",
                 "description": "Use a Sanctum token to authenticate",
-                "name": "Authorization",
-                "in": "header",
                 "bearerFormat": "JWT",
                 "scheme": "bearer"
             }
@@ -610,12 +1810,40 @@
             "description": "Authentication"
         },
         {
+            "name": "Estadios",
+            "description": "Estadios"
+        },
+        {
+            "name": "Fases",
+            "description": "Fases"
+        },
+        {
+            "name": "Jugadores",
+            "description": "Jugadores"
+        },
+        {
+            "name": "Partidos",
+            "description": "Partidos"
+        },
+        {
             "name": "Payments",
             "description": "Payments"
         },
         {
+            "name": "Rivales",
+            "description": "Rivales"
+        },
+        {
             "name": "Settings",
             "description": "Settings"
+        },
+        {
+            "name": "Tecnicos",
+            "description": "Tecnicos"
+        },
+        {
+            "name": "Torneos",
+            "description": "Torneos"
         },
         {
             "name": "User Management",

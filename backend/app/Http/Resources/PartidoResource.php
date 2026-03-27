@@ -5,7 +5,30 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
+use OpenApi\Attributes as OA;
 
+#[OA\Schema(
+    schema: 'PartidoResource',
+    properties: [
+        new OA\Property(property: 'fecha', type: 'string', format: 'date'),
+        new OA\Property(property: 'goles_river', type: 'integer'),
+        new OA\Property(property: 'goles_rival', type: 'integer'),
+        new OA\Property(property: 'observaciones', type: 'string', nullable: true),
+        new OA\Property(property: 'resultado', type: 'string', enum: ['G', 'E', 'P']),
+        new OA\Property(property: 'torneo', ref: '#/components/schemas/TorneoResource'),
+        new OA\Property(property: 'rival', ref: '#/components/schemas/RivalResource'),
+        new OA\Property(property: 'arbitro', ref: '#/components/schemas/ArbitroResource'),
+        new OA\Property(property: 'estadio', ref: '#/components/schemas/EstadioResource'),
+        new OA\Property(property: 'condicion', ref: '#/components/schemas/CondicionResource'),
+        new OA\Property(property: 'fase', ref: '#/components/schemas/FaseResource'),
+        new OA\Property(property: 'tecnico', ref: '#/components/schemas/TecnicoResource'),
+        new OA\Property(
+            property: 'goles',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/GolResource')
+        )
+    ]
+)]
 class PartidoResource extends JsonResource
 {
     /**

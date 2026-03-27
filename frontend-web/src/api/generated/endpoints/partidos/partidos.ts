@@ -25,6 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  GetPartidoByFecha200,
+  GetPartidos200,
   GetPartidosParams
 } from '../../model';
 
@@ -40,7 +42,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary List and filter partidos
  */
 export type getPartidosResponse200 = {
-  data: void
+  data: GetPartidos200
   status: 200
 }
 
@@ -240,7 +242,7 @@ export const useCreatePartido = <TError = unknown,
  * @summary Get partido by fecha
  */
 export type getPartidoByFechaResponse200 = {
-  data: void
+  data: GetPartidoByFecha200
   status: 200
 }
 

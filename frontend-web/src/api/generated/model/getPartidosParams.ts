@@ -15,4 +15,6 @@ fase?: number;
 fecha_desde?: string;
 fecha_hasta?: string;
 torneo_nivel?: string;
+hoy?: boolean;
+limit?: number;
 };

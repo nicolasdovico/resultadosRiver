@@ -69,7 +69,7 @@ class JugadorController extends Controller
      */
     public function show(string $id)
     {
-        $jugador = Jugador::with('goles')->findOrFail($id);
+        $jugador = Jugador::with(['goles.tipo_gol_rel', 'goles.periodo_rel'])->findOrFail($id);
         return new JugadorResource($jugador);
     }
 

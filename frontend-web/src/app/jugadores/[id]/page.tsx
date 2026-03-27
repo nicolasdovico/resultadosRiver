@@ -1,5 +1,5 @@
 import { formatLocalDate } from "@/utils/date";
-import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash } from "lucide-react";
+import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
@@ -7,6 +7,8 @@ import { customInstance } from "@/api/custom-instance";
 interface Gol {
   gol_fecha: string;
   minutos: number;
+  tipo_gol_desc?: string;
+  periodo_desc?: string;
 }
 
 interface Jugador {
@@ -109,11 +111,23 @@ export default async function JugadorDetailPage({
                       <div className="flex flex-col">
                         <span className="font-black text-zinc-800 uppercase text-xs tracking-tight">Gol #{index + 1}</span>
                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{formatLocalDate(gol.gol_fecha)}</span>
+                        {gol.tipo_gol_desc && (
+                          <span className="text-[9px] font-black text-yellow-600 uppercase tracking-widest mt-0.5">
+                            • {gol.tipo_gol_desc}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xl font-black text-zinc-900">{gol.minutos}'</span>
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest italic">minutos</span>
+                    <div className="flex flex-col items-end space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xl font-black text-zinc-900 tabular-nums">{gol.minutos}'</span>
+                        <Timer size={14} className="text-zinc-300" />
+                      </div>
+                      {gol.periodo_desc && (
+                        <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">
+                          {gol.periodo_desc}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
