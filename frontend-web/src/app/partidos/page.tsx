@@ -35,21 +35,25 @@ export default async function PartidosPage({
   
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q : '';
+  const currentPage = typeof params.page === 'string' ? parseInt(params.page, 10) : 1;
 
   // Pass search query directly to API
   const response = await getPartidos(
     { 
       q: query, 
       hoy: (query || isLoggedIn) ? undefined : true,
-      limit: (isLoggedIn && !query) ? 10 : undefined 
+      limit: (isLoggedIn && !query) ? 10 : undefined,
+      page: currentPage
     } as any, 
     { headers: token ? { 'Authorization': `Bearer ${token}` } : {} } as any
   );
   
   // @ts-expect-error - Resource data structure is not fully typed in SDK
   let visiblePartidos: Partido[] = (response as { data?: Partido[] }).data || [];
-  // @ts-expect-error
+  // @ts-expect-error - Meta missing from response type
   const totalResults = (response as any).meta?.total || visiblePartidos.length;
+  // @ts-expect-error - Meta missing from response type
+  const lastPage = (response as any).meta?.last_page || 1;
 
   // Restriction logic for non-premium users during search
   let shownCount = visiblePartidos.length;
@@ -147,47 +151,84 @@ export default async function PartidosPage({
         )}
 
         {visiblePartidos.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {visiblePartidos.map((partido) => (
-              <Link 
-                key={partido.fecha} 
-                href={`/partidos/${partido.fecha}`}
-                className="bg-white p-6 rounded-[32px] border border-zinc-100 hover:border-red-200 transition-all flex items-center group shadow-sm"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">{formatLocalDate(partido.fecha)}</span>
-                    <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight line-clamp-1">{partido.torneo?.tor_desc}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="font-black text-lg text-zinc-800 tracking-tight">River Plate</span>
-                      <span className="text-sm text-zinc-500 font-medium">{partido.rival?.ri_desc}</span>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {visiblePartidos.map((partido) => (
+                <Link 
+                  key={partido.fecha} 
+                  href={`/partidos/${partido.fecha}`}
+                  className="bg-white p-6 rounded-[32px] border border-zinc-100 hover:border-red-200 transition-all flex items-center group shadow-sm"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">{formatLocalDate(partido.fecha)}</span>
+                      <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight line-clamp-1">{partido.torneo?.tor_desc}</span>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex flex-col items-end mr-2">
-                        <span className={`text-2xl font-black ${partido.resultado === 'G' ? 'text-green-600' : partido.resultado === 'P' ? 'text-red-600' : 'text-zinc-400'}`}>
-                          {partido.goles_river} - {partido.goles_rival}
-                        </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="font-black text-lg text-zinc-800 tracking-tight">River Plate</span>
+                        <span className="text-sm text-zinc-500 font-medium">{partido.rival?.ri_desc}</span>
                       </div>
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black text-white shadow-sm ${
-                        partido.resultado === 'G' ? 'bg-green-500 shadow-green-100' : 
-                        partido.resultado === 'P' ? 'bg-red-500 shadow-red-100' : 
-                        'bg-zinc-400 shadow-zinc-100'
-                      }`}>
-                        {partido.resultado}
+                      <div className="flex items-center space-x-4">
+                        <div className="flex flex-col items-end mr-2">
+                          <span className={`text-2xl font-black ${partido.resultado === 'G' ? 'text-green-600' : partido.resultado === 'P' ? 'text-red-600' : 'text-zinc-400'}`}>
+                            {partido.goles_river} - {partido.goles_rival}
+                          </span>
+                        </div>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black text-white shadow-sm ${
+                          partido.resultado === 'G' ? 'bg-green-500 shadow-green-100' : 
+                          partido.resultado === 'P' ? 'bg-red-500 shadow-red-100' : 
+                          'bg-zinc-400 shadow-zinc-100'
+                        }`}>
+                          {partido.resultado}
+                        </div>
+                        <ChevronRight className="text-zinc-300 group-hover:text-red-400 transition-colors ml-2" size={20} />
                       </div>
-                      <ChevronRight className="text-zinc-300 group-hover:text-red-400 transition-colors ml-2" size={20} />
                     </div>
                   </div>
+                </Link>
+              ))}
+            </div>
+            
+            {/* Pagination */}
+            {!isRestricted && lastPage > 1 && (
+              <div className="flex justify-center items-center space-x-2 mt-12">
+                {currentPage > 1 ? (
+                  <Link 
+                    href={`/partidos?${new URLSearchParams({ ...(query ? { q: query } : {}), page: (currentPage - 1).toString() }).toString()}`}
+                    className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-zinc-600 font-bold text-sm hover:border-red-200 hover:text-red-600 transition-colors"
+                  >
+                    Anterior
+                  </Link>
+                ) : (
+                  <span className="px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-xl text-zinc-400 font-bold text-sm cursor-not-allowed">
+                    Anterior
+                  </span>
+                )}
+                
+                <div className="px-4 py-2 bg-zinc-100 rounded-xl text-zinc-600 font-black text-sm">
+                  Página {currentPage} de {lastPage}
                 </div>
-              </Link>
-            ))}
-          </div>
+                
+                {currentPage < lastPage ? (
+                  <Link 
+                    href={`/partidos?${new URLSearchParams({ ...(query ? { q: query } : {}), page: (currentPage + 1).toString() }).toString()}`}
+                    className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-zinc-600 font-bold text-sm hover:border-red-200 hover:text-red-600 transition-colors"
+                  >
+                    Siguiente
+                  </Link>
+                ) : (
+                  <span className="px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-xl text-zinc-400 font-bold text-sm cursor-not-allowed">
+                    Siguiente
+                  </span>
+                )}
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-24 bg-zinc-50 rounded-[40px] border-2 border-dashed border-zinc-200">
             <Trophy className="mx-auto mb-4 text-zinc-300" size={48} />
-            <h3 className="text-xl font-black text-zinc-900 mb-2">No hay resultados para "{query}"</h3>
+            <h3 className="text-xl font-black text-zinc-900 mb-2">No hay resultados para &quot;{query}&quot;</h3>
             <p className="text-zinc-500 font-medium">Prueba buscando otro equipo o competencia.</p>
           </div>
         )}
