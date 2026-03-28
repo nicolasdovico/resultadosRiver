@@ -16,6 +16,9 @@ class ArbitroResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'ar_id' => $this->ar_id,
+            'ar_desc' => $this->ar_apno,
+        ];
     }
 }

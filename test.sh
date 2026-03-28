@@ -6,4 +6,4 @@ docker compose exec backend php artisan test
 
 # Run frontend tests
 echo "Running Frontend Tests..."
-docker compose exec frontend npm run test:ci
+docker compose exec frontend-web npm run test:ci

@@ -49,3 +49,4 @@ bootstrap/cache/*
 # DB
 *.sql
 !backupfulbo210326.sql
+.aider*

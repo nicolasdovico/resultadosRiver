@@ -323,6 +323,9 @@ export default async function PartidoDetailPage({
                 <div>
                   <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Director Técnico</p>
                   <p className="font-black text-zinc-900 text-sm uppercase leading-tight">{partido.tecnico?.te_desc || 'No informado'}</p>
+                  {partido.tecnico?.cargo && (
+                    <p className="text-[10px] font-bold text-zinc-500 mt-1 uppercase tracking-tighter">{partido.tecnico.cargo}</p>
+                  )}
                 </div>
               </div>
 

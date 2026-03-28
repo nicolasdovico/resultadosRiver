@@ -19,4 +19,20 @@ class Tecnico extends Model
     {
         return $this->hasMany(Partido::class, 'tecnico', 'id_tecnicos');
     }
+
+    public static function getForFecha($fecha)
+    {
+        static $tecnicos = null;
+
+        if ($tecnicos === null) {
+            $tecnicos = self::all();
+        }
+
+        return $tecnicos->first(function ($tecnico) use ($fecha) {
+            $desde = $tecnico->desde;
+            $hasta = $tecnico->hasta ?? '9999-12-31';
+
+            return $fecha >= $desde && $fecha <= $hasta;
+        });
+    }
 }

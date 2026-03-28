@@ -52,9 +52,9 @@ class Partido extends Model
         return $this->belongsTo(Fase::class, 'fase', 'id_fase');
     }
 
-    public function tecnico_rel(): BelongsTo
+    public function getTecnicoAttribute()
     {
-        return $this->belongsTo(Tecnico::class, 'tecnico', 'id_tecnicos');
+        return Tecnico::getForFecha($this->fecha);
     }
 
     public function goles(): HasMany

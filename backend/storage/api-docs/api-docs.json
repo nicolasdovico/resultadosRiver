@@ -1785,6 +1785,15 @@
                 "type": "object"
             },
             "TecnicoResource": {
+                "properties": {
+                    "te_desc": {
+                        "type": "string"
+                    },
+                    "cargo": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
                 "type": "object"
             },
             "TorneoResource": {
