@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Partido;
 use App\Models\Rival;
+use App\Models\Periodo;
 use App\Http\Resources\PartidoResource;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -36,14 +37,24 @@ class PartidoController extends Controller
             
             if ($total === 0) {
                 return [
-                    'total' => 0,
-                    'wins' => 0,
-                    'draws' => 0,
-                    'losses' => 0,
-                    'goals_for' => 0,
-                    'goals_against' => 0,
-                    'win_percentage' => 0,
-                    'effectiveness' => 0,
+                    'summary' => [
+                        'pj' => 0,
+                        'g' => 0,
+                        'e' => 0,
+                        'p' => 0,
+                        'gf' => 0,
+                        'gc' => 0,
+                        'dg' => 0,
+                        'promedio_gol' => 0,
+                        'efectividad' => 0,
+                    ],
+                    'curiosities' => [
+                        'biggest_win' => null,
+                        'most_frequent_rival' => null,
+                        'most_active_year' => null,
+                        'total_rivales' => 0,
+                        'total_torneos' => 0
+                    ]
                 ];
             }
 
@@ -118,6 +129,237 @@ class PartidoController extends Controller
                 ]
             ];
         });
+    }
+
+    #[OA\Get(
+        path: '/v1/stats/goals-by-period',
+        summary: 'Get goals distribution by time period with filters',
+        operationId: 'getGoalsByPeriod',
+        tags: ['Stats'],
+        parameters: [
+            new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'torneo', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'adversario', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'fecha_desde', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'fecha_hasta', in: 'query', schema: new OA\Schema(type: 'string', format: 'date'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Goals distribution grouped by Period and 10-minute intervals',
+                content: new OA\JsonContent(type: 'object')
+            )
+        ]
+    )]
+    public function goalsByPeriod(Request $request)
+    {
+        $query = Partido::query();
+
+        // Apply filters
+        if ($request->has('q')) {
+            $searchTerm = $request->q;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->whereHas('rival', function ($r) use ($searchTerm) {
+                    $r->where('ri_desc', 'ILIKE', "%{$searchTerm}%");
+                })->orWhereHas('torneo_rel', function ($t) use ($searchTerm) {
+                    $t->where('tor_desc', 'ILIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
+        if ($request->has('torneo')) {
+            $query->where('torneo', $request->torneo);
+        }
+
+        if ($request->has('adversario')) {
+            $query->where('adversario', $request->adversario);
+        }
+
+        if ($request->has('fecha_desde')) {
+            $query->where('fecha', '>=', $request->fecha_desde);
+        }
+
+        if ($request->has('fecha_hasta')) {
+            $query->where('fecha', '<=', $request->fecha_hasta);
+        }
+
+        $matchDates = $query->pluck('fecha');
+
+        // Total goals for River and Opponents
+        $totalRiverGoals = DB::table('goles')
+            ->whereIn('gol_fecha', $matchDates)
+            ->where('gol_parariver', 1)
+            ->count();
+        
+        $totalOpponentGoals = DB::table('goles')
+            ->whereIn('gol_fecha', $matchDates)
+            ->where('gol_parariver', 2)
+            ->count();
+
+        // Get all periods present in the results
+        $activePeriods = Periodo::whereIn('id_periodo', function($q) use ($matchDates) {
+            $q->select('periodo')->from('goles')->whereIn('gol_fecha', $matchDates);
+        })->orderBy('id_periodo')->get();
+
+        $intervals = [
+            ['label' => "0' - 10'", 'min' => 0, 'max' => 10],
+            ['label' => "11' - 20'", 'min' => 11, 'max' => 20],
+            ['label' => "21' - 30'", 'min' => 21, 'max' => 30],
+            ['label' => "31' - 40'", 'min' => 31, 'max' => 40],
+            ['label' => "41' +", 'min' => 41, 'max' => 150], 
+        ];
+
+        $periodStats = [];
+
+        foreach ($activePeriods as $period) {
+            $periodData = [];
+            
+            $periodTotalRiver = DB::table('goles')
+                ->whereIn('gol_fecha', $matchDates)
+                ->where('gol_parariver', 1)
+                ->where('periodo', $period->id_periodo)
+                ->count();
+            
+            $periodTotalOpponent = DB::table('goles')
+                ->whereIn('gol_fecha', $matchDates)
+                ->where('gol_parariver', 2)
+                ->where('periodo', $period->id_periodo)
+                ->count();
+
+            foreach ($intervals as $interval) {
+                $countRiver = DB::table('goles')
+                    ->whereIn('gol_fecha', $matchDates)
+                    ->where('gol_parariver', 1)
+                    ->where('periodo', $period->id_periodo)
+                    ->where('minutos', '>=', $interval['min'])
+                    ->where('minutos', '<=', $interval['max'])
+                    ->count();
+                
+                $countOpponent = DB::table('goles')
+                    ->whereIn('gol_fecha', $matchDates)
+                    ->where('gol_parariver', 2)
+                    ->where('periodo', $period->id_periodo)
+                    ->where('minutos', '>=', $interval['min'])
+                    ->where('minutos', '<=', $interval['max'])
+                    ->count();
+
+                $periodData[] = [
+                    'label' => $interval['label'],
+                    'river' => [
+                        'count' => $countRiver,
+                        'percentage' => $totalRiverGoals > 0 ? round(($countRiver / $totalRiverGoals) * 100, 1) : 0
+                    ],
+                    'opponent' => [
+                        'count' => $countOpponent,
+                        'percentage' => $totalOpponentGoals > 0 ? round(($countOpponent / $totalOpponentGoals) * 100, 1) : 0
+                    ]
+                ];
+            }
+
+            $periodStats[] = [
+                'period_id' => $period->id_periodo,
+                'period_name' => trim($period->periodo_desc),
+                'river_total' => $periodTotalRiver,
+                'opponent_total' => $periodTotalOpponent,
+                'intervals' => $periodData
+            ];
+        }
+
+        return response()->json([
+            'periods' => $periodStats,
+            'total_river' => $totalRiverGoals,
+            'total_opponent' => $totalOpponentGoals
+        ]);
+    }
+
+    #[OA\Get(
+        path: '/v1/stats/goals-by-type',
+        summary: 'Get goals distribution by type (method) with filters',
+        operationId: 'getGoalsByType',
+        tags: ['Stats'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Goals distribution by type',
+                content: new OA\JsonContent(type: 'object')
+            )
+        ]
+    )]
+    public function goalsByType(Request $request)
+    {
+        $query = Partido::query();
+
+        // Apply filters
+        if ($request->has('q')) {
+            $searchTerm = $request->q;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->whereHas('rival', function ($r) use ($searchTerm) {
+                    $r->where('ri_desc', 'ILIKE', "%{$searchTerm}%");
+                })->orWhereHas('torneo_rel', function ($t) use ($searchTerm) {
+                    $t->where('tor_desc', 'ILIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
+        if ($request->has('torneo')) {
+            $query->where('torneo', $request->torneo);
+        }
+
+        if ($request->has('adversario')) {
+            $query->where('adversario', $request->adversario);
+        }
+
+        if ($request->has('fecha_desde')) {
+            $query->where('fecha', '>=', $request->fecha_desde);
+        }
+
+        if ($request->has('fecha_hasta')) {
+            $query->where('fecha', '<=', $request->fecha_hasta);
+        }
+
+        $matchDates = $query->pluck('fecha');
+
+        // Find the earliest match date that has cataloged goals (gol_penal > 0)
+        $sinceDate = DB::table('goles')
+            ->whereIn('gol_fecha', $matchDates)
+            ->where('gol_penal', '>', 0)
+            ->min('gol_fecha');
+
+        // Distribution for River
+        $riverStats = DB::table('goles')
+            ->leftJoin('tipo_gol', 'goles.gol_penal', '=', 'tipo_gol.tipo_gol')
+            ->whereIn('gol_fecha', $matchDates)
+            ->where('gol_parariver', 1)
+            ->select(DB::raw('COALESCE(tipo_gol.tipo_gol_descripcion, \'Sin catalogar\') as label'), DB::raw('count(*) as count'))
+            ->groupBy('label')
+            ->get()
+            ->map(function($item) {
+                $item->label = trim($item->label);
+                return $item;
+            });
+
+        // Distribution for Opponents
+        $opponentStats = DB::table('goles')
+            ->leftJoin('tipo_gol', 'goles.gol_penal', '=', 'tipo_gol.tipo_gol')
+            ->whereIn('gol_fecha', $matchDates)
+            ->where('gol_parariver', 2)
+            ->select(DB::raw('COALESCE(tipo_gol.tipo_gol_descripcion, \'Sin catalogar\') as label'), DB::raw('count(*) as count'))
+            ->groupBy('label')
+            ->get()
+            ->map(function($item) {
+                $item->label = trim($item->label);
+                return $item;
+            });
+
+        return response()->json([
+            'river' => $riverStats,
+            'opponent' => $opponentStats,
+            'since' => $sinceDate ? \Carbon\Carbon::parse($sinceDate)->format('d/m/Y') : null,
+            'total_cataloged' => [
+                'river' => $riverStats->sum('count'),
+                'opponent' => $opponentStats->sum('count')
+            ]
+        ]);
     }
 
     #[OA\Get(

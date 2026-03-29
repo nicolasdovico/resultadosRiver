@@ -7,6 +7,8 @@ import SearchBar from "@/components/SearchBar";
 import { cookies } from "next/headers";
 import ClubShield from "@/components/ClubShield";
 import RiverOfficialShield from "@/components/RiverOfficialShield";
+import GoalsAnalysis from "@/components/GoalsAnalysis";
+import GoalMethodAnalysis from "@/components/GoalMethodAnalysis";
 
 interface Partido {
   fecha: string;
@@ -304,37 +306,9 @@ export default async function PartidosPage({
           </div>
 
           <AccessControl tier={currentTier} requiredTier="premium" className="rounded-[40px] overflow-hidden shadow-xl border border-zinc-100">
-            <div className="bg-white p-10 min-h-[400px]">
-              <div className="flex items-center justify-between mb-12">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center text-red-600">
-                    <BarChart3 size={28} />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-xl text-zinc-900 tracking-tight uppercase">Goles por Tiempo</h3>
-                    <p className="text-zinc-500 font-medium text-sm">Cuándo marca River sus goles históricamente.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-col space-y-8">
-                {[
-                  { label: '0\' - 15\'', value: 15, color: 'bg-zinc-200' },
-                  { label: '16\' - 30\'', value: 25, color: 'bg-zinc-400' },
-                  { label: '31\' - 45\'', value: 35, color: 'bg-red-500' },
-                  { label: '46\' - 60\'', value: 20, color: 'bg-zinc-400' },
-                  { label: '61\' - 75\'', value: 30, color: 'bg-red-600' },
-                  { label: '76\' - 90\'', value: 45, color: 'bg-red-700' },
-                ].map((bar) => (
-                  <div key={bar.label} className="flex items-center">
-                    <span className="w-20 text-xs font-black text-zinc-500 uppercase">{bar.label}</span>
-                    <div className="flex-1 h-4 bg-zinc-50 rounded-full overflow-hidden mx-4">
-                      <div className={`h-full ${bar.color} rounded-full transition-all`} style={{ width: `${bar.value}%` }} />
-                    </div>
-                    <span className="w-12 text-right text-xs font-black text-zinc-900">{bar.value}%</span>
-                  </div>
-                ))}
-              </div>
+            <div className="flex flex-col">
+              <GoalsAnalysis filters={{ q: query }} />
+              <GoalMethodAnalysis filters={{ q: query }} />
             </div>
           </AccessControl>
         </section>

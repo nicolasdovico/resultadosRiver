@@ -64,6 +64,8 @@ Route::prefix('v1')->group(function () {
     Route::get('partidos/{fecha}', [PartidoController::class, 'show']);
 
     Route::get('stats/general', [PartidoController::class, 'generalStats']);
+    Route::get('stats/goals-by-period', [PartidoController::class, 'goalsByPeriod']);
+    Route::get('stats/goals-by-type', [PartidoController::class, 'goalsByType']);
 
     Route::get('settings/public', [SettingController::class, 'public']);
 
