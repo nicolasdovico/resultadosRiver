@@ -19,6 +19,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import ClubShield from "@/components/ClubShield";
+import StatsDashboard from "@/components/StatsDashboard";
 
 import { formatLocalDate } from "@/utils/date";
 
@@ -147,6 +148,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* General Stats Dashboard */}
+      <StatsDashboard />
 
       {/* Teaser Data Section */}
       <section className="py-20 px-4 bg-white">

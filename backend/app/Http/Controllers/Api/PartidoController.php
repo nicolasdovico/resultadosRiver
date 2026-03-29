@@ -4,12 +4,122 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Partido;
+use App\Models\Rival;
 use App\Http\Resources\PartidoResource;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
 class PartidoController extends Controller
 {
+    #[OA\Get(
+        path: '/v1/stats/general',
+        summary: 'Get general match statistics',
+        operationId: 'getGeneralStats',
+        tags: ['Stats'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'General statistics',
+                content: new OA\JsonContent(
+                    type: 'object'
+                )
+            )
+        ]
+    )]
+    public function generalStats()
+    {
+        return Cache::remember('general_stats', 86400, function () {
+            $total = Partido::count();
+            
+            if ($total === 0) {
+                return [
+                    'total' => 0,
+                    'wins' => 0,
+                    'draws' => 0,
+                    'losses' => 0,
+                    'goals_for' => 0,
+                    'goals_against' => 0,
+                    'win_percentage' => 0,
+                    'effectiveness' => 0,
+                ];
+            }
+
+            $wins = Partido::whereRaw('go_ri > go_ad')->count();
+            $draws = Partido::whereRaw('go_ri = go_ad')->count();
+            $losses = Partido::whereRaw('go_ri < go_ad')->count();
+            
+            $goalsFor = Partido::sum('go_ri');
+            $goalsAgainst = Partido::sum('go_ad');
+            
+            $puntosObtenidos = ($wins * 3) + $draws;
+            $puntosPosibles = $total * 3;
+            $effectiveness = ($puntosObtenidos / $puntosPosibles) * 100;
+
+            // Curious facts
+            $biggestWin = Partido::with(['rival', 'torneo_rel'])
+                ->orderByRaw('(go_ri - go_ad) DESC')
+                ->first();
+
+            $mostFrequentRival = DB::table('estadisticas')
+                ->select('adversario', DB::raw('count(*) as total'))
+                ->groupBy('adversario')
+                ->orderBy('total', 'desc')
+                ->first();
+            
+            $rivalInfo = $mostFrequentRival ? Rival::find($mostFrequentRival->adversario) : null;
+
+            $mostActiveYear = DB::table('estadisticas')
+                ->select(DB::raw('EXTRACT(YEAR FROM CAST(fecha AS DATE)) as year'), DB::raw('count(*) as total'))
+                ->groupBy('year')
+                ->orderBy('total', 'desc')
+                ->first();
+
+            $totalRivales = DB::table('rivales')
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                          ->from('estadisticas')
+                          ->whereRaw('estadisticas.adversario = rivales.ri_id');
+                })
+                ->count();
+
+            return [
+                'summary' => [
+                    'pj' => $total,
+                    'g' => $wins,
+                    'e' => $draws,
+                    'p' => $losses,
+                    'gf' => (int) $goalsFor,
+                    'gc' => (int) $goalsAgainst,
+                    'dg' => $goalsFor - $goalsAgainst,
+                    'promedio_gol' => round($goalsFor / $total, 2),
+                    'efectividad' => round($effectiveness, 2),
+                ],
+                'curiosities' => [
+                    'biggest_win' => $biggestWin ? [
+                        'fecha' => $biggestWin->fecha,
+                        'resultado' => "{$biggestWin->go_ri} - {$biggestWin->go_ad}",
+                        'rival' => $biggestWin->rival->ri_desc,
+                        'torneo' => $biggestWin->torneo_rel->tor_desc
+                    ] : null,
+                    'most_frequent_rival' => $rivalInfo ? [
+                        'nombre' => $rivalInfo->ri_desc,
+                        'partidos' => $mostFrequentRival->total,
+                        'escudo' => $rivalInfo->escudo_url
+                    ] : null,
+                    'most_active_year' => $mostActiveYear ? [
+                        'year' => (int) $mostActiveYear->year,
+                        'partidos' => $mostActiveYear->total
+                    ] : null,
+                    'total_rivales' => $totalRivales,
+                    'total_torneos' => DB::table('torneos')->count()
+                ]
+            ];
+        });
+    }
+
     #[OA\Get(
         path: '/v1/partidos',
         summary: 'List and filter partidos',
