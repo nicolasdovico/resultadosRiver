@@ -10,6 +10,7 @@ import RiverOfficialShield from "@/components/RiverOfficialShield";
 
 interface Partido {
   fecha: string;
+  fecha_nro?: number;
   rival: {
     ri_desc: string;
     escudo_url?: string;
@@ -17,6 +18,12 @@ interface Partido {
   torneo: {
     tor_desc: string;
     tor_nivel: string;
+  };
+  fase?: {
+    fa_desc: string;
+  };
+  condicion?: {
+    co_desc: string;
   };
   goles_river: number;
   goles_rival: number;
@@ -117,7 +124,18 @@ export default async function PartidosPage({
             {visiblePartidos.slice(0, 4).map((p) => (
               <div key={p.fecha} className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm flex items-center justify-between">
                 <div className="flex flex-col space-y-2">
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatLocalDate(p.fecha)}</span>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatLocalDate(p.fecha)}</span>
+                    {p.fase && (
+                      <span className="text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">{p.fase.fa_desc}</span>
+                    )}
+                    {p.fecha_nro && (
+                      <span className="text-[9px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Fecha {p.fecha_nro}</span>
+                    )}
+                    {p.condicion && (
+                      <span className="text-[9px] bg-amber-50 text-yellow-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">{p.condicion.co_desc}</span>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-6 h-6 shrink-0 relative">
                       <ClubShield 
@@ -187,9 +205,18 @@ export default async function PartidosPage({
                   className="bg-white p-6 rounded-[32px] border border-zinc-100 hover:border-red-200 transition-all flex items-center group shadow-sm"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-4">
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
                       <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">{formatLocalDate(partido.fecha)}</span>
                       <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight line-clamp-1">{partido.torneo?.tor_desc}</span>
+                      {partido.fase && (
+                        <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">{partido.fase.fa_desc}</span>
+                      )}
+                      {partido.fecha_nro && (
+                        <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Fecha {partido.fecha_nro}</span>
+                      )}
+                      {partido.condicion && (
+                        <span className="text-[10px] bg-amber-50 text-yellow-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">{partido.condicion.co_desc}</span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col space-y-2">

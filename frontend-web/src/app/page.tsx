@@ -24,12 +24,19 @@ import { formatLocalDate } from "@/utils/date";
 
 interface Partido {
   fecha: string;
+  fecha_nro?: number;
   rival?: {
     ri_desc: string;
     escudo_url?: string;
   };
   torneo?: {
     tor_desc: string;
+  };
+  fase?: {
+    fa_desc: string;
+  };
+  condicion?: {
+    co_desc: string;
   };
   goles_river: number;
   goles_rival: number;
@@ -162,9 +169,18 @@ export default function Home() {
                 className="bg-zinc-50 p-6 rounded-3xl border border-zinc-100 flex items-center shadow-sm hover:border-red-100 transition-colors group"
               >
                 <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-4">
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
                     <span className="text-[10px] bg-zinc-200 text-zinc-600 px-2 py-0.5 rounded-full font-bold uppercase">{formatLocalDate(partido.fecha)}</span>
                     <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase">{partido.torneo?.tor_desc || 'Torneo'}</span>
+                    {partido.fase && (
+                      <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase">{partido.fase.fa_desc}</span>
+                    )}
+                    {partido.fecha_nro && (
+                      <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase">Fecha {partido.fecha_nro}</span>
+                    )}
+                    {partido.condicion && (
+                      <span className="text-[10px] bg-amber-50 text-yellow-700 px-2 py-0.5 rounded-full font-bold uppercase">{partido.condicion.co_desc}</span>
+                    )}
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col space-y-2">

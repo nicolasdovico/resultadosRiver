@@ -1,20 +1,30 @@
 # Log de Progreso de Resultados River
 
+### 2026-03-29: Correcciones de UI y Escudos Dinámicos (Fase 1 - Pulido Final)
+- [x] **Backend**: Implementación de sistema de configuraciones (`settings`) para escudo oficial de River Plate.
+- [x] **Backend**: Endpoint público para configuraciones generales (`GET /v1/settings/public`).
+- [x] **Backend**: Robustecimiento de `RivalResource`, `FaseResource` y `CondicionResource` para mapeo correcto de columnas legacy.
+- [x] **Frontend Web**:
+  - [x] **Fix**: Solución a error de "Event handlers cannot be passed to Client Component props" mediante `ClubShield`.
+  - [x] **Mejora**: Integración de `RiverOfficialShield` dinámico desde el panel administrativo.
+  - [x] **Mejora**: Adición de información de Fase, Número de Fecha y Condición (Local/Visitante) en las obleas de partidos.
+  - [x] **Mejora**: Creación de `SettingsContext` para gestión global de configuraciones en Next.js.
+
 ### 2026-03-25: Mejoras de Access Control y UI (Fase 1 - Finalización MVP)
 - [x] **Backend**: Corrección de filtrado por fecha en `PartidoController` para "Hoy".
 - [x] **Backend**: Configuración de supervisor para procesamiento de colas (Laravel Worker).
 - [x] **Backend**: Refactorización de tests para usar SQLite en memoria (Aislamiento de datos).
 - [x] **Frontend Web**:
-  - [x] Rediseño de Header (User info, Logout, Premium Badge).
-  - [x] Implementación de tiers de acceso (Guest/Registered/Premium) en la lista de partidos.
-  - [x] Limitación de resultados para usuarios no-premium en búsquedas.
-  - [x] Modernización de tarjetas de resultados (Badges de estado).
-  - [x] Estandarización de fechas con `formatLocalDate`.
+  - [x] **Mejora**: Rediseño de Header (User info, Logout, Premium Badge).
+  - [x] **Mejora**: Implementación de tiers de acceso (Guest/Registered/Premium) en la lista de partidos.
+  - [x] **Mejora**: Limitación de resultados para usuarios no-premium en búsquedas.
+  - [x] **Mejora**: Modernización de tarjetas de resultados (Badges de estado).
+  - [x] **Mejora**: Estandarización de fechas con `formatLocalDate`.
 - [x] **Frontend Mobile**:
-  - [x] Implementación de escudos de clubes en la lista de partidos (River Plate y Rivales).
-  - [x] Desarrollo de la "Ficha de Partido" (Modal) con detalles completos, goles y observaciones.
-  - [x] Sincronización de modelos de API (Orval) para incluir URLs de escudos.
-  - [x] Mejora visual de tarjetas de resultados con escudos y nombres de equipos alineados.
-  - [x] Navegación enriquecida desde la lista de resultados hacia el detalle del partido.
+  - [x] **Mejora**: Implementación de escudos de clubes en la lista de partidos (River Plate y Rivales).
+  - [x] **Mejora**: Desarrollo de la "Ficha de Partido" (Modal) con detalles completos, goles y observaciones.
+  - [x] **Mejora**: Sincronización de modelos de API (Orval) para incluir URLs de escudos.
+  - [x] **Mejora**: Mejora visual de tarjetas de resultados con escudos y nombres de equipos alineados.
+  - [x] **Mejora**: Navegación enriquecida desde la lista de resultados hacia el detalle del partido.
   - [x] **Fix**: URLs de escudos dinámicas para evitar problemas de `localhost` en dispositivos móviles.
   - [x] **Mejora**: Implementación de placeholders y transiciones suaves para carga de imágenes con `expo-image`.

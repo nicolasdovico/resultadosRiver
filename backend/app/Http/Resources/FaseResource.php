@@ -16,6 +16,9 @@ class FaseResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id_fase' => $this->id_fase,
+            'fa_desc' => $this->fase,
+        ];
     }
 }

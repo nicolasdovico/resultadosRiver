@@ -16,6 +16,9 @@ class CondicionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id_condicion' => $this->id_condicion,
+            'co_desc' => trim($this->descripcion),
+        ];
     }
 }

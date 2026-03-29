@@ -9,6 +9,7 @@
   - [x] Detalle de Partidos, Jugadores, Rivales y Torneos.
   - [x] Lógica de filtrado "Un día como hoy".
   - [x] Acceso basado en tiers (Guest, Registered, Premium).
+  - [x] Mejoras de UI: Escudos dinámicos y badges de Fase/Fecha/Condición.
 - [x] **Visualización de Datos (Frontend Mobile)**:
   - [x] Pantallas de Resultados y Torneos con UI modernizada.
   - [x] Portabilidad de lógica de acceso (Guest, Registered, Premium).

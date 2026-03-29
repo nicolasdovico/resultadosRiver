@@ -40,6 +40,7 @@ class PartidoResource extends JsonResource
     {
         return [
             'fecha' => Carbon::parse($this->fecha)->format('Y-m-d'),
+            'fecha_nro' => $this->fecha_nro,
             'goles_river' => $this->go_ri,
             'goles_rival' => $this->go_ad,
             'observaciones' => $this->observaciones,
