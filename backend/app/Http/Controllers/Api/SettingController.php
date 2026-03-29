@@ -19,6 +19,23 @@ class SettingController extends Controller
             new OA\Response(response: 200, description: 'List of settings')
         ]
     )]
+    #[OA\Get(
+        path: '/v1/settings/public',
+        summary: 'Get public settings (No auth required)',
+        operationId: 'getPublicSettings',
+        tags: ['Settings'],
+        responses: [
+            new OA\Response(response: 200, description: 'Public settings')
+        ]
+    )]
+    public function public()
+    {
+        return response()->json([
+            'river_shield' => Setting::getUrl('river_shield'),
+            // Add other public settings here
+        ]);
+    }
+
     public function index()
     {
         return response()->json(Setting::all());

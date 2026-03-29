@@ -6,4 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface RivalResource { [key: string]: unknown }
+export interface RivalResource {
+  ri_id?: number;
+  ri_desc?: string;
+  /** @nullable */
+  escudo?: string | null;
+  /** @nullable */
+  escudo_url?: string | null;
+}

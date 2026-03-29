@@ -63,6 +63,8 @@ Route::prefix('v1')->group(function () {
     Route::get('partidos', [PartidoController::class, 'index']);
     Route::get('partidos/{fecha}', [PartidoController::class, 'show']);
 
+    Route::get('settings/public', [SettingController::class, 'public']);
+
     // Authenticated access
     Route::middleware(['auth:sanctum'])->group(function () {
         

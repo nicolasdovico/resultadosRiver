@@ -1782,6 +1782,22 @@
                 "type": "object"
             },
             "RivalResource": {
+                "properties": {
+                    "ri_id": {
+                        "type": "integer"
+                    },
+                    "ri_desc": {
+                        "type": "string"
+                    },
+                    "escudo": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "escudo_url": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
                 "type": "object"
             },
             "TecnicoResource": {

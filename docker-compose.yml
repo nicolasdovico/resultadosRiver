@@ -51,6 +51,7 @@ services:
     volumes:
       - ./backend:/var/www/html
     environment:
+      APP_URL: http://localhost:8000
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432

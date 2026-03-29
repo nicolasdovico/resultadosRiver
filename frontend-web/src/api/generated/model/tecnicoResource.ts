@@ -6,4 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface TecnicoResource { [key: string]: unknown }
+export interface TecnicoResource {
+  te_desc?: string;
+  /** @nullable */
+  cargo?: string | null;
+}

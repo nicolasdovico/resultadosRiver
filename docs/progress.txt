@@ -11,9 +11,10 @@
   - [x] Modernización de tarjetas de resultados (Badges de estado).
   - [x] Estandarización de fechas con `formatLocalDate`.
 - [x] **Frontend Mobile**:
-  - [x] Portabilidad completa de lógica de tiers (Guest/Registered/Premium).
-  - [x] Sincronización de UI con el diseño moderno de la web.
-  - [x] Fix de Bug de Auth: Uso de `SecureStore` para tokens consistente en todo el sistema.
-  - [x] Habilitación de acceso "Guest" en la navegación principal.
-  - [x] Implementación de barra de búsqueda y banners de "Sé Premium".
-  - [x] Introducción de utilidad `formatLocalDate` para mobile.
+  - [x] Implementación de escudos de clubes en la lista de partidos (River Plate y Rivales).
+  - [x] Desarrollo de la "Ficha de Partido" (Modal) con detalles completos, goles y observaciones.
+  - [x] Sincronización de modelos de API (Orval) para incluir URLs de escudos.
+  - [x] Mejora visual de tarjetas de resultados con escudos y nombres de equipos alineados.
+  - [x] Navegación enriquecida desde la lista de resultados hacia el detalle del partido.
+  - [x] **Fix**: URLs de escudos dinámicas para evitar problemas de `localhost` en dispositivos móviles.
+  - [x] **Mejora**: Implementación de placeholders y transiciones suaves para carga de imágenes con `expo-image`.

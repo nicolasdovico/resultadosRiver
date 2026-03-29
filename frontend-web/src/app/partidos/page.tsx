@@ -5,11 +5,14 @@ import { Trophy, ChevronRight, Calendar, BarChart3, Clock, Star, Info } from "lu
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { cookies } from "next/headers";
+import ClubShield from "@/components/ClubShield";
+import RiverOfficialShield from "@/components/RiverOfficialShield";
 
 interface Partido {
   fecha: string;
   rival: {
     ri_desc: string;
+    escudo_url?: string;
   };
   torneo: {
     tor_desc: string;
@@ -35,7 +38,12 @@ export default async function PartidosPage({
   
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q : '';
-  const currentPage = typeof params.page === 'string' ? parseInt(params.page, 10) : 1;
+  let currentPage = typeof params.page === 'string' ? parseInt(params.page, 10) : 1;
+
+  // Force page 1 for free users on the default list
+  if (isLoggedIn && !isPremium && !query) {
+    currentPage = 1;
+  }
 
   // Pass search query directly to API
   const response = await getPartidos(
@@ -49,26 +57,31 @@ export default async function PartidosPage({
   );
   
   // @ts-expect-error - Resource data structure is not fully typed in SDK
-  let visiblePartidos: Partido[] = (response as { data?: Partido[] }).data || [];
+  let visiblePartidos: any[] = (response as { data?: any[] }).data || [];
   // @ts-expect-error - Meta missing from response type
   const totalResults = (response as any).meta?.total || visiblePartidos.length;
   // @ts-expect-error - Meta missing from response type
   const lastPage = (response as any).meta?.last_page || 1;
 
-  // Restriction logic for non-premium users during search
+  // Restriction logic for non-premium users
   let shownCount = visiblePartidos.length;
   let isRestricted = false;
 
-  if (query && isLoggedIn && !isPremium) {
-    let limit = 20;
-    if (totalResults <= 20) {
-      limit = Math.max(3, Math.floor(totalResults * 0.5));
-    }
-    
-    if (totalResults > limit) {
-      visiblePartidos = visiblePartidos.slice(0, limit);
-      shownCount = limit;
+  if (isLoggedIn && !isPremium) {
+    if (query) {
+      let limit = 20;
+      if (totalResults <= 20) {
+        limit = Math.max(3, Math.floor(totalResults * 0.5));
+      }
+      
+      if (totalResults > limit) {
+        visiblePartidos = visiblePartidos.slice(0, limit);
+        shownCount = limit;
+        isRestricted = true;
+      }
+    } else {
       isRestricted = true;
+      shownCount = visiblePartidos.length;
     }
   }
 
@@ -103,9 +116,18 @@ export default async function PartidosPage({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {visiblePartidos.slice(0, 4).map((p) => (
               <div key={p.fecha} className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm flex items-center justify-between">
-                <div className="flex flex-col">
+                <div className="flex flex-col space-y-2">
                   <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatLocalDate(p.fecha)}</span>
-                  <span className="font-black text-zinc-800 tracking-tight line-clamp-1">{p.rival?.ri_desc}</span>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 shrink-0 relative">
+                      <ClubShield 
+                        src={p.rival?.escudo_url} 
+                        alt={p.rival?.ri_desc} 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <span className="font-black text-zinc-800 tracking-tight line-clamp-1">{p.rival?.ri_desc}</span>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <span className={`text-2xl font-black ${p.resultado === 'G' ? 'text-green-600' : p.resultado === 'P' ? 'text-red-600' : 'text-zinc-400'}`}>
@@ -133,14 +155,19 @@ export default async function PartidosPage({
         </div>
 
         {/* Premium Restriction Banner */}
-        {query && isLoggedIn && !isPremium && (
+        {isRestricted && (
           <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm shadow-yellow-900/5">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-yellow-600 shrink-0 shadow-sm">
                 <Info size={24} />
               </div>
               <p className="text-yellow-900 font-medium text-sm md:text-base">
-                Mostrando <span className="font-black">{shownCount}</span> de <span className="font-black">{totalResults}</span> resultados encontrados. Los socios <span className="font-black">Premium</span> acceden al 100% de los datos y filtros avanzados.
+                {query ? (
+                  <>Mostrando <span className="font-black">{shownCount}</span> de <span className="font-black">{totalResults}</span> resultados encontrados.</>
+                ) : (
+                  <>Mostrando los últimos <span className="font-black">{shownCount}</span> partidos de un total de <span className="font-black">{totalResults}</span>.</>
+                )}{" "}
+                Los socios <span className="font-black">Premium</span> acceden al archivo histórico completo y filtros avanzados.
               </p>
             </div>
             <Link href="/premium" className="bg-zinc-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center whitespace-nowrap">
@@ -160,14 +187,23 @@ export default async function PartidosPage({
                   className="bg-white p-6 rounded-[32px] border border-zinc-100 hover:border-red-200 transition-all flex items-center group shadow-sm"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center space-x-2 mb-4">
                       <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">{formatLocalDate(partido.fecha)}</span>
                       <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight line-clamp-1">{partido.torneo?.tor_desc}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="font-black text-lg text-zinc-800 tracking-tight">River Plate</span>
-                        <span className="text-sm text-zinc-500 font-medium">{partido.rival?.ri_desc}</span>
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex items-center space-x-3">
+                          <RiverOfficialShield />
+                          <span className="font-black text-lg text-zinc-800 tracking-tight">River Plate</span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <ClubShield 
+                            src={partido.rival?.escudo_url} 
+                            alt={partido.rival?.ri_desc} 
+                          />
+                          <span className="text-sm text-zinc-500 font-bold">{partido.rival?.ri_desc}</span>
+                        </div>
                       </div>
                       <div className="flex items-center space-x-4">
                         <div className="flex flex-col items-end mr-2">

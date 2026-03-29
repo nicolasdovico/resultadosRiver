@@ -1,23 +1,14 @@
 import { StyleSheet, FlatList, View, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { useState, useEffect } from 'react';
+import { Image } from 'expo-image';
 import { getPartidos } from '@/api/generated/endpoints/partidos/partidos';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { formatLocalDate } from '@/utils/date';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import type { PartidoResource as Partido } from '@/api/generated/model/partidoResource';
 
-interface Partido {
-  fecha: string;
-  rival?: {
-    ri_desc: string;
-  };
-  torneo?: {
-    tor_desc: string;
-  };
-  goles_river: number;
-  goles_rival: number;
-  resultado: string;
-}
+const RIVER_SHIELD = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Escudo_del_C_A_River_Plate.svg/1200px-Escudo_del_C_A_River_Plate.svg.png';
 
 export default function ResultadosScreen() {
   const [partidos, setPartidos] = useState<Partido[]>([]);
@@ -139,11 +130,11 @@ export default function ResultadosScreen() {
   const renderPartido = ({ item }: { item: Partido }) => (
     <TouchableOpacity 
       style={styles.card}
-      onPress={() => isLoggedIn ? router.push('/modal') : router.push('/(auth)/login')}
+      onPress={() => isLoggedIn ? router.push({ pathname: '/modal', params: { fecha: item.fecha } }) : router.push('/(auth)/login')}
     >
       <View style={styles.cardHeader}>
         <View style={styles.dateTag}>
-          <Text style={styles.fecha}>{formatLocalDate(item.fecha)}</Text>
+          <Text style={styles.fecha}>{formatLocalDate(item.fecha || '')}</Text>
         </View>
         <Text style={styles.torneo} numberOfLines={1}>
           {item.torneo?.tor_desc || 'Torneo'}
@@ -152,8 +143,27 @@ export default function ResultadosScreen() {
       
       <View style={styles.matchBody}>
         <View style={styles.teamsContainer}>
-          <Text style={styles.riverName}>River Plate</Text>
-          <Text style={styles.rivalName}>{item.rival?.ri_desc || 'Rival'}</Text>
+          <View style={styles.teamRow}>
+            <Image 
+              source={{ uri: RIVER_SHIELD }} 
+              style={styles.shield}
+              contentFit="contain"
+              transition={200}
+            />
+            <Text style={styles.riverName}>River Plate</Text>
+          </View>
+          <View style={[styles.teamRow, { marginTop: 8 }]}>
+            <Image 
+              source={{ uri: item.rival?.escudo_url || 'https://via.placeholder.com/40?text=R' }} 
+              style={styles.shield}
+              contentFit="contain"
+              placeholder={'https://via.placeholder.com/40?text=R'}
+              transition={200}
+              onError={(e) => console.log(`Error loading shield for ${item.rival?.ri_desc}:`, e.error, 'URL:', item.rival?.escudo_url)}
+              onLoad={() => console.log(`Successfully loaded shield for ${item.rival?.ri_desc}`)}
+            />
+            <Text style={styles.rivalName}>{item.rival?.ri_desc || 'Rival'}</Text>
+          </View>
         </View>
         
         <View style={styles.scoreAndStatus}>
@@ -366,6 +376,15 @@ const styles = StyleSheet.create({
   },
   teamsContainer: {
     flex: 1,
+  },
+  teamRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  shield: {
+    width: 24,
+    height: 24,
   },
   riverName: {
     fontSize: 18,

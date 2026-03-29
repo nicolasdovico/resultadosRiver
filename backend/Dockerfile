@@ -36,6 +36,9 @@ COPY supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisor.conf"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

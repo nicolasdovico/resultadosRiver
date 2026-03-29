@@ -33,6 +33,7 @@ trait UpperCaseStrings
             'token',
             'secret',
             'api_token',
+            'escudo',
             'id',
             'ar_id', 'es_id', 'pl_id', 'ri_id', 'tor_id', 'id_condicion', 'id_fase',
             'fecha',

@@ -12,12 +12,13 @@ import {
   ChevronRight, 
   Star,
   Crown,
-  LogOut,
   CircleArrowRight,
   TrendingUp,
   Search
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useSettings } from "@/context/SettingsContext";
+import ClubShield from "@/components/ClubShield";
 
 import { formatLocalDate } from "@/utils/date";
 
@@ -25,6 +26,7 @@ interface Partido {
   fecha: string;
   rival?: {
     ri_desc: string;
+    escudo_url?: string;
   };
   torneo?: {
     tor_desc: string;
@@ -33,6 +35,8 @@ interface Partido {
   goles_rival: number;
   resultado: string;
 }
+
+const RIVER_SHIELD_FALLBACK = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Escudo_del_C_A_River_Plate.svg/1200px-Escudo_del_C_A_River_Plate.svg.png';
 
 const CATEGORIES = [
   { id: 'partidos', label: 'Partidos', icon: Trophy, color: 'bg-red-50 text-red-600', desc: 'Historial completo de resultados.' },
@@ -44,9 +48,12 @@ const CATEGORIES = [
 ];
 
 export default function Home() {
-  const { user, logout, isPremium, token } = useAuth();
+  const { isPremium, token } = useAuth();
+  const { settings } = useSettings();
   const [partidos, setPartidos] = useState<Partido[]>([]);
   const [sectionTitle, setSectionTitle] = useState('Resultados Recientes');
+
+  const riverShield = settings.river_shield || RIVER_SHIELD_FALLBACK;
 
   useEffect(() => {
     async function fetchData() {
@@ -155,14 +162,23 @@ export default function Home() {
                 className="bg-zinc-50 p-6 rounded-3xl border border-zinc-100 flex items-center shadow-sm hover:border-red-100 transition-colors group"
               >
                 <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
+                  <div className="flex items-center space-x-2 mb-4">
                     <span className="text-[10px] bg-zinc-200 text-zinc-600 px-2 py-0.5 rounded-full font-bold uppercase">{formatLocalDate(partido.fecha)}</span>
                     <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase">{partido.torneo?.tor_desc || 'Torneo'}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="font-black text-lg text-zinc-800 tracking-tight">River Plate</span>
-                      <span className="text-sm text-zinc-500 font-medium">{partido.rival?.ri_desc || 'Rival'}</span>
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center space-x-3">
+                        <ClubShield src={riverShield} alt="River Plate" />
+                        <span className="font-black text-lg text-zinc-800 tracking-tight">River Plate</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <ClubShield 
+                          src={partido.rival?.escudo_url} 
+                          alt={partido.rival?.ri_desc} 
+                        />
+                        <span className="text-sm text-zinc-500 font-bold">{partido.rival?.ri_desc || 'Rival'}</span>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-4">
                       <span className={`text-3xl font-black ${partido.resultado === 'G' ? 'text-green-600' : partido.resultado === 'P' ? 'text-red-600' : 'text-zinc-400'}`}>

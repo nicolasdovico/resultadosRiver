@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RivalResource\Pages;
-use App\Filament\Resources\RivalResource\RelationManagers;
 use App\Models\Rival;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RivalResource extends Resource
 {
@@ -29,6 +26,16 @@ class RivalResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('ri_desc')
                     ->label('Nombre'),
+                Forms\Components\FileUpload::make('escudo')
+                    ->label('Escudo')
+                    ->image()
+                    ->disk('public')
+                    ->directory('rivales')
+                    ->visibility('public')
+                    ->maxSize(2048)
+                    ->nullable()
+                    // Evita que el campo quede vacío si exists() falla (permisos, etc.)
+                    ->fetchFileInformation(false),
             ]);
     }
 
@@ -36,6 +43,12 @@ class RivalResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('escudo')
+                    ->label('Escudo')
+                    ->disk('public')
+                    ->circular()
+                    ->size(40)
+                    ->checkFileExistence(false),
                 Tables\Columns\TextColumn::make('ri_desc')
                     ->label('Nombre')
                     ->searchable()

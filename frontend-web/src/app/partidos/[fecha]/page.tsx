@@ -17,6 +17,8 @@ import {
 import AccessControl from "@/components/AccessControl";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import ClubShield from "@/components/ClubShield";
+import RiverOfficialShield from "@/components/RiverOfficialShield";
 
 interface Gol {
   gol_id: number;
@@ -43,6 +45,7 @@ interface PartidoDetail {
   };
   rival?: {
     ri_desc: string;
+    escudo_url?: string;
   };
   arbitro?: {
     ar_desc: string;
@@ -58,6 +61,7 @@ interface PartidoDetail {
   };
   tecnico?: {
     te_desc: string;
+    cargo?: string;
   };
   goles: Gol[];
 }
@@ -127,8 +131,8 @@ export default async function PartidoDetailPage({
             <div className="flex items-center justify-center gap-4 sm:gap-12 mb-8 w-full">
               {/* River Plate */}
               <div className="flex flex-col items-center text-center flex-1">
-                <div className="w-16 h-16 sm:w-24 sm:h-24 bg-red-600 rounded-[32px] flex items-center justify-center text-white mb-4 shadow-xl shadow-red-100 border-4 border-white">
-                  <span className="text-3xl sm:text-5xl font-black italic">R</span>
+                <div className="w-20 h-20 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-zinc-50 p-2">
+                  <RiverOfficialShield className="w-full h-full object-contain" />
                 </div>
                 <span className="font-black text-zinc-900 text-sm sm:text-xl uppercase leading-tight">River Plate</span>
               </div>
@@ -155,8 +159,13 @@ export default async function PartidoDetailPage({
 
               {/* Rival */}
               <div className="flex flex-col items-center text-center flex-1">
-                <div className="w-16 h-16 sm:w-24 sm:h-24 bg-zinc-800 rounded-[32px] flex items-center justify-center text-white mb-4 shadow-xl shadow-zinc-100 border-4 border-white">
-                  <span className="text-3xl sm:text-5xl font-black italic">{partido.rival?.ri_desc?.charAt(0)}</span>
+                <div className="w-20 h-20 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-zinc-50 p-2">
+                  <ClubShield 
+                    src={partido.rival?.escudo_url} 
+                    alt={partido.rival?.ri_desc} 
+                    className="w-full h-full object-contain"
+                    fallbackSrc="https://via.placeholder.com/80?text=R"
+                  />
                 </div>
                 <span className="font-black text-zinc-900 text-sm sm:text-xl uppercase leading-tight">{partido.rival?.ri_desc}</span>
               </div>

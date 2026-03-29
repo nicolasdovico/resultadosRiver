@@ -1782,9 +1782,34 @@
                 "type": "object"
             },
             "RivalResource": {
+                "properties": {
+                    "ri_id": {
+                        "type": "integer"
+                    },
+                    "ri_desc": {
+                        "type": "string"
+                    },
+                    "escudo": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "escudo_url": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
                 "type": "object"
             },
             "TecnicoResource": {
+                "properties": {
+                    "te_desc": {
+                        "type": "string"
+                    },
+                    "cargo": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
                 "type": "object"
             },
             "TorneoResource": {
