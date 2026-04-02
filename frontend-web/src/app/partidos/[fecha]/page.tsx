@@ -19,6 +19,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import ClubShield from "@/components/ClubShield";
 import RiverOfficialShield from "@/components/RiverOfficialShield";
+import GoBack from "@/components/GoBack";
 
 interface Gol {
   gol_id: number;
@@ -107,10 +108,7 @@ export default async function PartidoDetailPage({
       {/* Top Bar */}
       <div className="bg-white border-b border-zinc-200 sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-4xl">
-          <Link href="/partidos" className="flex items-center text-zinc-500 hover:text-red-600 transition-colors font-bold text-sm uppercase tracking-widest">
-            <ChevronLeft size={20} className="mr-1" />
-            Volver
-          </Link>
+          <GoBack />
           <div className="flex flex-col items-center">
             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
               {partido.torneo?.tor_desc}

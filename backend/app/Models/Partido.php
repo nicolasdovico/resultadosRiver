@@ -22,6 +22,18 @@ class Partido extends Model
         'fecha' => 'string',
     ];
 
+    protected $appends = ['resultado'];
+
+    public function getResultadoAttribute(): string
+    {
+        if (!isset($this->go_ri) || !isset($this->go_ad)) {
+            return '';
+        }
+        if ($this->go_ri > $this->go_ad) return 'G';
+        if ($this->go_ri < $this->go_ad) return 'P';
+        return 'E';
+    }
+
     public function torneo_rel(): BelongsTo
     {
         return $this->belongsTo(Torneo::class, 'torneo', 'tor_id');
