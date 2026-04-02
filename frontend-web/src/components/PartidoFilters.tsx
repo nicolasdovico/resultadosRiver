@@ -10,7 +10,9 @@ import {
   Layers, 
   X, 
   Filter,
-  Loader2
+  Loader2,
+  Home,
+  Calendar
 } from 'lucide-react';
 import SearchableSelect from './ui/SearchableSelect';
 
@@ -47,6 +49,9 @@ export default function PartidoFilters({
     arbitro: searchParams.get('arbitro') || '',
     torneo: searchParams.get('torneo') || '',
     torneo_nivel: searchParams.get('torneo_nivel') || '',
+    condicion: searchParams.get('condicion') || '',
+    fecha_desde: searchParams.get('fecha_desde') || '',
+    fecha_hasta: searchParams.get('fecha_hasta') || '',
   });
 
   const handleFilterChange = (name: string, value: string) => {
@@ -74,6 +79,9 @@ export default function PartidoFilters({
       arbitro: '',
       torneo: '',
       torneo_nivel: '',
+      condicion: '',
+      fecha_desde: '',
+      fecha_hasta: '',
     };
     setFilters(resetFilters);
 
@@ -83,6 +91,9 @@ export default function PartidoFilters({
     params.delete('arbitro');
     params.delete('torneo');
     params.delete('torneo_nivel');
+    params.delete('condicion');
+    params.delete('fecha_desde');
+    params.delete('fecha_hasta');
     params.delete('page');
     params.delete('q');
 
@@ -119,52 +130,122 @@ export default function PartidoFilters({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <SearchableSelect
-          icon={Users}
-          placeholder="Rival"
-          value={filters.adversario}
-          onChange={(val) => handleFilterChange('adversario', val)}
-          options={rivales}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-6">
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Rival</label>
+          <SearchableSelect
+            icon={Users}
+            placeholder="Seleccionar Rival"
+            value={filters.adversario}
+            onChange={(val) => handleFilterChange('adversario', val)}
+            options={rivales}
+          />
+        </div>
         
-        <SearchableSelect
-          icon={Trophy}
-          placeholder="Torneo"
-          value={filters.torneo}
-          onChange={(val) => handleFilterChange('torneo', val)}
-          options={torneos}
-        />
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Torneo</label>
+          <SearchableSelect
+            icon={Trophy}
+            placeholder="Seleccionar Torneo"
+            value={filters.torneo}
+            onChange={(val) => handleFilterChange('torneo', val)}
+            options={torneos}
+          />
+        </div>
 
-        <SearchableSelect
-          icon={Layers}
-          placeholder="Nivel"
-          value={filters.torneo_nivel}
-          onChange={(val) => handleFilterChange('torneo_nivel', val)}
-          options={niveles.map(n => ({ id: n, label: n }))}
-          isPremium={isPremium}
-          requiredPremium={true}
-        />
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Nivel</label>
+          <SearchableSelect
+            icon={Layers}
+            placeholder="Nivel de Torneo"
+            value={filters.torneo_nivel}
+            onChange={(val) => handleFilterChange('torneo_nivel', val)}
+            options={niveles.map(n => ({ id: n, label: n }))}
+            isPremium={isPremium}
+            requiredPremium={true}
+          />
+        </div>
 
-        <SearchableSelect
-          icon={MapPin}
-          placeholder="Estadio"
-          value={filters.estadio}
-          onChange={(val) => handleFilterChange('estadio', val)}
-          options={estadios}
-          isPremium={isPremium}
-          requiredPremium={true}
-        />
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Condición</label>
+          <SearchableSelect
+            icon={Home}
+            placeholder="Local / Visitante"
+            value={filters.condicion}
+            onChange={(val) => handleFilterChange('condicion', val)}
+            options={[
+              { id: '1', label: 'Local' },
+              { id: '2', label: 'Visitante' },
+              { id: '3', label: 'Neutral' },
+            ]}
+          />
+        </div>
 
-        <SearchableSelect
-          icon={UserCheck}
-          placeholder="Árbitro"
-          value={filters.arbitro}
-          onChange={(val) => handleFilterChange('arbitro', val)}
-          options={arbitros}
-          isPremium={isPremium}
-          requiredPremium={true}
-        />
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Estadio</label>
+          <SearchableSelect
+            icon={MapPin}
+            placeholder="Seleccionar Estadio"
+            value={filters.estadio}
+            onChange={(val) => handleFilterChange('estadio', val)}
+            options={estadios}
+            isPremium={isPremium}
+            requiredPremium={true}
+          />
+        </div>
+
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Árbitro</label>
+          <SearchableSelect
+            icon={UserCheck}
+            placeholder="Seleccionar Árbitro"
+            value={filters.arbitro}
+            onChange={(val) => handleFilterChange('arbitro', val)}
+            options={arbitros}
+            isPremium={isPremium}
+            requiredPremium={true}
+          />
+        </div>
+
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Fecha Desde</label>
+          <div className="relative group">
+            <div className={`w-full bg-white border-2 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold transition-all outline-none flex items-center justify-between min-h-[52px] ${filters.fecha_desde ? 'border-red-100 bg-red-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+              <Calendar className={`absolute left-4 top-1/2 -translate-y-1/2 ${filters.fecha_desde ? 'text-red-500' : 'text-zinc-400'}`} size={18} />
+              <input 
+                type="date" 
+                value={filters.fecha_desde}
+                onChange={(e) => handleFilterChange('fecha_desde', e.target.value)}
+                className="w-full bg-transparent border-none outline-none text-zinc-900 cursor-pointer text-xs"
+              />
+              {filters.fecha_desde && (
+                <div onClick={() => handleFilterChange('fecha_desde', '')} className="p-1 hover:text-red-500 transition-colors text-zinc-300 absolute right-2 cursor-pointer z-10 bg-white/80 rounded-full">
+                  <X size={14} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Fecha Hasta</label>
+          <div className="relative group">
+            <div className={`w-full bg-white border-2 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold transition-all outline-none flex items-center justify-between min-h-[52px] ${filters.fecha_hasta ? 'border-red-100 bg-red-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+              <Calendar className={`absolute left-4 top-1/2 -translate-y-1/2 ${filters.fecha_hasta ? 'text-red-500' : 'text-zinc-400'}`} size={18} />
+              <input 
+                type="date" 
+                value={filters.fecha_hasta}
+                onChange={(e) => handleFilterChange('fecha_hasta', e.target.value)}
+                className="w-full bg-transparent border-none outline-none text-zinc-900 cursor-pointer text-xs"
+              />
+              {filters.fecha_hasta && (
+                <div onClick={() => handleFilterChange('fecha_hasta', '')} className="p-1 hover:text-red-500 transition-colors text-zinc-300 absolute right-2 cursor-pointer z-10 bg-white/80 rounded-full">
+                  <X size={14} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {isPending && (

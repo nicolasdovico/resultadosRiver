@@ -37,7 +37,7 @@
     - [x] Detalles técnicos en obleas (Fase, Nro. Fecha, Condición).
     - [x] Rediseño de cabeceras y estados de carga (Skeletons).
     - [x] Mejora en la visualización de la ficha técnica para usuarios Premium.
-    - [x] **Filtros Avanzados en Partidos:** Implementación de selectores para Rival, Estadio, Árbitro, Torneo y Nivel con lógica de tiers.
+    - [x] **Filtros Avanzados en Partidos:** Implementación de selectores para Rival, Estadio, Árbitro, Torneo, Nivel, Condición y rango de fechas con lógica de tiers y optimización de layout.
 - [x] **Robustecimiento Técnico:**
     - [x] Refactorización de la suite de tests para usar SQLite en memoria (Aislamiento total).
     - [x] Implementación de paginación para búsquedas Premium en el frontend web.

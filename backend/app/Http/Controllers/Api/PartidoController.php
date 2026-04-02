@@ -374,6 +374,7 @@ class PartidoController extends Controller
             new OA\Parameter(name: 'arbitro', in: 'query', schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'estadio', in: 'query', schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'fase', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'condicion', in: 'query', schema: new OA\Schema(type: 'integer', enum: [1, 2, 3])),
             new OA\Parameter(name: 'fecha_desde', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
             new OA\Parameter(name: 'fecha_hasta', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
             new OA\Parameter(name: 'torneo_nivel', in: 'query', schema: new OA\Schema(type: 'string')),
@@ -405,7 +406,7 @@ class PartidoController extends Controller
         $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador', 'goles.tipo_gol_rel', 'goles.periodo_rel']);
         $title = 'Resultados';
 
-        if ($request->has('q')) {
+        if ($request->filled('q')) {
             $searchTerm = $request->q;
             $query->where(function ($q) use ($searchTerm) {
                 $q->whereHas('rival', function ($r) use ($searchTerm) {
@@ -416,31 +417,35 @@ class PartidoController extends Controller
             });
         }
 
-        if ($request->has('torneo')) {
+        if ($request->filled('torneo')) {
             $query->where('torneo', $request->torneo);
         }
 
-        if ($request->has('adversario')) {
+        if ($request->filled('adversario')) {
             $query->where('adversario', $request->adversario);
         }
 
-        if ($request->has('arbitro')) {
+        if ($request->filled('arbitro')) {
             $query->where('arbitro', $request->arbitro);
         }
 
-        if ($request->has('estadio')) {
+        if ($request->filled('estadio')) {
             $query->where('estadio', $request->estadio);
         }
 
-        if ($request->has('fase')) {
+        if ($request->filled('fase')) {
             $query->where('fase', $request->fase);
         }
 
-        if ($request->has('fecha_desde')) {
+        if ($request->filled('condicion')) {
+            $query->where('condicion', $request->condicion);
+        }
+
+        if ($request->filled('fecha_desde')) {
             $query->where('fecha', '>=', $request->fecha_desde);
         }
 
-        if ($request->has('fecha_hasta')) {
+        if ($request->filled('fecha_hasta')) {
             $query->where('fecha', '<=', $request->fecha_hasta);
         }
 
@@ -459,7 +464,7 @@ class PartidoController extends Controller
         }
 
         // Filter by Torneo Nivel (requires join or whereHas)
-        if ($request->has('torneo_nivel')) {
+        if ($request->filled('torneo_nivel')) {
             $query->whereHas('torneo_rel', function ($q) use ($request) {
                 $q->where('tor_nivel', $request->torneo_nivel);
             });

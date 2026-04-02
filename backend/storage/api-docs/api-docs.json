@@ -1021,6 +1021,18 @@
                         }
                     },
                     {
+                        "name": "condicion",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "L",
+                                "V",
+                                "N"
+                            ]
+                        }
+                    },
+                    {
                         "name": "fecha_desde",
                         "in": "query",
                         "schema": {

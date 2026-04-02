@@ -5,6 +5,7 @@
  * API for managing and querying historical football results for River Plate.
  * OpenAPI spec version: 1.0.0
  */
+import type { GetPartidosCondicion } from './getPartidosCondicion';
 
 export type GetPartidosParams = {
 torneo?: number;
@@ -12,6 +13,7 @@ adversario?: number;
 arbitro?: number;
 estadio?: number;
 fase?: number;
+condicion?: GetPartidosCondicion;
 fecha_desde?: string;
 fecha_hasta?: string;
 torneo_nivel?: string;

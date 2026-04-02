@@ -5,7 +5,7 @@ import { getEstadios } from "@/api/generated/endpoints/estadios/estadios";
 import { getArbitros } from "@/api/generated/endpoints/arbitros/arbitros";
 import { getTorneos, getTorneoNiveles } from "@/api/generated/endpoints/torneos/torneos";
 import Link from "next/link";
-import { Trophy, ChevronRight, Calendar, BarChart3, Clock, Star, Info } from "lucide-react";
+import { Trophy, ChevronRight, Calendar, BarChart3, Clock, Star, Info, TrendingUp } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { cookies } from "next/headers";
@@ -35,10 +35,13 @@ export default async function PartidosPage({
   const arbitroId = typeof params.arbitro === 'string' ? parseInt(params.arbitro, 10) : undefined;
   const torneoId = typeof params.torneo === 'string' ? parseInt(params.torneo, 10) : undefined;
   const torneoNivel = typeof params.torneo_nivel === 'string' ? params.torneo_nivel : undefined;
+  const condicion = typeof params.condicion === 'string' ? params.condicion : undefined;
+  const fechaDesde = typeof params.fecha_desde === 'string' ? params.fecha_desde : undefined;
+  const fechaHasta = typeof params.fecha_hasta === 'string' ? params.fecha_hasta : undefined;
   
   let currentPage = typeof params.page === 'string' ? parseInt(params.page, 10) : 1;
 
-  const hasAnyFilter = query || rivalId || estadioId || arbitroId || torneoId || torneoNivel;
+  const hasAnyFilter = query || rivalId || estadioId || arbitroId || torneoId || torneoNivel || condicion || fechaDesde || fechaHasta;
 
   // Force page 1 for free users on the default list
   if (isLoggedIn && !isPremium && !hasAnyFilter) {
@@ -75,6 +78,9 @@ export default async function PartidosPage({
       arbitro: isPremium ? arbitroId : undefined,
       torneo: torneoId,
       torneo_nivel: isPremium ? torneoNivel : undefined,
+      condicion: condicion,
+      fecha_desde: fechaDesde,
+      fecha_hasta: fechaHasta,
       hoy: (hasAnyFilter || isLoggedIn) ? undefined : true,
       limit: (isLoggedIn && !hasAnyFilter) ? 10 : undefined,
       page: currentPage
@@ -110,6 +116,9 @@ export default async function PartidosPage({
       shownCount = visiblePartidos.length;
     }
   }
+
+  // Calculate streak from visible matches (sorted ascending for correct chronological order)
+  const partidosStreak = [...visiblePartidos].reverse();
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -186,9 +195,6 @@ export default async function PartidosPage({
           <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">
             {isLoggedIn && !hasAnyFilter ? 'Últimos 10 Partidos' : 'Archivo Histórico'}
           </h2>
-          {isLoggedIn && (
-            <SearchBar placeholder="Buscar por rival o torneo..." className="w-full md:max-w-md" />
-          )}
         </div>
 
         {/* Advanced Filters */}
@@ -340,6 +346,43 @@ export default async function PartidosPage({
             <Trophy className="mx-auto mb-4 text-zinc-300" size={48} />
             <h3 className="text-xl font-black text-zinc-900 mb-2">No hay resultados para esta búsqueda</h3>
             <p className="text-zinc-500 font-medium">Prueba ajustando los filtros o buscando otro equipo.</p>
+          </div>
+        )}
+
+        {/* Form Guide (Racha) - Blurred for non-premium users - MOVED HERE */}
+        {visiblePartidos.length > 0 && (
+          <div className="mt-12">
+            <AccessControl tier={currentTier} requiredTier="premium">
+              <div className="bg-white border border-zinc-100 rounded-[32px] p-6 shadow-sm">
+                <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center">
+                  <TrendingUp size={14} className="mr-2 text-red-500" /> 
+                  Racha de resultados mostrados
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {partidosStreak.map((p, idx) => {
+                    const extraInfo = [
+                      p.torneo?.tor_desc,
+                      p.fase?.fa_desc,
+                      p.fecha_nro ? `Fecha ${p.fecha_nro}` : null
+                    ].filter(Boolean).join(' - ');
+
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm cursor-help transition-all hover:scale-110 ${
+                          p.resultado === 'G' ? 'bg-green-500 text-green-950' : 
+                          p.resultado === 'P' ? 'bg-red-500 text-red-950' : 
+                          'bg-zinc-200 text-zinc-600'
+                        }`}
+                        title={`${formatLocalDate(p.fecha)} | ${p.resultado}: ${p.goles_river}-${p.goles_rival} vs ${p.rival?.ri_desc}${extraInfo ? ` (${extraInfo})` : ''}`}
+                      >
+                        {p.resultado}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </AccessControl>
           </div>
         )}
 

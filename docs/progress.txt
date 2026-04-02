@@ -6,11 +6,14 @@
   - [x] Soporte de `limit=-1` en listados maestros (Rivales, Estadios, Árbitros y Torneos).
   - [x] Mejora de esquemas OpenAPI para incluir parámetros `q` y `limit` y esquemas de respuesta correctos.
   - [x] Ordenamiento alfabético en listados maestros para facilitar la búsqueda en filtros.
+  - [x] Soporte en `PartidoController` para filtros de `condicion`, `fecha_desde` y `fecha_hasta`.
 - [x] **Frontend Web**:
   - [x] **Mejora**: Implementación de `PartidoFilters` con lógica de Tiers.
   - [x] **Mejora**: Creación de componente `SearchableSelect` para permitir búsqueda en tiempo real dentro de los filtros (Selects editables).
   - [x] **Fix**: Corrección en la carga de opciones de filtros para asegurar que se recuperen todos los registros (sin paginación) y ordenados alfabéticamente.
   - [x] **Mejora**: Sincronización completa de filtros con la URL y carga paralela desde el servidor.
+  - [x] **UI**: Rediseño de la grilla de filtros (`PartidoFilters`) para optimizar el ancho de los selectores, mejorando la legibilidad de textos largos.
+  - [x] **Mejora**: Se agregaron los selectores de Condición (Local, Visitante, Neutral) y Rango de Fechas (Desde/Hasta) a los filtros avanzados.
 
 ### 2026-03-29: Correcciones de UI y Escudos Dinámicos (Fase 1 - Pulido Final)
 ... rest of the file ...

@@ -21,6 +21,7 @@ export * from './getGoalsByPeriodParams';
 export * from './getGoalsByType200';
 export * from './getPartidoByFecha200';
 export * from './getPartidos200';
+export * from './getPartidosCondicion';
 export * from './getPartidosParams';
 export * from './getRivales200';
 export * from './getRivalesParams';
