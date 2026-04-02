@@ -227,4 +227,113 @@ export const useUpdateSetting = <TError = unknown,
       > => {
       return useMutation(getUpdateSettingMutationOptions(options), queryClient);
     }
+    /**
+ * @summary Get public settings (No auth required)
+ */
+export type getPublicSettingsResponse200 = {
+  data: void
+  status: 200
+}
+
+export type getPublicSettingsResponseSuccess = (getPublicSettingsResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getPublicSettingsResponse = (getPublicSettingsResponseSuccess)
+
+export const getGetPublicSettingsUrl = () => {
+
+
+  
+
+  return `/v1/settings/public`
+}
+
+export const getPublicSettings = async ( options?: RequestInit): Promise<getPublicSettingsResponse> => {
+  
+  return customInstance<getPublicSettingsResponse>(getGetPublicSettingsUrl(),
+  {      
+    ...options,
+    method: 'GET'
     
+    
+  }
+);}
+  
+
+
+
+
+export const getGetPublicSettingsQueryKey = () => {
+    return [
+    `/v1/settings/public`
+    ] as const;
+    }
+
+    
+export const getGetPublicSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getPublicSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicSettings>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicSettingsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicSettings>>> = ({ signal }) => getPublicSettings({ signal, ...requestOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPublicSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicSettings>>>
+export type GetPublicSettingsQueryError = unknown
+
+
+export function useGetPublicSettings<TData = Awaited<ReturnType<typeof getPublicSettings>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicSettings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicSettings<TData = Awaited<ReturnType<typeof getPublicSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicSettings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPublicSettings<TData = Awaited<ReturnType<typeof getPublicSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicSettings>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get public settings (No auth required)
+ */
+
+export function useGetPublicSettings<TData = Awaited<ReturnType<typeof getPublicSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPublicSettings>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPublicSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+

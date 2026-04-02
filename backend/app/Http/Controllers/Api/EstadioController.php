@@ -16,8 +16,25 @@ class EstadioController extends Controller
         operationId: 'getEstadios',
         security: [['sanctum' => []]],
         tags: ['Estadios'],
+        parameters: [
+            new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
+        ],
         responses: [
-            new OA\Response(response: 200, description: 'Successful operation')
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/EstadioResource')
+                        )
+                    ]
+                )
+            )
         ]
     )]
     /**
@@ -29,7 +46,13 @@ class EstadioController extends Controller
         if ($request->has('q')) {
             $query->where('es_desc', 'ILIKE', "%{$request->q}%");
         }
-        return EstadioResource::collection($query->paginate(50));
+
+        $limit = $request->query('limit', 50);
+        if ($limit == -1) {
+            return EstadioResource::collection($query->orderBy('es_desc')->get());
+        }
+
+        return EstadioResource::collection($query->orderBy('es_desc')->paginate($limit));
     }
 
     #[OA\Post(

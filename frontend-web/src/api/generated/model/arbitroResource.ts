@@ -7,5 +7,6 @@
  */
 
 export interface ArbitroResource {
+  ar_id?: number;
   ar_desc?: string;
 }

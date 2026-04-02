@@ -6,7 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface EstadioResource {
-  es_id?: number;
-  es_desc?: string;
-}
+export type GetGoalsByPeriodParams = {
+q?: string;
+torneo?: number;
+adversario?: number;
+fecha_desde?: string;
+fecha_hasta?: string;
+};

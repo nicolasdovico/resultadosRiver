@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface EstadioResource {
-  es_id?: number;
-  es_desc?: string;
-}
+export type GetGeneralStats200 = { [key: string]: unknown };

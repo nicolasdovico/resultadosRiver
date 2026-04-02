@@ -6,7 +6,17 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface EstadioResource {
-  es_id?: number;
-  es_desc?: string;
-}
+export type GetTorneosParams = {
+/**
+ * Search by description
+ */
+q?: string;
+/**
+ * Filter by year
+ */
+año?: number;
+/**
+ * Limit results
+ */
+limit?: number;
+};

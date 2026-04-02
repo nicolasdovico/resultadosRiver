@@ -27,9 +27,40 @@
                 "summary": "List all arbitros",
                 "description": "Display a listing of the resource.",
                 "operationId": "getArbitros",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ArbitroResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -448,9 +479,40 @@
                 "summary": "List all estadios",
                 "description": "Display a listing of the resource.",
                 "operationId": "getEstadios",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/EstadioResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -812,6 +874,108 @@
                 ]
             }
         },
+        "/v1/stats/general": {
+            "get": {
+                "tags": [
+                    "Stats"
+                ],
+                "summary": "Get general match statistics",
+                "operationId": "getGeneralStats",
+                "responses": {
+                    "200": {
+                        "description": "General statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/stats/goals-by-period": {
+            "get": {
+                "tags": [
+                    "Stats"
+                ],
+                "summary": "Get goals distribution by time period with filters",
+                "operationId": "getGoalsByPeriod",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "torneo",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "adversario",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "fecha_desde",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "fecha_hasta",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Goals distribution grouped by Period and 10-minute intervals",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/stats/goals-by-type": {
+            "get": {
+                "tags": [
+                    "Stats"
+                ],
+                "summary": "Get goals distribution by type (method) with filters",
+                "operationId": "getGoalsByType",
+                "responses": {
+                    "200": {
+                        "description": "Goals distribution by type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/partidos": {
             "get": {
                 "tags": [
@@ -1087,9 +1251,40 @@
                 "summary": "List all rivales",
                 "description": "Display a listing of the resource.",
                 "operationId": "getRivales",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/RivalResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1263,6 +1458,20 @@
                 ]
             }
         },
+        "/v1/settings/public": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Get public settings (No auth required)",
+                "operationId": "getPublicSettings",
+                "responses": {
+                    "200": {
+                        "description": "Public settings"
+                    }
+                }
+            }
+        },
         "/v1/tecnicos": {
             "get": {
                 "tags": [
@@ -1393,11 +1602,51 @@
                     "Torneos"
                 ],
                 "summary": "List all torneos",
-                "description": "Display a listing of the resource.",
                 "operationId": "getTorneos",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search by description",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "año",
+                        "in": "query",
+                        "description": "Filter by year",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Limit results",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TorneoResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1416,6 +1665,35 @@
                 "responses": {
                     "201": {
                         "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/torneos/niveles": {
+            "get": {
+                "tags": [
+                    "Torneos"
+                ],
+                "summary": "Get unique tournament levels",
+                "operationId": "getTorneoNiveles",
+                "responses": {
+                    "200": {
+                        "description": "Unique tournament levels",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1640,6 +1918,9 @@
         "schemas": {
             "ArbitroResource": {
                 "properties": {
+                    "ar_id": {
+                        "type": "integer"
+                    },
                     "ar_desc": {
                         "type": "string"
                     }
@@ -1656,6 +1937,9 @@
             },
             "EstadioResource": {
                 "properties": {
+                    "es_id": {
+                        "type": "integer"
+                    },
                     "es_desc": {
                         "type": "string"
                     }
@@ -1813,6 +2097,56 @@
                 "type": "object"
             },
             "TorneoResource": {
+                "properties": {
+                    "tor_id": {
+                        "type": "integer"
+                    },
+                    "tor_desc": {
+                        "type": "string"
+                    },
+                    "tor_nivel": {
+                        "type": "string"
+                    },
+                    "tor_anio": {
+                        "type": "integer"
+                    },
+                    "stats": {
+                        "properties": {
+                            "pj": {
+                                "type": "integer"
+                            },
+                            "pg": {
+                                "type": "integer"
+                            },
+                            "pe": {
+                                "type": "integer"
+                            },
+                            "pp": {
+                                "type": "integer"
+                            },
+                            "gf": {
+                                "type": "integer"
+                            },
+                            "gc": {
+                                "type": "integer"
+                            },
+                            "dg": {
+                                "type": "integer"
+                            },
+                            "puntos": {
+                                "type": "integer"
+                            },
+                            "vallas_invictas": {
+                                "type": "integer"
+                            },
+                            "efectividad": {
+                                "type": "number",
+                                "format": "float"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
                 "type": "object"
             }
         },
@@ -1845,6 +2179,10 @@
         {
             "name": "Jugadores",
             "description": "Jugadores"
+        },
+        {
+            "name": "Stats",
+            "description": "Stats"
         },
         {
             "name": "Partidos",

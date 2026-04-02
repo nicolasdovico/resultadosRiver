@@ -24,6 +24,11 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  GetRivales200,
+  GetRivalesParams
+} from '../../model';
+
 import { customInstance } from '../../../custom-instance';
 
 
@@ -36,7 +41,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary List all rivales
  */
 export type getRivalesResponse200 = {
-  data: void
+  data: GetRivales200
   status: 200
 }
 
@@ -47,17 +52,24 @@ export type getRivalesResponseSuccess = (getRivalesResponse200) & {
 
 export type getRivalesResponse = (getRivalesResponseSuccess)
 
-export const getGetRivalesUrl = () => {
+export const getGetRivalesUrl = (params?: GetRivalesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/v1/rivales`
+  return stringifiedParams.length > 0 ? `/v1/rivales?${stringifiedParams}` : `/v1/rivales`
 }
 
-export const getRivales = async ( options?: RequestInit): Promise<getRivalesResponse> => {
+export const getRivales = async (params?: GetRivalesParams, options?: RequestInit): Promise<getRivalesResponse> => {
   
-  return customInstance<getRivalesResponse>(getGetRivalesUrl(),
+  return customInstance<getRivalesResponse>(getGetRivalesUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -70,23 +82,23 @@ export const getRivales = async ( options?: RequestInit): Promise<getRivalesResp
 
 
 
-export const getGetRivalesQueryKey = () => {
+export const getGetRivalesQueryKey = (params?: GetRivalesParams,) => {
     return [
-    `/v1/rivales`
+    `/v1/rivales`, ...(params ? [params] : [])
     ] as const;
     }
 
     
-export const getGetRivalesQueryOptions = <TData = Awaited<ReturnType<typeof getRivales>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetRivalesQueryOptions = <TData = Awaited<ReturnType<typeof getRivales>>, TError = unknown>(params?: GetRivalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRivalesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetRivalesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRivales>>> = ({ signal }) => getRivales({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRivales>>> = ({ signal }) => getRivales(params, { signal, ...requestOptions });
 
       
 
@@ -100,7 +112,7 @@ export type GetRivalesQueryError = unknown
 
 
 export function useGetRivales<TData = Awaited<ReturnType<typeof getRivales>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>> & Pick<
+ params: undefined |  GetRivalesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getRivales>>,
           TError,
@@ -110,7 +122,7 @@ export function useGetRivales<TData = Awaited<ReturnType<typeof getRivales>>, TE
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetRivales<TData = Awaited<ReturnType<typeof getRivales>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>> & Pick<
+ params?: GetRivalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getRivales>>,
           TError,
@@ -120,7 +132,7 @@ export function useGetRivales<TData = Awaited<ReturnType<typeof getRivales>>, TE
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetRivales<TData = Awaited<ReturnType<typeof getRivales>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetRivalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -128,11 +140,11 @@ export function useGetRivales<TData = Awaited<ReturnType<typeof getRivales>>, TE
  */
 
 export function useGetRivales<TData = Awaited<ReturnType<typeof getRivales>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetRivalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRivales>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRivalesQueryOptions(options)
+  const queryOptions = getGetRivalesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

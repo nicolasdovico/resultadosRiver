@@ -17,8 +17,25 @@ class RivalController extends Controller
         operationId: 'getRivales',
         security: [['sanctum' => []]],
         tags: ['Rivales'],
+        parameters: [
+            new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
+        ],
         responses: [
-            new OA\Response(response: 200, description: 'Successful operation')
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/RivalResource')
+                        )
+                    ]
+                )
+            )
         ]
     )]
     /**
@@ -30,7 +47,13 @@ class RivalController extends Controller
         if ($request->has('q')) {
             $query->where('ri_desc', 'ILIKE', "%{$request->q}%");
         }
-        return RivalResource::collection($query->paginate(50));
+
+        $limit = $request->query('limit', 50);
+        if ($limit == -1) {
+            return RivalResource::collection($query->orderBy('ri_desc')->get());
+        }
+
+        return RivalResource::collection($query->orderBy('ri_desc')->paginate($limit));
     }
 
     #[OA\Post(

@@ -5,5 +5,12 @@
  * API for managing and querying historical football results for River Plate.
  * OpenAPI spec version: 1.0.0
  */
+import type { TorneoResourceStats } from './torneoResourceStats';
 
-export interface TorneoResource { [key: string]: unknown }
+export interface TorneoResource {
+  tor_id?: number;
+  tor_desc?: string;
+  tor_nivel?: string;
+  tor_anio?: number;
+  stats?: TorneoResourceStats;
+}

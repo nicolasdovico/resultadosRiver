@@ -16,8 +16,25 @@ class ArbitroController extends Controller
         operationId: 'getArbitros',
         security: [['sanctum' => []]],
         tags: ['Arbitros'],
+        parameters: [
+            new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
+        ],
         responses: [
-            new OA\Response(response: 200, description: 'Successful operation')
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/ArbitroResource')
+                        )
+                    ]
+                )
+            )
         ]
     )]
     /**
@@ -29,7 +46,13 @@ class ArbitroController extends Controller
         if ($request->has('q')) {
             $query->where('ar_apno', 'ILIKE', "%{$request->q}%");
         }
-        return ArbitroResource::collection($query->paginate(50));
+
+        $limit = $request->query('limit', 50);
+        if ($limit == -1) {
+            return ArbitroResource::collection($query->orderBy('ar_apno')->get());
+        }
+
+        return ArbitroResource::collection($query->orderBy('ar_apno')->paginate($limit));
     }
 
     #[OA\Post(

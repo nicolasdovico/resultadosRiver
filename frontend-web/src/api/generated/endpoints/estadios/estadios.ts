@@ -24,6 +24,11 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  GetEstadios200,
+  GetEstadiosParams
+} from '../../model';
+
 import { customInstance } from '../../../custom-instance';
 
 
@@ -36,7 +41,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary List all estadios
  */
 export type getEstadiosResponse200 = {
-  data: void
+  data: GetEstadios200
   status: 200
 }
 
@@ -47,17 +52,24 @@ export type getEstadiosResponseSuccess = (getEstadiosResponse200) & {
 
 export type getEstadiosResponse = (getEstadiosResponseSuccess)
 
-export const getGetEstadiosUrl = () => {
+export const getGetEstadiosUrl = (params?: GetEstadiosParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/v1/estadios`
+  return stringifiedParams.length > 0 ? `/v1/estadios?${stringifiedParams}` : `/v1/estadios`
 }
 
-export const getEstadios = async ( options?: RequestInit): Promise<getEstadiosResponse> => {
+export const getEstadios = async (params?: GetEstadiosParams, options?: RequestInit): Promise<getEstadiosResponse> => {
   
-  return customInstance<getEstadiosResponse>(getGetEstadiosUrl(),
+  return customInstance<getEstadiosResponse>(getGetEstadiosUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -70,23 +82,23 @@ export const getEstadios = async ( options?: RequestInit): Promise<getEstadiosRe
 
 
 
-export const getGetEstadiosQueryKey = () => {
+export const getGetEstadiosQueryKey = (params?: GetEstadiosParams,) => {
     return [
-    `/v1/estadios`
+    `/v1/estadios`, ...(params ? [params] : [])
     ] as const;
     }
 
     
-export const getGetEstadiosQueryOptions = <TData = Awaited<ReturnType<typeof getEstadios>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetEstadiosQueryOptions = <TData = Awaited<ReturnType<typeof getEstadios>>, TError = unknown>(params?: GetEstadiosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetEstadiosQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetEstadiosQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEstadios>>> = ({ signal }) => getEstadios({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEstadios>>> = ({ signal }) => getEstadios(params, { signal, ...requestOptions });
 
       
 
@@ -100,7 +112,7 @@ export type GetEstadiosQueryError = unknown
 
 
 export function useGetEstadios<TData = Awaited<ReturnType<typeof getEstadios>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>> & Pick<
+ params: undefined |  GetEstadiosParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getEstadios>>,
           TError,
@@ -110,7 +122,7 @@ export function useGetEstadios<TData = Awaited<ReturnType<typeof getEstadios>>, 
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetEstadios<TData = Awaited<ReturnType<typeof getEstadios>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>> & Pick<
+ params?: GetEstadiosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getEstadios>>,
           TError,
@@ -120,7 +132,7 @@ export function useGetEstadios<TData = Awaited<ReturnType<typeof getEstadios>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetEstadios<TData = Awaited<ReturnType<typeof getEstadios>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetEstadiosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -128,11 +140,11 @@ export function useGetEstadios<TData = Awaited<ReturnType<typeof getEstadios>>, 
  */
 
 export function useGetEstadios<TData = Awaited<ReturnType<typeof getEstadios>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetEstadiosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEstadios>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetEstadiosQueryOptions(options)
+  const queryOptions = getGetEstadiosQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

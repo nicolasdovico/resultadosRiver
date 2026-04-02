@@ -5,8 +5,8 @@
  * API for managing and querying historical football results for River Plate.
  * OpenAPI spec version: 1.0.0
  */
+import type { ArbitroResource } from './arbitroResource';
 
-export interface EstadioResource {
-  es_id?: number;
-  es_desc?: string;
-}
+export type GetArbitros200 = {
+  data?: ArbitroResource[];
+};

@@ -24,6 +24,11 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  GetTorneos200,
+  GetTorneosParams
+} from '../../model';
+
 import { customInstance } from '../../../custom-instance';
 
 
@@ -32,11 +37,10 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 /**
- * Display a listing of the resource.
  * @summary List all torneos
  */
 export type getTorneosResponse200 = {
-  data: void
+  data: GetTorneos200
   status: 200
 }
 
@@ -47,17 +51,24 @@ export type getTorneosResponseSuccess = (getTorneosResponse200) & {
 
 export type getTorneosResponse = (getTorneosResponseSuccess)
 
-export const getGetTorneosUrl = () => {
+export const getGetTorneosUrl = (params?: GetTorneosParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/v1/torneos`
+  return stringifiedParams.length > 0 ? `/v1/torneos?${stringifiedParams}` : `/v1/torneos`
 }
 
-export const getTorneos = async ( options?: RequestInit): Promise<getTorneosResponse> => {
+export const getTorneos = async (params?: GetTorneosParams, options?: RequestInit): Promise<getTorneosResponse> => {
   
-  return customInstance<getTorneosResponse>(getGetTorneosUrl(),
+  return customInstance<getTorneosResponse>(getGetTorneosUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -70,23 +81,23 @@ export const getTorneos = async ( options?: RequestInit): Promise<getTorneosResp
 
 
 
-export const getGetTorneosQueryKey = () => {
+export const getGetTorneosQueryKey = (params?: GetTorneosParams,) => {
     return [
-    `/v1/torneos`
+    `/v1/torneos`, ...(params ? [params] : [])
     ] as const;
     }
 
     
-export const getGetTorneosQueryOptions = <TData = Awaited<ReturnType<typeof getTorneos>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetTorneosQueryOptions = <TData = Awaited<ReturnType<typeof getTorneos>>, TError = unknown>(params?: GetTorneosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTorneosQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetTorneosQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTorneos>>> = ({ signal }) => getTorneos({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTorneos>>> = ({ signal }) => getTorneos(params, { signal, ...requestOptions });
 
       
 
@@ -100,7 +111,7 @@ export type GetTorneosQueryError = unknown
 
 
 export function useGetTorneos<TData = Awaited<ReturnType<typeof getTorneos>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>> & Pick<
+ params: undefined |  GetTorneosParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTorneos>>,
           TError,
@@ -110,7 +121,7 @@ export function useGetTorneos<TData = Awaited<ReturnType<typeof getTorneos>>, TE
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetTorneos<TData = Awaited<ReturnType<typeof getTorneos>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>> & Pick<
+ params?: GetTorneosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTorneos>>,
           TError,
@@ -120,7 +131,7 @@ export function useGetTorneos<TData = Awaited<ReturnType<typeof getTorneos>>, TE
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetTorneos<TData = Awaited<ReturnType<typeof getTorneos>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetTorneosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -128,11 +139,11 @@ export function useGetTorneos<TData = Awaited<ReturnType<typeof getTorneos>>, TE
  */
 
 export function useGetTorneos<TData = Awaited<ReturnType<typeof getTorneos>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetTorneosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneos>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTorneosQueryOptions(options)
+  const queryOptions = getGetTorneosQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -225,6 +236,116 @@ export const useCreateTorneo = <TError = unknown,
       return useMutation(getCreateTorneoMutationOptions(options), queryClient);
     }
     /**
+ * @summary Get unique tournament levels
+ */
+export type getTorneoNivelesResponse200 = {
+  data: string[]
+  status: 200
+}
+
+export type getTorneoNivelesResponseSuccess = (getTorneoNivelesResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getTorneoNivelesResponse = (getTorneoNivelesResponseSuccess)
+
+export const getGetTorneoNivelesUrl = () => {
+
+
+  
+
+  return `/v1/torneos/niveles`
+}
+
+export const getTorneoNiveles = async ( options?: RequestInit): Promise<getTorneoNivelesResponse> => {
+  
+  return customInstance<getTorneoNivelesResponse>(getGetTorneoNivelesUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+  
+
+
+
+
+export const getGetTorneoNivelesQueryKey = () => {
+    return [
+    `/v1/torneos/niveles`
+    ] as const;
+    }
+
+    
+export const getGetTorneoNivelesQueryOptions = <TData = Awaited<ReturnType<typeof getTorneoNiveles>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneoNiveles>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTorneoNivelesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTorneoNiveles>>> = ({ signal }) => getTorneoNiveles({ signal, ...requestOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTorneoNiveles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTorneoNivelesQueryResult = NonNullable<Awaited<ReturnType<typeof getTorneoNiveles>>>
+export type GetTorneoNivelesQueryError = unknown
+
+
+export function useGetTorneoNiveles<TData = Awaited<ReturnType<typeof getTorneoNiveles>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneoNiveles>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTorneoNiveles>>,
+          TError,
+          Awaited<ReturnType<typeof getTorneoNiveles>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTorneoNiveles<TData = Awaited<ReturnType<typeof getTorneoNiveles>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneoNiveles>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTorneoNiveles>>,
+          TError,
+          Awaited<ReturnType<typeof getTorneoNiveles>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTorneoNiveles<TData = Awaited<ReturnType<typeof getTorneoNiveles>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneoNiveles>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get unique tournament levels
+ */
+
+export function useGetTorneoNiveles<TData = Awaited<ReturnType<typeof getTorneoNiveles>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTorneoNiveles>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTorneoNivelesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+/**
  * Display the specified resource.
  * @summary Get torneo by ID
  */

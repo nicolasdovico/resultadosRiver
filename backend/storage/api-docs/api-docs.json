@@ -27,9 +27,40 @@
                 "summary": "List all arbitros",
                 "description": "Display a listing of the resource.",
                 "operationId": "getArbitros",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ArbitroResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -448,9 +479,40 @@
                 "summary": "List all estadios",
                 "description": "Display a listing of the resource.",
                 "operationId": "getEstadios",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/EstadioResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1189,9 +1251,40 @@
                 "summary": "List all rivales",
                 "description": "Display a listing of the resource.",
                 "operationId": "getRivales",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/RivalResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1509,7 +1602,6 @@
                     "Torneos"
                 ],
                 "summary": "List all torneos",
-                "description": "Display a listing of the resource.",
                 "operationId": "getTorneos",
                 "parameters": [
                     {
@@ -1527,11 +1619,34 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Limit results",
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful operation"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TorneoResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1550,6 +1665,35 @@
                 "responses": {
                     "201": {
                         "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/torneos/niveles": {
+            "get": {
+                "tags": [
+                    "Torneos"
+                ],
+                "summary": "Get unique tournament levels",
+                "operationId": "getTorneoNiveles",
+                "responses": {
+                    "200": {
+                        "description": "Unique tournament levels",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1774,6 +1918,9 @@
         "schemas": {
             "ArbitroResource": {
                 "properties": {
+                    "ar_id": {
+                        "type": "integer"
+                    },
                     "ar_desc": {
                         "type": "string"
                     }
@@ -1790,6 +1937,9 @@
             },
             "EstadioResource": {
                 "properties": {
+                    "es_id": {
+                        "type": "integer"
+                    },
                     "es_desc": {
                         "type": "string"
                     }
@@ -1954,7 +2104,10 @@
                     "tor_desc": {
                         "type": "string"
                     },
-                    "tor_año": {
+                    "tor_nivel": {
+                        "type": "string"
+                    },
+                    "tor_anio": {
                         "type": "integer"
                     },
                     "stats": {

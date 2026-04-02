@@ -6,7 +6,15 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface EstadioResource {
-  es_id?: number;
-  es_desc?: string;
-}
+export type TorneoResourceStats = {
+  pj?: number;
+  pg?: number;
+  pe?: number;
+  pp?: number;
+  gf?: number;
+  gc?: number;
+  dg?: number;
+  puntos?: number;
+  vallas_invictas?: number;
+  efectividad?: number;
+};

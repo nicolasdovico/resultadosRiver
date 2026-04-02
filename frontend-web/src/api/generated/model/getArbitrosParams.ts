@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface EstadioResource {
-  es_id?: number;
-  es_desc?: string;
-}
+export type GetArbitrosParams = {
+q?: string;
+limit?: number;
+};

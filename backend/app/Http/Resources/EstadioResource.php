@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 
-#[OA\Schema(schema: 'EstadioResource', properties: [new OA\Property(property: 'es_desc', type: 'string')])]
+#[OA\Schema(schema: 'EstadioResource', properties: [
+    new OA\Property(property: 'es_id', type: 'integer'),
+    new OA\Property(property: 'es_desc', type: 'string')
+])]
 class EstadioResource extends JsonResource
 {
     /**

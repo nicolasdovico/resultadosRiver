@@ -52,6 +52,7 @@ Route::prefix('v1')->group(function () {
     Route::get('rivales/{id}', [RivalController::class, 'show']);
     
     Route::get('torneos', [TorneoController::class, 'index']);
+    Route::get('torneos/niveles', [TorneoController::class, 'niveles']);
     Route::get('torneos/{id}', [TorneoController::class, 'show']);
     
     Route::get('tecnicos', [TecnicoController::class, 'index']);

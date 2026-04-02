@@ -21,12 +21,48 @@ class TorneoController extends Controller
         tags: ['Torneos'],
         parameters: [
             new OA\Parameter(name: 'q', in: 'query', description: 'Search by description', schema: new OA\Schema(type: 'string')),
-            new OA\Parameter(name: 'año', in: 'query', description: 'Filter by year', schema: new OA\Schema(type: 'integer'))
+            new OA\Parameter(name: 'año', in: 'query', description: 'Filter by year', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'limit', in: 'query', description: 'Limit results', schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
-            new OA\Response(response: 200, description: 'Successful operation')
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/TorneoResource')
+                        )
+                    ]
+                )
+            )
         ]
     )]
+    #[OA\Get(
+        path: '/v1/torneos/niveles',
+        summary: 'Get unique tournament levels',
+        operationId: 'getTorneoNiveles',
+        security: [['sanctum' => []]],
+        tags: ['Torneos'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Unique tournament levels',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(type: 'string')
+                )
+            )
+        ]
+    )]
+    public function niveles()
+    {
+        return Torneo::distinct()->pluck('tor_nivel')->filter()->values();
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -57,6 +93,11 @@ class TorneoController extends Controller
 
         // Pagination logic
         $perPage = $request->query('limit', 15);
+        
+        if ($perPage == -1) {
+            return TorneoResource::collection($query->get());
+        }
+
         $paginator = $query->paginate($perPage);
 
         return TorneoResource::collection($paginator->items())->additional([

@@ -24,6 +24,11 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  GetArbitros200,
+  GetArbitrosParams
+} from '../../model';
+
 import { customInstance } from '../../../custom-instance';
 
 
@@ -36,7 +41,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary List all arbitros
  */
 export type getArbitrosResponse200 = {
-  data: void
+  data: GetArbitros200
   status: 200
 }
 
@@ -47,17 +52,24 @@ export type getArbitrosResponseSuccess = (getArbitrosResponse200) & {
 
 export type getArbitrosResponse = (getArbitrosResponseSuccess)
 
-export const getGetArbitrosUrl = () => {
+export const getGetArbitrosUrl = (params?: GetArbitrosParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/v1/arbitros`
+  return stringifiedParams.length > 0 ? `/v1/arbitros?${stringifiedParams}` : `/v1/arbitros`
 }
 
-export const getArbitros = async ( options?: RequestInit): Promise<getArbitrosResponse> => {
+export const getArbitros = async (params?: GetArbitrosParams, options?: RequestInit): Promise<getArbitrosResponse> => {
   
-  return customInstance<getArbitrosResponse>(getGetArbitrosUrl(),
+  return customInstance<getArbitrosResponse>(getGetArbitrosUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -70,23 +82,23 @@ export const getArbitros = async ( options?: RequestInit): Promise<getArbitrosRe
 
 
 
-export const getGetArbitrosQueryKey = () => {
+export const getGetArbitrosQueryKey = (params?: GetArbitrosParams,) => {
     return [
-    `/v1/arbitros`
+    `/v1/arbitros`, ...(params ? [params] : [])
     ] as const;
     }
 
     
-export const getGetArbitrosQueryOptions = <TData = Awaited<ReturnType<typeof getArbitros>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetArbitrosQueryOptions = <TData = Awaited<ReturnType<typeof getArbitros>>, TError = unknown>(params?: GetArbitrosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetArbitrosQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetArbitrosQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArbitros>>> = ({ signal }) => getArbitros({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArbitros>>> = ({ signal }) => getArbitros(params, { signal, ...requestOptions });
 
       
 
@@ -100,7 +112,7 @@ export type GetArbitrosQueryError = unknown
 
 
 export function useGetArbitros<TData = Awaited<ReturnType<typeof getArbitros>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>> & Pick<
+ params: undefined |  GetArbitrosParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getArbitros>>,
           TError,
@@ -110,7 +122,7 @@ export function useGetArbitros<TData = Awaited<ReturnType<typeof getArbitros>>, 
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetArbitros<TData = Awaited<ReturnType<typeof getArbitros>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>> & Pick<
+ params?: GetArbitrosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getArbitros>>,
           TError,
@@ -120,7 +132,7 @@ export function useGetArbitros<TData = Awaited<ReturnType<typeof getArbitros>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetArbitros<TData = Awaited<ReturnType<typeof getArbitros>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetArbitrosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -128,11 +140,11 @@ export function useGetArbitros<TData = Awaited<ReturnType<typeof getArbitros>>, 
  */
 
 export function useGetArbitros<TData = Awaited<ReturnType<typeof getArbitros>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ params?: GetArbitrosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getArbitros>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetArbitrosQueryOptions(options)
+  const queryOptions = getGetArbitrosQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

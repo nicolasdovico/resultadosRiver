@@ -1,5 +1,9 @@
 import { formatLocalDate } from "@/utils/date";
 import { getPartidos } from "@/api/generated/endpoints/partidos/partidos";
+import { getRivales } from "@/api/generated/endpoints/rivales/rivales";
+import { getEstadios } from "@/api/generated/endpoints/estadios/estadios";
+import { getArbitros } from "@/api/generated/endpoints/arbitros/arbitros";
+import { getTorneos, getTorneoNiveles } from "@/api/generated/endpoints/torneos/torneos";
 import Link from "next/link";
 import { Trophy, ChevronRight, Calendar, BarChart3, Clock, Star, Info } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
@@ -9,28 +13,7 @@ import ClubShield from "@/components/ClubShield";
 import RiverOfficialShield from "@/components/RiverOfficialShield";
 import GoalsAnalysis from "@/components/GoalsAnalysis";
 import GoalMethodAnalysis from "@/components/GoalMethodAnalysis";
-
-interface Partido {
-  fecha: string;
-  fecha_nro?: number;
-  rival: {
-    ri_desc: string;
-    escudo_url?: string;
-  };
-  torneo: {
-    tor_desc: string;
-    tor_nivel: string;
-  };
-  fase?: {
-    fa_desc: string;
-  };
-  condicion?: {
-    co_desc: string;
-  };
-  goles_river: number;
-  goles_rival: number;
-  resultado: string;
-}
+import PartidoFilters from "@/components/PartidoFilters";
 
 export default async function PartidosPage({
   searchParams,
@@ -47,22 +30,56 @@ export default async function PartidosPage({
   
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q : '';
+  const rivalId = typeof params.adversario === 'string' ? parseInt(params.adversario, 10) : undefined;
+  const estadioId = typeof params.estadio === 'string' ? parseInt(params.estadio, 10) : undefined;
+  const arbitroId = typeof params.arbitro === 'string' ? parseInt(params.arbitro, 10) : undefined;
+  const torneoId = typeof params.torneo === 'string' ? parseInt(params.torneo, 10) : undefined;
+  const torneoNivel = typeof params.torneo_nivel === 'string' ? params.torneo_nivel : undefined;
+  
   let currentPage = typeof params.page === 'string' ? parseInt(params.page, 10) : 1;
 
+  const hasAnyFilter = query || rivalId || estadioId || arbitroId || torneoId || torneoNivel;
+
   // Force page 1 for free users on the default list
-  if (isLoggedIn && !isPremium && !query) {
+  if (isLoggedIn && !isPremium && !hasAnyFilter) {
     currentPage = 1;
   }
 
-  // Pass search query directly to API
+  const fetchOptions = { headers: token ? { 'Authorization': `Bearer ${token}` } : {} } as any;
+
+  // Fetch filter options in parallel
+  const [rivalesRes, estadiosRes, arbitrosRes, torneosRes, nivelesRes] = await Promise.all([
+    getRivales({ limit: -1 } as any, fetchOptions),
+    getEstadios({ limit: -1 } as any, fetchOptions),
+    getArbitros({ limit: -1 } as any, fetchOptions),
+    getTorneos({ limit: -1 } as any, fetchOptions),
+    getTorneoNiveles(fetchOptions),
+  ]);
+
+  // @ts-ignore - access to .data because Laravel wraps the response in data
+  const rivalesOptions = (rivalesRes.data || []).map((r: any) => ({ id: r.ri_id, label: r.ri_desc }));
+  // @ts-ignore
+  const estadiosOptions = (estadiosRes.data || []).map((e: any) => ({ id: e.es_id, label: e.es_desc }));
+  // @ts-ignore
+  const arbitrosOptions = (arbitrosRes.data || []).map((a: any) => ({ id: a.ar_id, label: a.ar_desc }));
+  // @ts-ignore
+  const torneosOptions = (torneosRes.data || []).map((t: any) => ({ id: t.tor_id, label: t.tor_desc }));
+  const nivelesOptions = nivelesRes as any || [];
+
+  // Pass search params directly to API
   const response = await getPartidos(
     { 
-      q: query, 
-      hoy: (query || isLoggedIn) ? undefined : true,
-      limit: (isLoggedIn && !query) ? 10 : undefined,
+      q: query,
+      adversario: rivalId,
+      estadio: isPremium ? estadioId : undefined,
+      arbitro: isPremium ? arbitroId : undefined,
+      torneo: torneoId,
+      torneo_nivel: isPremium ? torneoNivel : undefined,
+      hoy: (hasAnyFilter || isLoggedIn) ? undefined : true,
+      limit: (isLoggedIn && !hasAnyFilter) ? 10 : undefined,
       page: currentPage
     } as any, 
-    { headers: token ? { 'Authorization': `Bearer ${token}` } : {} } as any
+    fetchOptions
   );
   
   // @ts-expect-error - Resource data structure is not fully typed in SDK
@@ -77,7 +94,7 @@ export default async function PartidosPage({
   let isRestricted = false;
 
   if (isLoggedIn && !isPremium) {
-    if (query) {
+    if (hasAnyFilter) {
       let limit = 20;
       if (totalResults <= 20) {
         limit = Math.max(3, Math.floor(totalResults * 0.5));
@@ -111,12 +128,12 @@ export default async function PartidosPage({
         </div>
         <div className="bg-zinc-100 text-zinc-600 px-6 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center">
           <Calendar className="mr-2" size={14} />
-          {query ? `${totalResults} encontrados` : `Archivo Completo`}
+          {hasAnyFilter ? `${totalResults} encontrados` : `Archivo Completo`}
         </div>
       </div>
 
       {/* Recent Results Teaser (ONLY for guests and when no query) */}
-      {!query && !isLoggedIn && (
+      {!hasAnyFilter && !isLoggedIn && (
         <section className="mb-16">
           <h2 className="text-2xl font-black text-zinc-900 mb-6 flex items-center tracking-tight uppercase">
             <Clock className="mr-3 text-red-600" size={20} />
@@ -167,12 +184,24 @@ export default async function PartidosPage({
       <section className="relative">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">
-            {isLoggedIn && !query ? 'Últimos 10 Partidos' : 'Archivo Histórico'}
+            {isLoggedIn && !hasAnyFilter ? 'Últimos 10 Partidos' : 'Archivo Histórico'}
           </h2>
           {isLoggedIn && (
             <SearchBar placeholder="Buscar por rival o torneo..." className="w-full md:max-w-md" />
           )}
         </div>
+
+        {/* Advanced Filters */}
+        {isLoggedIn && (
+          <PartidoFilters 
+            rivales={rivalesOptions}
+            estadios={estadiosOptions}
+            arbitros={arbitrosOptions}
+            torneos={torneosOptions}
+            niveles={nivelesOptions}
+            isPremium={isPremium}
+          />
+        )}
 
         {/* Premium Restriction Banner */}
         {isRestricted && (
@@ -182,7 +211,7 @@ export default async function PartidosPage({
                 <Info size={24} />
               </div>
               <p className="text-yellow-900 font-medium text-sm md:text-base">
-                {query ? (
+                {hasAnyFilter ? (
                   <>Mostrando <span className="font-black">{shownCount}</span> de <span className="font-black">{totalResults}</span> resultados encontrados.</>
                 ) : (
                   <>Mostrando los últimos <span className="font-black">{shownCount}</span> partidos de un total de <span className="font-black">{totalResults}</span>.</>
@@ -260,7 +289,15 @@ export default async function PartidosPage({
               <div className="flex justify-center items-center space-x-2 mt-12">
                 {currentPage > 1 ? (
                   <Link 
-                    href={`/partidos?${new URLSearchParams({ ...(query ? { q: query } : {}), page: (currentPage - 1).toString() }).toString()}`}
+                    href={`/partidos?${new URLSearchParams({ 
+                      ...(query ? { q: query } : {}), 
+                      ...(rivalId ? { adversario: rivalId.toString() } : {}),
+                      ...(estadioId ? { estadio: estadioId.toString() } : {}),
+                      ...(arbitroId ? { arbitro: arbitroId.toString() } : {}),
+                      ...(torneoId ? { torneo: torneoId.toString() } : {}),
+                      ...(torneoNivel ? { torneo_nivel: torneoNivel } : {}),
+                      page: (currentPage - 1).toString() 
+                    }).toString()}`}
                     className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-zinc-600 font-bold text-sm hover:border-red-200 hover:text-red-600 transition-colors"
                   >
                     Anterior
@@ -277,7 +314,15 @@ export default async function PartidosPage({
                 
                 {currentPage < lastPage ? (
                   <Link 
-                    href={`/partidos?${new URLSearchParams({ ...(query ? { q: query } : {}), page: (currentPage + 1).toString() }).toString()}`}
+                    href={`/partidos?${new URLSearchParams({ 
+                      ...(query ? { q: query } : {}), 
+                      ...(rivalId ? { adversario: rivalId.toString() } : {}),
+                      ...(estadioId ? { estadio: estadioId.toString() } : {}),
+                      ...(arbitroId ? { arbitro: arbitroId.toString() } : {}),
+                      ...(torneoId ? { torneo: torneoId.toString() } : {}),
+                      ...(torneoNivel ? { torneo_nivel: torneoNivel } : {}),
+                      page: (currentPage + 1).toString() 
+                    }).toString()}`}
                     className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-zinc-600 font-bold text-sm hover:border-red-200 hover:text-red-600 transition-colors"
                   >
                     Siguiente
@@ -293,8 +338,8 @@ export default async function PartidosPage({
         ) : (
           <div className="text-center py-24 bg-zinc-50 rounded-[40px] border-2 border-dashed border-zinc-200">
             <Trophy className="mx-auto mb-4 text-zinc-300" size={48} />
-            <h3 className="text-xl font-black text-zinc-900 mb-2">No hay resultados para &quot;{query}&quot;</h3>
-            <p className="text-zinc-500 font-medium">Prueba buscando otro equipo o competencia.</p>
+            <h3 className="text-xl font-black text-zinc-900 mb-2">No hay resultados para esta búsqueda</h3>
+            <p className="text-zinc-500 font-medium">Prueba ajustando los filtros o buscando otro equipo.</p>
           </div>
         )}
 
@@ -307,8 +352,16 @@ export default async function PartidosPage({
 
           <AccessControl tier={currentTier} requiredTier="premium" className="rounded-[40px] overflow-hidden shadow-xl border border-zinc-100">
             <div className="flex flex-col">
-              <GoalsAnalysis filters={{ q: query }} />
-              <GoalMethodAnalysis filters={{ q: query }} />
+              <GoalsAnalysis filters={{ 
+                q: query,
+                adversario: rivalId,
+                torneo: torneoId,
+              }} />
+              <GoalMethodAnalysis filters={{ 
+                q: query,
+                adversario: rivalId,
+                torneo: torneoId,
+              }} />
             </div>
           </AccessControl>
         </section>
