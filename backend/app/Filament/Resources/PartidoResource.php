@@ -192,13 +192,16 @@ class PartidoResource extends Resource
                 Tables\Columns\TextColumn::make('fecha')
                     ->label('Día')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('torneo_rel.tor_desc')
                     ->label('Torneo')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('rival.ri_desc')
                     ->label('Rival')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('go_ri')
                     ->label('LP')
                     ->sortable(),
@@ -220,7 +223,19 @@ class PartidoResource extends Resource
             ])
             ->defaultSort('fecha', 'desc')
             ->filters([
-                //
+                Tables\Filters\Filter::make('fecha')
+                    ->form([
+                        Forms\Components\DatePicker::make('fecha_exacta')
+                            ->label('Buscar por fecha exacta')
+                            ->displayFormat('d/m/Y'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['fecha_exacta'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('fecha', $date),
+                            );
+                    })
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

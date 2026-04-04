@@ -76,3 +76,16 @@ Tiene que estar levantado el container
 
 ## Restaurar backup en DB dentro del container
 `cat backup_20260324_192049.sql | docker compose exec -T db psql -U river_user -d resultados_river`
+
+## Query para encontrar el ultimo partido con el dato correcto en cuanto a como se hizo se gol
+`SELECT g.* 
+    FROM goles g
+    JOIN estadisticas e ON g.gol_fecha = e.fecha
+    WHERE g.gol_penal = 2
+    ORDER BY e.fecha DESC, g.periodo DESC, g.minutos DESC
+    LIMIT 1;` 
+
+## Query para contar los registros que faltan modificar el tipo de gol
+`SELECT COUNT(DISTINCT gol_fecha) AS cantidad_partidos
+FROM goles 
+WHERE gol_penal = 2;` 

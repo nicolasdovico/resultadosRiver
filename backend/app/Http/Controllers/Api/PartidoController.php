@@ -320,10 +320,14 @@ class PartidoController extends Controller
         $matchDates = $query->pluck('fecha');
 
         // Find the earliest match date that has cataloged goals (gol_penal > 0)
-        $sinceDate = DB::table('goles')
-            ->whereIn('gol_fecha', $matchDates)
-            ->where('gol_penal', '>', 0)
-            ->min('gol_fecha');
+        $sinceDate = \App\Models\Setting::get('goals_cataloged_since');
+        
+        if (!$sinceDate) {
+            $sinceDate = DB::table('goles')
+                ->whereIn('gol_fecha', $matchDates)
+                ->where('gol_penal', '>', 0)
+                ->min('gol_fecha');
+        }
 
         // Distribution for River
         $riverStats = DB::table('goles')
@@ -470,6 +474,40 @@ class PartidoController extends Controller
             });
         }
 
+        // Calculate summary stats for ALL results matching the current filters
+        $stats = (clone $query)->selectRaw('
+            COUNT(*) as pj,
+            COUNT(CASE WHEN go_ri > go_ad THEN 1 END) as pg,
+            COUNT(CASE WHEN go_ri = go_ad THEN 1 END) as pe,
+            COUNT(CASE WHEN go_ri < go_ad THEN 1 END) as pp,
+            SUM(go_ri) as gf,
+            SUM(go_ad) as gc
+        ')->first();
+
+        // Calculate breakdown by condition
+        $breakdown = (clone $query)->selectRaw('
+            condicion,
+            COUNT(*) as pj,
+            COUNT(CASE WHEN go_ri > go_ad THEN 1 END) as pg,
+            COUNT(CASE WHEN go_ri = go_ad THEN 1 END) as pe,
+            COUNT(CASE WHEN go_ri < go_ad THEN 1 END) as pp,
+            SUM(go_ri) as gf,
+            SUM(go_ad) as gc
+        ')->groupBy('condicion')->get()->keyBy('condicion');
+
+        $formatBreakdown = function($data) {
+            if (!$data) return ['pj' => 0, 'pg' => 0, 'pe' => 0, 'pp' => 0, 'gf' => 0, 'gc' => 0, 'dg' => 0];
+            return [
+                'pj' => (int) $data->pj,
+                'pg' => (int) $data->pg,
+                'pe' => (int) $data->pe,
+                'pp' => (int) $data->pp,
+                'gf' => (int) $data->gf,
+                'gc' => (int) $data->gc,
+                'dg' => (int) ($data->gf - $data->gc),
+            ];
+        };
+
         $limit = $request->input('limit', 20);
         
         // Always order by date descending if not specifically searching (or as a tie-breaker)
@@ -479,7 +517,21 @@ class PartidoController extends Controller
 
         return PartidoResource::collection($partidos)->additional([
             'meta' => [
-                'title' => $title
+                'title' => $title,
+                'summary' => [
+                    'pj' => (int) $stats->pj,
+                    'pg' => (int) $stats->pg,
+                    'pe' => (int) $stats->pe,
+                    'pp' => (int) $stats->pp,
+                    'gf' => (int) $stats->gf,
+                    'gc' => (int) $stats->gc,
+                    'dg' => (int) ($stats->gf - $stats->gc),
+                    'breakdown' => [
+                        'local' => $formatBreakdown($breakdown->get(1)),
+                        'visitante' => $formatBreakdown($breakdown->get(2)),
+                        'neutral' => $formatBreakdown($breakdown->get(3)),
+                    ]
+                ]
             ]
         ]);
     }

@@ -6,9 +6,28 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { formatLocalDate } from '@/utils/date';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import type { PartidoResource as Partido } from '@/api/generated/model/partidoResource';
 
 const RIVER_SHIELD = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Escudo_del_C_A_River_Plate.svg/1200px-Escudo_del_C_A_River_Plate.svg.png';
+
+interface StatRow {
+  pj: number;
+  pg: number;
+  pe: number;
+  pp: number;
+  gf: number;
+  gc: number;
+  dg: number;
+}
+
+interface SummaryStats extends StatRow {
+  breakdown?: {
+    local: StatRow;
+    visitante: StatRow;
+    neutral: StatRow;
+  };
+}
 
 export default function ResultadosScreen() {
   const [partidos, setPartidos] = useState<Partido[]>([]);
@@ -17,6 +36,14 @@ export default function ResultadosScreen() {
   const [totalResults, setTotalResults] = useState(0);
   const [isRestricted, setIsRestricted] = useState(false);
   const [sectionTitle, setSectionTitle] = useState('Resultados');
+  const [summaryStats, setSummaryStats] = useState<SummaryStats>({ 
+    pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0,
+    breakdown: {
+      local: { pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0 },
+      visitante: { pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0 },
+      neutral: { pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0 }
+    }
+  });
   
   const { token, isPremium } = useAuth();
   const isLoggedIn = !!token;
@@ -40,8 +67,10 @@ export default function ResultadosScreen() {
       
       let data: Partido[] = (response as any).data || [];
       const total = (response as any).meta?.total || data.length;
+      const summary = (response as any).meta?.summary || summaryStats;
       
       setTotalResults(total);
+      setSummaryStats(summary);
       
       // Restriction logic for non-premium users during search
       let restricted = false;
@@ -72,60 +101,116 @@ export default function ResultadosScreen() {
     }
   };
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.headerTitle}>{sectionTitle}</Text>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{totalResults}</Text>
-        </View>
-      </View>
-      
-      {isLoggedIn ? (
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar por rival o torneo..."
-            value={query}
-            onChangeText={setQuery}
-            placeholderTextColor="#94a3b8"
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery('')}>
-              <Ionicons name="close-circle" size={20} color="#94a3b8" />
-            </TouchableOpacity>
-          )}
-        </View>
-      ) : (
-        <TouchableOpacity 
-          style={styles.guestBanner}
-          onPress={() => router.push('/(auth)/login')}
-        >
-          <View style={styles.guestBannerContent}>
-            <Ionicons name="log-in-outline" size={18} color="#b91c1c" />
-            <Text style={styles.guestBannerText}>Inicia sesión para ver el historial completo</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color="#b91c1c" />
-        </TouchableOpacity>
-      )}
-
-      {isRestricted && (
-        <TouchableOpacity 
-          style={styles.premiumBanner}
-          onPress={() => router.push('/premium')}
-        >
-          <View style={styles.premiumBannerLeft}>
-            <MaterialCommunityIcons name="crown" size={20} color="#b45309" />
-            <Text style={styles.premiumBannerText}>
-              Viendo {partidos.length} de {totalResults}. Sé premium para ver todo.
-            </Text>
-          </View>
-          <Text style={styles.premiumLink}>Ver más</Text>
-        </TouchableOpacity>
-      )}
+  const renderStatRow = (label: string, stats: StatRow, isTotal = false) => (
+    <View style={[styles.statRow, isTotal && styles.statRowTotal]}>
+      <Text style={styles.statRowLabel}>{label}</Text>
+      <Text style={styles.statCell}>{stats.pj}</Text>
+      <Text style={[styles.statCell, { color: '#10b981' }]}>{stats.pg}</Text>
+      <Text style={[styles.statCell, { color: '#94a3b8' }]}>{stats.pe}</Text>
+      <Text style={[styles.statCell, { color: '#ef4444' }]}>{stats.pp}</Text>
+      <Text style={styles.statCell}>{stats.gf}</Text>
+      <Text style={styles.statCell}>{stats.gc}</Text>
+      <Text style={[styles.statCell, stats.dg > 0 ? { color: '#10b981' } : stats.dg < 0 ? { color: '#ef4444' } : {}]}>
+        {stats.dg > 0 ? '+' : ''}{stats.dg}
+      </Text>
     </View>
   );
+
+  const renderHeader = () => {
+    return (
+      <View style={styles.header}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.headerTitle}>{sectionTitle}</Text>
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{totalResults}</Text>
+          </View>
+        </View>
+        
+        {isLoggedIn ? (
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar por rival o torneo..."
+              value={query}
+              onChangeText={setQuery}
+              placeholderTextColor="#94a3b8"
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery('')}>
+                <Ionicons name="close-circle" size={20} color="#94a3b8" />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={styles.guestBanner}
+            onPress={() => router.push('/(auth)/login')}
+          >
+            <View style={styles.guestBannerContent}>
+              <Ionicons name="log-in-outline" size={18} color="#b91c1c" />
+              <Text style={styles.guestBannerText}>Inicia sesión para ver el historial completo</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#b91c1c" />
+          </TouchableOpacity>
+        )}
+
+        {partidos.length > 0 && (
+          <View style={styles.statsCard}>
+            <View style={styles.statTableHeader}>
+              <Text style={styles.statRowLabel}></Text>
+              <Text style={styles.statHeaderCell}>PJ</Text>
+              <Text style={styles.statHeaderCell}>PG</Text>
+              <Text style={styles.statHeaderCell}>PE</Text>
+              <Text style={styles.statHeaderCell}>PP</Text>
+              <Text style={styles.statHeaderCell}>GF</Text>
+              <Text style={styles.statHeaderCell}>GC</Text>
+              <Text style={styles.statHeaderCell}>DG</Text>
+            </View>
+            
+            {renderStatRow('TOTAL', summaryStats, true)}
+            {summaryStats.breakdown && (
+              <>
+                {renderStatRow('L', summaryStats.breakdown.local)}
+                {renderStatRow('V', summaryStats.breakdown.visitante)}
+                {renderStatRow('N', summaryStats.breakdown.neutral)}
+              </>
+            )}
+
+            {!isPremium && (
+              <TouchableOpacity 
+                style={styles.lockOverlayContainer} 
+                onPress={() => router.push('/premium')}
+                activeOpacity={1}
+              >
+                <BlurView intensity={20} tint="dark" style={styles.blurOverlay}>
+                  <View style={styles.lockContent}>
+                    <MaterialCommunityIcons name="crown" size={24} color="#b45309" />
+                    <Text style={styles.lockText}>Resumen Premium</Text>
+                  </View>
+                </BlurView>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {isRestricted && (
+          <TouchableOpacity 
+            style={styles.premiumBanner}
+            onPress={() => router.push('/premium')}
+          >
+            <View style={styles.premiumBannerLeft}>
+              <MaterialCommunityIcons name="crown" size={20} color="#b45309" />
+              <Text style={styles.premiumBannerText}>
+                Viendo {partidos.length} de {totalResults}. Sé premium para ver todo.
+              </Text>
+            </View>
+            <Text style={styles.premiumLink}>Ver más</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   const renderPartido = ({ item }: { item: Partido }) => (
     <TouchableOpacity 
@@ -441,5 +526,85 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#94a3b8',
+  },
+  statsCard: {
+    backgroundColor: '#0f172a',
+    borderRadius: 24,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  statTableHeader: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+    paddingBottom: 4,
+  },
+  statHeaderCell: {
+    flex: 1,
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#64748b',
+    textAlign: 'center',
+  },
+  statRow: {
+    flexDirection: 'row',
+    paddingVertical: 4,
+    alignItems: 'center',
+  },
+  statRowTotal: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    marginVertical: 2,
+  },
+  statRowLabel: {
+    width: 45,
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#94a3b8',
+    paddingLeft: 4,
+  },
+  statCell: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+    fontVariant: ['tabular-nums'],
+  },
+  lockOverlayContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+  },
+  blurOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lockContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#b45309',
+  },
+  lockText: {
+    fontSize: 12,
+    color: '#fbbf24',
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
 });

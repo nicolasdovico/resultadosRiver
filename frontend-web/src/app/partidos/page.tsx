@@ -94,6 +94,8 @@ export default async function PartidosPage({
   const totalResults = (response as any).meta?.total || visiblePartidos.length;
   // @ts-expect-error - Meta missing from response type
   const lastPage = (response as any).meta?.last_page || 1;
+  // @ts-expect-error - summary in meta
+  const summary = (response as any).meta?.summary || { pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0 };
 
   // Restriction logic for non-premium users
   let shownCount = visiblePartidos.length;
@@ -120,6 +122,46 @@ export default async function PartidosPage({
   // Calculate streak from visible matches (sorted ascending for correct chronological order)
   const partidosStreak = [...visiblePartidos].reverse();
 
+  const StatBox = ({ label, stats, isTotal = false }: { label: string, stats: any, isTotal?: boolean }) => (
+    <div className={`flex-1 p-6 ${!isTotal ? 'border-l border-white/10' : ''}`}>
+      <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-6 text-center">{label}</h4>
+      <div className="space-y-6">
+        <div className="flex justify-between items-end">
+          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PJ</span>
+          <span className="text-xl font-black text-white leading-none">{stats.pj}</span>
+        </div>
+        <div className="flex justify-between items-end">
+          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PG</span>
+          <span className="text-xl font-black text-green-500 leading-none">{stats.pg}</span>
+        </div>
+        <div className="flex justify-between items-end">
+          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PE</span>
+          <span className="text-xl font-black text-zinc-400 leading-none">{stats.pe}</span>
+        </div>
+        <div className="flex justify-between items-end">
+          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PP</span>
+          <span className="text-xl font-black text-red-500 leading-none">{stats.pp}</span>
+        </div>
+        <div className="pt-4 border-t border-white/5 space-y-4">
+          <div className="flex justify-between items-end">
+            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">GF</span>
+            <span className="text-sm font-black text-white leading-none">{stats.gf}</span>
+          </div>
+          <div className="flex justify-between items-end">
+            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">GC</span>
+            <span className="text-sm font-black text-zinc-400 leading-none">{stats.gc}</span>
+          </div>
+          <div className="flex justify-between items-end">
+            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">DG</span>
+            <span className={`text-sm font-black leading-none ${stats.dg > 0 ? 'text-green-500' : stats.dg < 0 ? 'text-red-500' : 'text-zinc-400'}`}>
+              {stats.dg > 0 ? '+' : ''}{stats.dg}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       {/* Header */}
@@ -140,6 +182,26 @@ export default async function PartidosPage({
           {hasAnyFilter ? `${totalResults} encontrados` : `Archivo Completo`}
         </div>
       </div>
+
+      {/* Stats Summary Dashboard */}
+      {visiblePartidos.length > 0 && (
+        <div className="mb-12">
+          <AccessControl tier={currentTier} requiredTier="premium">
+            <div className="bg-zinc-900 rounded-[40px] overflow-hidden shadow-2xl border border-white/5">
+              <div className="flex flex-col md:flex-row">
+                <StatBox label="Resumen Total" stats={summary} isTotal />
+                {summary.breakdown && (
+                  <>
+                    <StatBox label="Como Local" stats={summary.breakdown.local} />
+                    <StatBox label="Como Visitante" stats={summary.breakdown.visitante} />
+                    <StatBox label="Cancha Neutral" stats={summary.breakdown.neutral} />
+                  </>
+                )}
+              </div>
+            </div>
+          </AccessControl>
+        </div>
+      )}
 
       {/* Recent Results Teaser (ONLY for guests and when no query) */}
       {!hasAnyFilter && !isLoggedIn && (

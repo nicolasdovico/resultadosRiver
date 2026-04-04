@@ -28,7 +28,15 @@ class SettingResource extends Resource
                     ->maxLength(255)
                     ->disabled(fn (?Setting $record) => $record !== null),
                 Forms\Components\Textarea::make('value')
-                    ->visible(fn (Forms\Get $get) => $get('key') !== 'river_shield')
+                    ->visible(fn (Forms\Get $get) => !in_array($get('key'), ['river_shield', 'goals_cataloged_since']))
+                    ->columnSpanFull(),
+                Forms\Components\DatePicker::make('value')
+                    ->label('Datos catalogados desde')
+                    ->native(false)
+                    ->displayFormat('d/m/Y')
+                    ->formatStateUsing(fn (?string $state) => $state)
+                    ->dehydrateStateUsing(fn ($state) => $state)
+                    ->visible(fn (Forms\Get $get) => $get('key') === 'goals_cataloged_since')
                     ->columnSpanFull(),
                 Forms\Components\FileUpload::make('value')
                     ->label('Escudo de River')
@@ -50,6 +58,9 @@ class SettingResource extends Resource
                     ->formatStateUsing(function (?string $state, Setting $record) {
                         if ($record->key === 'river_shield') {
                             return 'Imagen cargada';
+                        }
+                        if ($record->key === 'goals_cataloged_since' && $state) {
+                            return \Carbon\Carbon::parse($state)->format('d/m/Y');
                         }
                         return $state;
                     }),
