@@ -150,9 +150,9 @@ export default async function TorneoDetailPage({
           </h2>
 
           <AccessControl tier={currentTier} requiredTier="registered">
-            {partidos.length > 0 ? (
+            {partidosAsc.length > 0 ? (
               <div className="space-y-4">
-                {partidos.map((p) => (
+                {partidosAsc.map((p) => (
                   <Link 
                     key={p.fecha} 
                     href={`/partidos/${p.fecha}`}
