@@ -5,7 +5,22 @@ import { getEstadios } from "@/api/generated/endpoints/estadios/estadios";
 import { getArbitros } from "@/api/generated/endpoints/arbitros/arbitros";
 import { getTorneos, getTorneoNiveles } from "@/api/generated/endpoints/torneos/torneos";
 import Link from "next/link";
-import { Trophy, ChevronRight, Calendar, BarChart3, Clock, Star, Info, TrendingUp } from "lucide-react";
+import { 
+  Trophy, 
+  ChevronRight, 
+  Calendar, 
+  BarChart3, 
+  Clock, 
+  Star, 
+  Info, 
+  TrendingUp,
+  Target,
+  Shield,
+  Zap,
+  Swords,
+  Activity,
+  Award
+} from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { cookies } from "next/headers";
@@ -123,37 +138,70 @@ export default async function PartidosPage({
   const partidosStreak = [...visiblePartidos].reverse();
 
   const StatBox = ({ label, stats, isTotal = false }: { label: string, stats: any, isTotal?: boolean }) => (
-    <div className={`flex-1 p-6 ${!isTotal ? 'border-l border-white/10' : ''}`}>
-      <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-6 text-center">{label}</h4>
-      <div className="space-y-6">
-        <div className="flex justify-between items-end">
-          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PJ</span>
-          <span className="text-xl font-black text-white leading-none">{stats.pj}</span>
-        </div>
-        <div className="flex justify-between items-end">
-          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PG</span>
-          <span className="text-xl font-black text-green-500 leading-none">{stats.pg}</span>
-        </div>
-        <div className="flex justify-between items-end">
-          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PE</span>
-          <span className="text-xl font-black text-zinc-400 leading-none">{stats.pe}</span>
-        </div>
-        <div className="flex justify-between items-end">
-          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">PP</span>
-          <span className="text-xl font-black text-red-500 leading-none">{stats.pp}</span>
-        </div>
-        <div className="pt-4 border-t border-white/5 space-y-4">
-          <div className="flex justify-between items-end">
-            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">GF</span>
-            <span className="text-sm font-black text-white leading-none">{stats.gf}</span>
+    <div className={`flex-1 p-8 ${!isTotal ? 'border-l border-white/5' : ''} transition-all duration-500 hover:bg-white/[0.02]`}>
+      <div className="flex items-center justify-center gap-2 mb-8">
+        <div className={`w-1.5 h-1.5 rounded-full ${isTotal ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-zinc-600'}`} />
+        <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.25em] text-center">{label}</h4>
+      </div>
+      
+      <div className="space-y-4">
+        {/* PJ row */}
+        <div className="flex justify-between items-center group/stat">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center text-zinc-500 group-hover/stat:text-white transition-colors border border-white/5">
+              <Activity size={14} />
+            </div>
+            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Partidos</span>
           </div>
-          <div className="flex justify-between items-end">
-            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">GC</span>
-            <span className="text-sm font-black text-zinc-400 leading-none">{stats.gc}</span>
+          <span className="text-xl font-black text-white tabular-nums tracking-tighter">{stats.pj}</span>
+        </div>
+
+        {/* Results row */}
+        <div className="grid grid-cols-3 gap-2 pt-2">
+          <div className="bg-zinc-800/30 rounded-xl p-3 border border-white/5 flex flex-col items-center gap-1 group/item hover:bg-zinc-800/50 transition-all">
+            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">PG</span>
+            <span className="text-lg font-black text-green-500 tabular-nums">{stats.pg}</span>
           </div>
-          <div className="flex justify-between items-end">
-            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">DG</span>
-            <span className={`text-sm font-black leading-none ${stats.dg > 0 ? 'text-green-500' : stats.dg < 0 ? 'text-red-500' : 'text-zinc-400'}`}>
+          <div className="bg-zinc-800/30 rounded-xl p-3 border border-white/5 flex flex-col items-center gap-1 group/item hover:bg-zinc-800/50 transition-all">
+            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">PE</span>
+            <span className="text-lg font-black text-zinc-400 tabular-nums">{stats.pe}</span>
+          </div>
+          <div className="bg-zinc-800/30 rounded-xl p-3 border border-white/5 flex flex-col items-center gap-1 group/item hover:bg-zinc-800/50 transition-all">
+            <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">PP</span>
+            <span className="text-lg font-black text-red-500 tabular-nums">{stats.pp}</span>
+          </div>
+        </div>
+
+        {/* Goals section */}
+        <div className="pt-6 border-t border-white/5 space-y-4">
+          <div className="flex justify-between items-center group/stat">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center text-zinc-500 group-hover/stat:text-green-500 transition-colors border border-white/5">
+                <Target size={14} />
+              </div>
+              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">A Favor</span>
+            </div>
+            <span className="text-base font-black text-white tabular-nums">{stats.gf}</span>
+          </div>
+          
+          <div className="flex justify-between items-center group/stat">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-zinc-800/50 flex items-center justify-center text-zinc-500 group-hover/stat:text-red-500 transition-colors border border-white/5">
+                <Shield size={14} />
+              </div>
+              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">En Contra</span>
+            </div>
+            <span className="text-base font-black text-zinc-400 tabular-nums">{stats.gc}</span>
+          </div>
+
+          <div className="mt-4 bg-zinc-900/50 border border-white/5 rounded-2xl p-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center border border-white/5 ${stats.dg > 0 ? 'bg-green-500/10 text-green-500' : stats.dg < 0 ? 'bg-red-500/10 text-red-500' : 'bg-zinc-800/50 text-zinc-500'}`}>
+                <Zap size={14} />
+              </div>
+              <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Dif. Gol</span>
+            </div>
+            <span className={`text-lg font-black tabular-nums ${stats.dg > 0 ? 'text-green-500' : stats.dg < 0 ? 'text-red-500' : 'text-zinc-400'}`}>
               {stats.dg > 0 ? '+' : ''}{stats.dg}
             </span>
           </div>
@@ -183,6 +231,18 @@ export default async function PartidosPage({
         </div>
       </div>
 
+      {/* Advanced Filters */}
+      {isLoggedIn && (
+        <PartidoFilters 
+          rivales={rivalesOptions}
+          estadios={estadiosOptions}
+          arbitros={arbitrosOptions}
+          torneos={torneosOptions}
+          niveles={nivelesOptions}
+          isPremium={isPremium}
+        />
+      )}
+
       {/* Stats Summary Dashboard */}
       {visiblePartidos.length > 0 && (
         <div className="mb-12">
@@ -197,6 +257,43 @@ export default async function PartidosPage({
                     <StatBox label="Cancha Neutral" stats={summary.breakdown.neutral} />
                   </>
                 )}
+              </div>
+            </div>
+          </AccessControl>
+        </div>
+      )}
+
+      {/* Form Guide (Racha) - Blurred for non-premium users */}
+      {visiblePartidos.length > 0 && (
+        <div className="mb-12">
+          <AccessControl tier={currentTier} requiredTier="premium">
+            <div className="bg-white border border-zinc-100 rounded-[32px] p-6 shadow-sm">
+              <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center">
+                <TrendingUp size={14} className="mr-2 text-red-500" /> 
+                Racha de resultados mostrados
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {partidosStreak.map((p, idx) => {
+                  const extraInfo = [
+                    p.torneo?.tor_desc,
+                    p.fase?.fa_desc,
+                    p.fecha_nro ? `Fecha ${p.fecha_nro}` : null
+                  ].filter(Boolean).join(' - ');
+
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm cursor-help transition-all hover:scale-110 ${
+                        p.resultado === 'G' ? 'bg-green-500 text-green-950' : 
+                        p.resultado === 'P' ? 'bg-red-500 text-red-950' : 
+                        'bg-zinc-200 text-zinc-600'
+                      }`}
+                      title={`${formatLocalDate(p.fecha)} | ${p.resultado}: ${p.goles_river}-${p.goles_rival} vs ${p.rival?.ri_desc}${extraInfo ? ` (${extraInfo})` : ''}`}
+                    >
+                      {p.resultado}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </AccessControl>
@@ -258,18 +355,6 @@ export default async function PartidosPage({
             {isLoggedIn && !hasAnyFilter ? 'Últimos 10 Partidos' : 'Archivo Histórico'}
           </h2>
         </div>
-
-        {/* Advanced Filters */}
-        {isLoggedIn && (
-          <PartidoFilters 
-            rivales={rivalesOptions}
-            estadios={estadiosOptions}
-            arbitros={arbitrosOptions}
-            torneos={torneosOptions}
-            niveles={nivelesOptions}
-            isPremium={isPremium}
-          />
-        )}
 
         {/* Premium Restriction Banner */}
         {isRestricted && (
@@ -408,43 +493,6 @@ export default async function PartidosPage({
             <Trophy className="mx-auto mb-4 text-zinc-300" size={48} />
             <h3 className="text-xl font-black text-zinc-900 mb-2">No hay resultados para esta búsqueda</h3>
             <p className="text-zinc-500 font-medium">Prueba ajustando los filtros o buscando otro equipo.</p>
-          </div>
-        )}
-
-        {/* Form Guide (Racha) - Blurred for non-premium users - MOVED HERE */}
-        {visiblePartidos.length > 0 && (
-          <div className="mt-12">
-            <AccessControl tier={currentTier} requiredTier="premium">
-              <div className="bg-white border border-zinc-100 rounded-[32px] p-6 shadow-sm">
-                <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center">
-                  <TrendingUp size={14} className="mr-2 text-red-500" /> 
-                  Racha de resultados mostrados
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {partidosStreak.map((p, idx) => {
-                    const extraInfo = [
-                      p.torneo?.tor_desc,
-                      p.fase?.fa_desc,
-                      p.fecha_nro ? `Fecha ${p.fecha_nro}` : null
-                    ].filter(Boolean).join(' - ');
-
-                    return (
-                      <div 
-                        key={idx} 
-                        className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm cursor-help transition-all hover:scale-110 ${
-                          p.resultado === 'G' ? 'bg-green-500 text-green-950' : 
-                          p.resultado === 'P' ? 'bg-red-500 text-red-950' : 
-                          'bg-zinc-200 text-zinc-600'
-                        }`}
-                        title={`${formatLocalDate(p.fecha)} | ${p.resultado}: ${p.goles_river}-${p.goles_rival} vs ${p.rival?.ri_desc}${extraInfo ? ` (${extraInfo})` : ''}`}
-                      >
-                        {p.resultado}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </AccessControl>
           </div>
         )}
 

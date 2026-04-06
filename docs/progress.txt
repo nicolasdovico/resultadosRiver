@@ -1,5 +1,15 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-06: Optimización de UX y Rediseño Visual del Tablero (Fase 5 - Pulido Final)
+- [x] **Frontend Web**:
+  - [x] **Mejora de UX**: Reubicación de los filtros avanzados a la parte superior de la página de Partidos para acceso inmediato.
+  - [x] **Mejora de Layout**: Reordenamiento lógico de componentes (Filtros -> Resumen -> Racha -> Listado) para una lectura más fluida.
+  - [x] **Rediseño Visual**: Transformación del tablero de estadísticas (fondo negro) en una "consola de alto rendimiento":
+    - [x] Integración de iconos dinámicos (`Activity`, `Target`, `Shield`, `Zap`) para cada métrica.
+    - [x] Mejora de la jerarquía visual con grillas de resultados personalizadas (PG, PE, PP) y efectos de hover.
+    - [x] Aumento de contraste y profundidad visual mediante bordes sutiles y sombras optimizadas.
+  - [x] **Fix**: Eliminación de secciones duplicadas tras la reestructuración del layout.
+
 ### 2026-04-02: Filtros Avanzados, Mejoras de UX y Racha de Resultados (Fase 5 - Pulido Final)
 - [x] **Backend**: 
   - [x] Nuevo endpoint `GET /v1/torneos/niveles` para obtener niveles de torneo.

@@ -37,6 +37,10 @@
     - [x] Detalles técnicos en obleas (Fase, Nro. Fecha, Condición).
     - [x] Rediseño de cabeceras y estados de carga (Skeletons).
     - [x] Mejora en la visualización de la ficha técnica para usuarios Premium.
+    - [x] **Optimización de Página de Partidos:** 
+        - [x] Reubicación de filtros avanzados a la parte superior para mejor accesibilidad.
+        - [x] Reordenamiento lógico del layout (Filtros -> Estadísticas -> Racha -> Listado).
+        - [x] Rediseño del tablero de estadísticas con estética "Data Console", iconos dinámicos y jerarquía visual mejorada.
     - [x] **Filtros Avanzados en Partidos:** Implementación de selectores para Rival, Estadio, Árbitro, Torneo, Nivel, Condición y rango de fechas con lógica de tiers y etiquetas superiores.
     - [x] **Optimización de Layout:** Rediseño de la grilla de filtros y eliminación de buscadores redundantes.
     - [x] **Racha de Resultados:** Implementación de visualización cronológica (Form Guide) con restricción Premium (efecto blur).
