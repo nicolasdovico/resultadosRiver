@@ -1,11 +1,12 @@
 import { getJugadores } from "@/api/generated/endpoints/jugadores/jugadores";
 import Link from "next/link";
-import { Users, ChevronRight, Star, Trophy, Activity, Search, X, Info } from "lucide-react";
+import { Users, ChevronRight, Star, Trophy, Activity, Search, X, Info, Shield } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { customInstance } from "@/api/custom-instance";
 import Image from "next/image";
 import { cookies } from "next/headers";
+import { sanitizeImageUrl } from "@/utils/image";
 
 interface Jugador {
   pl_id: number;
@@ -72,10 +73,6 @@ export default async function JugadoresPage({
   if (isLoggedIn && !isPremium && (query || letter)) {
     const limit = Math.max(5, Math.floor(totalResults * 0.5));
     if (totalResults > limit) {
-      // In pagination context, if total results > limit, we restrict the view
-      // but since we are paginating 25 per page, if the limit is less than 25
-      // we slice the current page. If limit is more than 25, they see the first page full
-      // but they can't go to page 2.
       if (limit < 25) {
         visibleJugadores = visibleJugadores.slice(0, limit);
         shownCount = limit;
@@ -222,46 +219,62 @@ export default async function JugadoresPage({
               {visibleJugadores.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {visibleJugadores.map((jugador) => (
-                      <Link 
-                        key={jugador.pl_id}
-                        href={`/jugadores/${jugador.pl_id}`}
-                        className="bg-white p-6 rounded-[36px] border border-zinc-100 flex flex-col group hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-red-900/5"
-                      >
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-white font-black text-xl uppercase group-hover:bg-red-600 transition-colors shadow-lg shadow-zinc-200 overflow-hidden relative">
-                            {jugador.pl_foto ? (
-                               <Image src={jugador.pl_foto} alt={jugador.pl_apno} fill className="object-cover" />
-                            ) : (
-                              jugador.pl_apno ? jugador.pl_apno.charAt(0) : "?"
-                            )}
+                    {visibleJugadores.map((jugador) => {
+                      const fotoUrl = sanitizeImageUrl(jugador.pl_foto);
+                      return (
+                        <Link 
+                          key={jugador.pl_id}
+                          href={`/jugadores/${jugador.pl_id}`}
+                          className="bg-white p-6 rounded-[36px] border border-zinc-100 flex flex-col group hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-red-900/5"
+                        >
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-white font-black text-xl uppercase group-hover:bg-red-600 transition-colors shadow-lg shadow-zinc-200 overflow-hidden relative border-2 border-white">
+                              {fotoUrl ? (
+                                <>
+                                  <Image 
+                                    src={fotoUrl} 
+                                    alt="" 
+                                    fill 
+                                    unoptimized
+                                    className={`object-cover transition-all duration-500 ${!isPremium ? 'blur-[3px] grayscale opacity-50' : ''}`} 
+                                  />
+                                  {!isPremium && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                      <Shield size={10} className="text-white" />
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                jugador.pl_apno ? jugador.pl_apno.charAt(0) : "?"
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">ID Registro</span>
+                              <span className="text-xs font-black text-zinc-900 tabular-nums"># {jugador.pl_id}</span>
+                            </div>
                           </div>
-                          <div className="flex flex-col items-end">
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">ID Registro</span>
-                            <span className="text-xs font-black text-zinc-900 tabular-nums"># {jugador.pl_id}</span>
-                          </div>
-                        </div>
 
-                        <div className="mt-auto">
-                          <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-lg uppercase leading-tight mb-4">
-                            {jugador.pl_apno}
-                          </h3>
-                          
-                          <div className="flex items-center justify-between pt-4 border-t border-zinc-50">
-                            <div className="flex flex-col">
-                              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Historial</span>
-                              <div className="flex items-center space-x-1.5">
-                                <span className="font-black text-zinc-900">{jugador.goles_count || 0}</span>
-                                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">Goles</span>
+                          <div className="mt-auto">
+                            <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-lg uppercase leading-tight mb-4">
+                              {jugador.pl_apno}
+                            </h3>
+                            
+                            <div className="flex items-center justify-between pt-4 border-t border-zinc-50">
+                              <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Historial</span>
+                                <div className="flex items-center space-x-1.5">
+                                  <span className="font-black text-zinc-900">{jugador.goles_count || 0}</span>
+                                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">Goles</span>
+                                </div>
+                              </div>
+                              <div className="w-8 h-8 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-red-50 group-hover:text-red-600 transition-all">
+                                <ChevronRight size={16} />
                               </div>
                             </div>
-                            <div className="w-8 h-8 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-red-50 group-hover:text-red-600 transition-all">
-                              <ChevronRight size={16} />
-                            </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      );
+                    })}
                   </div>
 
                   {/* Pagination */}

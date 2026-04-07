@@ -5,6 +5,7 @@ import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
 import Image from "next/image";
 import { cookies } from "next/headers";
+import { sanitizeImageUrl } from "@/utils/image";
 
 interface Gol {
   gol_fecha: string;
@@ -81,6 +82,8 @@ export default async function JugadorDetailPage({
 
   const topRival = Object.entries(rivalFavorito).sort((a: any, b: any) => b[1] - a[1])[0] || ["-", 0];
 
+  const jugadorFotoUrl = sanitizeImageUrl(jugador.pl_foto);
+
   return (
     <div className="min-h-screen bg-zinc-50/30 pb-24">
       {/* Navigation & Header Area */}
@@ -106,16 +109,27 @@ export default async function JugadorDetailPage({
             {/* Foto / Avatar */}
             <div className="relative">
               <div className="w-48 h-48 md:w-64 md:h-64 bg-zinc-800 rounded-[60px] flex items-center justify-center text-zinc-700 font-black text-8xl shadow-2xl border-2 border-zinc-700 overflow-hidden relative group">
-                {jugador.pl_foto ? (
-                  <Image src={jugador.pl_foto} alt={jugador.pl_apno} fill className="object-cover" />
+                {jugadorFotoUrl ? (
+                  <>
+                    <Image 
+                      src={jugadorFotoUrl} 
+                      alt="" 
+                      fill 
+                      unoptimized
+                      className={`object-cover transition-all duration-700 ${!isPremium ? 'blur-2xl grayscale scale-110' : 'group-hover:scale-105'}`} 
+                    />
+                    {!isPremium && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 backdrop-blur-sm">
+                        <div className="flex flex-col items-center px-6 text-center">
+                          <Shield size={24} className="text-red-500 mb-2" />
+                          <span className="text-[10px] text-white font-black uppercase tracking-widest leading-tight">Contenido<br/>Premium</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex flex-col items-center">
                     <span className="leading-none">{jugador.pl_apno.charAt(0)}</span>
-                    {!jugador.pl_foto && (
-                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
-                          <span className="text-[10px] text-white font-black uppercase tracking-widest text-center px-4">Foto solo para Premium</span>
-                       </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -190,7 +204,13 @@ export default async function JugadorDetailPage({
                     {/* Rival Crest Placeholder */}
                     <div className="w-16 h-16 bg-zinc-50 rounded-3xl flex items-center justify-center border border-zinc-100 shadow-inner group-hover:scale-110 transition-transform overflow-hidden relative">
                       {gol.partido?.rival?.escudo ? (
-                        <Image src={gol.partido.rival.escudo} alt={gol.partido.rival.ri_desc} fill className="object-contain p-2" />
+                        <Image 
+                          src={sanitizeImageUrl(gol.partido.rival.escudo)} 
+                          alt="" 
+                          fill 
+                          unoptimized
+                          className="object-contain p-2" 
+                        />
                       ) : (
                         <Trophy size={24} className="text-zinc-200" />
                       )}

@@ -41,7 +41,7 @@ class JugadorResource extends JsonResource
         return [
             "pl_id" => $this->pl_id,
             "pl_apno" => $this->pl_apno,
-            "pl_foto" => $isPremium && $this->pl_foto ? Storage::disk("public")->url($this->pl_foto) : null,
+            "pl_foto" => $this->pl_foto ? Storage::disk("public")->url($this->pl_foto) : null,
             "goles_count" => $this->whenCounted("goles"),
             "goles" => GolResource::collection($golesCollection),
             "is_premium_restricted" => !$isPremium
