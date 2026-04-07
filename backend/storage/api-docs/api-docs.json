@@ -756,8 +756,27 @@
                     "Jugadores"
                 ],
                 "summary": "List all jugadores",
-                "description": "Display a listing of the resource.",
                 "operationId": "getJugadores",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search by name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Records per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -774,7 +793,6 @@
                     "Jugadores"
                 ],
                 "summary": "Create a new jugador",
-                "description": "Store a newly created resource in storage.",
                 "operationId": "createJugador",
                 "responses": {
                     "201": {
@@ -794,7 +812,6 @@
                     "Jugadores"
                 ],
                 "summary": "Get jugador by ID",
-                "description": "Display the specified resource.",
                 "operationId": "getJugadorById",
                 "parameters": [
                     {
@@ -822,7 +839,6 @@
                     "Jugadores"
                 ],
                 "summary": "Update a jugador",
-                "description": "Update the specified resource in storage.",
                 "operationId": "updateJugador",
                 "parameters": [
                     {
@@ -850,7 +866,6 @@
                     "Jugadores"
                 ],
                 "summary": "Delete a jugador",
-                "description": "Remove the specified resource from storage.",
                 "operationId": "deleteJugador",
                 "parameters": [
                     {
@@ -1024,11 +1039,11 @@
                         "name": "condicion",
                         "in": "query",
                         "schema": {
-                            "type": "string",
+                            "type": "integer",
                             "enum": [
-                                "L",
-                                "V",
-                                "N"
+                                1,
+                                2,
+                                3
                             ]
                         }
                     },
@@ -2013,6 +2028,14 @@
                     },
                     "pl_apno": {
                         "type": "string"
+                    },
+                    "pl_foto": {
+                        "description": "URL de la foto del jugador (Solo Premium)",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "goles_count": {
+                        "type": "integer"
                     },
                     "goles": {
                         "type": "array",

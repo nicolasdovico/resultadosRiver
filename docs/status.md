@@ -53,9 +53,24 @@
     - [x] Ajustes de fechas locales y filtros de tiempo ("Hoy", "Un día como hoy").
     - [x] Configuración de Mailpit para entorno de desarrollo.
     - [x] Solución de errores de hidratación en Next.js y manejo de Client Components.
-
 ## Fase 6: Estadísticas Avanzadas y Engagement (En Progreso)
+- [x] **Sección de Figuras (Jugadores):**
+    - [x] **Infraestructura:** Migración para fotos de jugadores y actualización del panel Filament para gestión multimedia.
+    - [x] **Backend:** 
+        - [x] Implementación de filtros por letra inicial (`letter`) y soporte de paginación real.
+        - [x] Lógica de privacidad para fotos e historial de goles (Restricción Free vs Full Premium).
+        - [x] Carga de relaciones para historial detallado (Rivales, Escudos, Resultados).
+    - [x] **Frontend Web:**
+        - [x] Implementación de **Directorio Alfabético** (A-Z) con tarjetas compactas para exploración masiva.
+        - [x] Rediseño de fichas de jugadores con estética "Data Console" y tableros de rendimiento.
+        - [x] Sistema de paginación dinámica (25 por página) y banners de conversión Premium.
+    - [x] **Frontend Mobile:**
+        - [x] Nueva pestaña de navegación "Figuras".
+        - [x] Carrusel de ídolos y buscador optimizado.
+        - [x] Detalle de jugador con `BlurView` para contenido Premium.
 - [x] **Sección de Torneos:**
+...
+
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.
         - [x] Lógica de cálculo de estadísticas avanzadas (PJ, PG, PE, PP, GF, GC, DG, Efectividad, Vallas Invictas) en el modelo `Torneo`.

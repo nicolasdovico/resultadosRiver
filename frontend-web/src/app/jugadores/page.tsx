@@ -1,13 +1,17 @@
 import { getJugadores } from "@/api/generated/endpoints/jugadores/jugadores";
 import Link from "next/link";
-import { Users, ChevronRight, TrendingUp, Star } from "lucide-react";
+import { Users, ChevronRight, Star, Trophy, Activity, Search, X, Info } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { customInstance } from "@/api/custom-instance";
+import Image from "next/image";
+import { cookies } from "next/headers";
 
 interface Jugador {
   pl_id: number;
   pl_apno: string;
+  pl_foto?: string | null;
+  goles_count?: number;
 }
 
 export default async function JugadoresPage({
@@ -15,155 +19,316 @@ export default async function JugadoresPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const currentTier: 'guest' | 'registered' | 'premium' = 'registered';
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  const userRole = cookieStore.get("user_role")?.value;
+  const isLoggedIn = !!token;
+  const isPremium = userRole === "premium";
+  
+  const currentTier: "guest" | "registered" | "premium" = isPremium ? "premium" : (isLoggedIn ? "registered" : "guest");
   
   const params = await searchParams;
-  const query = typeof params.q === 'string' ? params.q : '';
+  const query = typeof params.q === "string" ? params.q : "";
+  const letter = typeof params.letra === "string" ? params.letra.toUpperCase() : "";
+  let currentPage = typeof params.page === "string" ? parseInt(params.page, 10) : 1;
 
-  // Manual call because Orval might not have generated the 'q' param in the SDK signature
-  const response = await customInstance<{ data: Jugador[] }>({
-    url: '/v1/jugadores',
-    method: 'GET',
-    params: { q: query }
-  });
-  
-  const visibleJugadores: Jugador[] = response.data || [];
-  
-  const totalDisplay = query ? visibleJugadores.length : 2900; 
+  // Force page 1 for free users
+  if (isLoggedIn && !isPremium) {
+    currentPage = 1;
+  }
+
+  const fetchOptions = { headers: token ? { "Authorization": `Bearer ${token}` } : {} } as any;
+
+  // Solo buscamos jugadores si hay una query o una letra seleccionada
+  let visibleJugadores: Jugador[] = [];
+  let totalResults = 0;
+  let lastPage = 1;
+
+  if (query || letter) {
+    const response = await customInstance<{ data: Jugador[], meta?: any }>({
+      url: "/v1/jugadores",
+      method: "GET",
+      params: { 
+        q: query, 
+        letter: letter,
+        page: currentPage,
+        limit: 25
+      },
+      ...fetchOptions
+    });
+    
+    // @ts-expect-error - meta is not fully typed
+    visibleJugadores = response.data || [];
+    // @ts-expect-error
+    totalResults = response.meta?.total || visibleJugadores.length;
+    // @ts-expect-error
+    lastPage = response.meta?.last_page || 1;
+  }
+
+  // Restriction logic for non-premium users
+  let shownCount = visibleJugadores.length;
+  let isRestricted = false;
+
+  if (isLoggedIn && !isPremium && (query || letter)) {
+    const limit = Math.max(5, Math.floor(totalResults * 0.5));
+    if (totalResults > limit) {
+      // In pagination context, if total results > limit, we restrict the view
+      // but since we are paginating 25 per page, if the limit is less than 25
+      // we slice the current page. If limit is more than 25, they see the first page full
+      // but they can't go to page 2.
+      if (limit < 25) {
+        visibleJugadores = visibleJugadores.slice(0, limit);
+        shownCount = limit;
+      } else {
+        shownCount = 25; // Full first page
+      }
+      isRestricted = true;
+    }
+  }
+
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-        <div>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center">
-              <Users size={24} />
-            </div>
-            <h1 className="text-4xl font-black text-zinc-900 tracking-tight uppercase">Jugadores</h1>
-          </div>
-          <p className="text-zinc-500 font-medium max-w-xl">
-            Explora las figuras que vistieron la banda roja. Goleadores, ídolos y leyendas del club.
-          </p>
+    <div className="min-h-screen bg-zinc-50/50 pb-24">
+      <div className="bg-white border-b border-zinc-100 mb-12 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-24 opacity-[0.03] pointer-events-none rotate-12">
+          <Users size={400} />
         </div>
-        <div className="bg-zinc-100 text-zinc-600 px-6 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center">
-          <Users className="mr-2" size={14} />
-          {query ? `${visibleJugadores.length} encontrados` : `${totalDisplay} Registrados`}
+        
+        <div className="container mx-auto px-4 py-16 max-w-6xl relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-14 h-14 bg-red-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-red-200">
+                  <Users size={28} />
+                </div>
+                <h1 className="text-5xl font-black text-zinc-900 tracking-tighter uppercase italic">
+                  Archivo de <span className="text-red-600">Figuras</span>
+                </h1>
+              </div>
+              <p className="text-zinc-500 font-medium text-lg leading-relaxed">
+                Explora el registro histórico de los protagonistas que defendieron la banda roja. 
+                Goleadores, leyendas y guerreros del Monumental.
+              </p>
+            </div>
+            
+            <div className="flex items-center bg-zinc-900 text-white px-8 py-4 rounded-[32px] font-black text-sm uppercase tracking-widest shadow-xl border-4 border-white">
+              <Activity className="mr-3 text-red-500" size={18} />
+              {query || letter ? `${totalResults} encontrados` : "Directorio Alfabético"}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Guest View: Top Goleadores Teaser */}
-      {!query && (
-        <section className="mb-16">
-          <h2 className="text-2xl font-black text-zinc-900 mb-6 flex items-center tracking-tight uppercase">
-            <Star className="mr-3 fill-red-600 text-red-600" size={20} />
-            Máximos Goleadores Históricos
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {[
-              { name: 'ÁNGEL LABRUNA', goals: 317, pos: 1 },
-              { name: 'OSCAR MAS', goals: 217, pos: 2 },
-              { name: 'BERNABÉ FERREYRA', goals: 202, pos: 3 },
-              { name: 'JOSÉ MANUEL MORENO', goals: 184, pos: 4 },
-              { name: 'NORBERTO ALONSO', goals: 158, pos: 5 },
-            ].map((top) => (
-              <div key={top.pos} className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm relative overflow-hidden group hover:border-red-200 transition-all">
-                <div className="text-5xl font-black text-zinc-50 absolute -right-2 -bottom-2 group-hover:text-red-50 transition-colors">#{top.pos}</div>
-                <h3 className="font-black text-zinc-900 text-sm mb-1 leading-tight relative z-10 uppercase">{top.name}</h3>
-                <p className="text-red-600 font-black text-2xl relative z-10">{top.goals} <span className="text-[10px] text-zinc-400 uppercase tracking-widest">Goles</span></p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <div className="container mx-auto px-4 max-w-6xl">
+        {/* Top 5 Goleadores - Solo en la vista inicial */}
+        {!query && !letter && (
+          <section className="mb-20">
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase italic flex items-center">
+                <Trophy className="mr-4 text-red-600" size={28} />
+                Goleadores Inmortales
+              </h2>
+              <div className="h-px flex-1 bg-zinc-200 mx-8 hidden md:block" />
+            </div>
 
-      {/* Main List with Access Control */}
-      <section className="relative">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">Archivo Completo</h2>
-          {currentTier !== 'guest' && (
-            <SearchBar placeholder="Buscar por apellido o nombre..." className="w-full md:max-w-md" />
-          )}
-        </div>
-
-        {visibleJugadores.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {visibleJugadores.map((jugador) => (
-              <Link 
-                key={jugador.pl_id}
-                href={`/jugadores/${jugador.pl_id}`}
-                className="bg-white p-6 rounded-[32px] border border-zinc-100 flex items-center justify-between group hover:border-red-200 transition-all shadow-sm"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 font-black text-xl uppercase group-hover:bg-red-50 group-hover:text-red-600 transition-all">
-                    {jugador.pl_apno ? jugador.pl_apno.charAt(0) : '?'}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+              {[
+                { name: "ÁNGEL LABRUNA", goals: 317, pos: 1 },
+                { name: "OSCAR MAS", goals: 217, pos: 2 },
+                { name: "BERNABÉ FERREYRA", goals: 202, pos: 3 },
+                { name: "JOSÉ MANUEL MORENO", goals: 184, pos: 4 },
+                { name: "NORBERTO ALONSO", goals: 158, pos: 5 },
+              ].map((top) => (
+                <div key={top.pos} className="bg-white p-8 rounded-[40px] border border-zinc-100 shadow-sm relative overflow-hidden group hover:border-red-600 transition-all duration-500 hover:-translate-y-2">
+                  <div className="absolute -right-4 -bottom-4 text-8xl font-black text-zinc-50 group-hover:text-red-50/50 transition-colors pointer-events-none italic">
+                    #{top.pos}
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-black text-zinc-800 tracking-tight group-hover:text-red-600 transition-colors text-sm uppercase">
-                      {jugador.pl_apno}
-                    </span>
-                    <div className="flex items-center text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">
-                      <span className="mr-2 text-[8px]">ID: {jugador.pl_id}</span>
-                      <ChevronRight size={10} />
+                  <div className="relative z-10">
+                    <div className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center font-black text-xs mb-4">
+                      {top.pos}º
+                    </div>
+                    <h3 className="font-black text-zinc-900 text-lg mb-2 leading-none uppercase tracking-tight">{top.name}</h3>
+                    <div className="flex items-end space-x-1">
+                      <span className="text-3xl font-black text-red-600">{top.goals}</span>
+                      <span className="text-[10px] text-zinc-400 font-black uppercase tracking-widest mb-1.5">Goles</span>
                     </div>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-24 bg-zinc-50 rounded-[40px] border-2 border-dashed border-zinc-200">
-            <Users className="mx-auto mb-4 text-zinc-300" size={48} />
-            <h3 className="text-xl font-black text-zinc-900 mb-2">No encontramos a "{query}"</h3>
-            <p className="text-zinc-500 font-medium">Revisa la ortografía o intenta con otro nombre.</p>
-          </div>
-        )}
-
-        {/* Access Control for Guests */}
-        {currentTier === 'guest' && !query && (
-          <AccessControl tier={currentTier} requiredTier="registered" className="mt-8 h-64" />
-        )}
-
-        {/* Premium Section Teaser */}
-        <section className="mt-20">
-          <div className="flex flex-col mb-10">
-            <h2 className="text-3xl font-black text-zinc-900 mb-2 tracking-tight uppercase italic">Análisis de Rendimiento</h2>
-            <p className="text-zinc-500 font-medium">Estadísticas avanzadas para usuarios Premium.</p>
-          </div>
-
-          <AccessControl tier={currentTier} requiredTier="premium" className="rounded-[40px] overflow-hidden shadow-xl border border-zinc-100">
-            <div className="bg-white p-10 min-h-[400px]">
-              <div className="flex items-center justify-between mb-12">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center text-red-600">
-                    <TrendingUp size={28} />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-xl text-zinc-900 tracking-tight uppercase">Goles por Década</h3>
-                    <p className="text-zinc-500 font-medium text-sm">Distribución histórica de anotaciones.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-8 items-end gap-3 h-48 mb-6 px-4">
-                {[45, 78, 92, 65, 88, 120, 110, 85].map((h, i) => (
-                  <div key={i} className="bg-red-600/10 hover:bg-red-600 transition-all rounded-t-xl group relative" style={{ height: `${h}%` }} />
-                ))}
-              </div>
-              <div className="flex justify-between px-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                <span>1950</span>
-                <span>1960</span>
-                <span>1970</span>
-                <span>1980</span>
-                <span>1990</span>
-                <span>2000</span>
-                <span>2010</span>
-                <span>2020</span>
-              </div>
+              ))}
             </div>
-          </AccessControl>
+          </section>
+        )}
+
+        <section className="relative">
+          {/* Header de Búsqueda / Navegación */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+            <div className="flex items-center space-x-4">
+              <h2 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase italic">
+                {letter ? `Letra ${letter}` : query ? "Búsqueda" : "Explorar"}
+              </h2>
+              {(letter || query) && (
+                <Link 
+                  href="/jugadores"
+                  className="flex items-center space-x-2 px-4 py-1.5 bg-red-50 text-red-600 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                >
+                  <X size={12} />
+                  <span>Cerrar</span>
+                </Link>
+              )}
+            </div>
+            <div className="relative w-full md:max-w-md">
+              <SearchBar placeholder="Refinar búsqueda..." className="w-full" />
+            </div>
+          </div>
+
+          {/* Premium Restriction Banner */}
+          {isRestricted && (
+            <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-[32px] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm shadow-yellow-900/5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-yellow-600 shrink-0 shadow-sm">
+                  <Info size={24} />
+                </div>
+                <p className="text-yellow-900 font-medium text-sm md:text-base">
+                  Mostrando <span className="font-black">{shownCount}</span> de <span className="font-black">{totalResults}</span> jugadores encontrados.{" "}
+                  Los socios <span className="font-black">Premium</span> acceden al archivo histórico completo y paginación ilimitada.
+                </p>
+              </div>
+              <Link href="/premium" className="bg-zinc-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center whitespace-nowrap">
+                <Star className="mr-2 fill-yellow-400 text-yellow-400" size={14} />
+                Hacerme Premium
+              </Link>
+            </div>
+          )}
+
+          {/* Vista 1: Cuadrícula Alfabética - Tamaño Reducido */}
+          {!query && !letter ? (
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-3">
+              {alphabet.map((l) => (
+                <Link
+                  key={l}
+                  href={`/jugadores?letra=${l}`}
+                  className="aspect-square bg-white rounded-2xl border border-zinc-100 flex items-center justify-center group hover:bg-red-600 hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-red-900/20"
+                >
+                  <span className="text-xl font-black text-zinc-900 group-hover:text-white transition-colors italic tabular-nums">
+                    {l}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            /* Vista 2: Resultados del Directorio / Búsqueda */
+            <>
+              {visibleJugadores.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {visibleJugadores.map((jugador) => (
+                      <Link 
+                        key={jugador.pl_id}
+                        href={`/jugadores/${jugador.pl_id}`}
+                        className="bg-white p-6 rounded-[36px] border border-zinc-100 flex flex-col group hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-red-900/5"
+                      >
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-white font-black text-xl uppercase group-hover:bg-red-600 transition-colors shadow-lg shadow-zinc-200 overflow-hidden relative">
+                            {jugador.pl_foto ? (
+                               <Image src={jugador.pl_foto} alt={jugador.pl_apno} fill className="object-cover" />
+                            ) : (
+                              jugador.pl_apno ? jugador.pl_apno.charAt(0) : "?"
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">ID Registro</span>
+                            <span className="text-xs font-black text-zinc-900 tabular-nums"># {jugador.pl_id}</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-auto">
+                          <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-lg uppercase leading-tight mb-4">
+                            {jugador.pl_apno}
+                          </h3>
+                          
+                          <div className="flex items-center justify-between pt-4 border-t border-zinc-50">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Historial</span>
+                              <div className="flex items-center space-x-1.5">
+                                <span className="font-black text-zinc-900">{jugador.goles_count || 0}</span>
+                                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">Goles</span>
+                              </div>
+                            </div>
+                            <div className="w-8 h-8 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-red-50 group-hover:text-red-600 transition-all">
+                              <ChevronRight size={16} />
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {!isRestricted && lastPage > 1 && (
+                    <div className="flex justify-center items-center space-x-2 mt-12">
+                      {currentPage > 1 ? (
+                        <Link 
+                          href={`/jugadores?${new URLSearchParams({ 
+                            ...(query ? { q: query } : {}), 
+                            ...(letter ? { letra: letter } : {}),
+                            page: (currentPage - 1).toString() 
+                          }).toString()}`}
+                          className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-zinc-600 font-bold text-sm hover:border-red-200 hover:text-red-600 transition-colors"
+                        >
+                          Anterior
+                        </Link>
+                      ) : (
+                        <span className="px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-xl text-zinc-400 font-bold text-sm cursor-not-allowed">
+                          Anterior
+                        </span>
+                      )}
+                      
+                      <div className="px-4 py-2 bg-zinc-100 rounded-xl text-zinc-600 font-black text-sm">
+                        Página {currentPage} de {lastPage}
+                      </div>
+                      
+                      {currentPage < lastPage ? (
+                        <Link 
+                          href={`/jugadores?${new URLSearchParams({ 
+                            ...(query ? { q: query } : {}), 
+                            ...(letter ? { letra: letter } : {}),
+                            page: (currentPage + 1).toString() 
+                          }).toString()}`}
+                          className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-zinc-600 font-bold text-sm hover:border-red-200 hover:text-red-600 transition-colors"
+                        >
+                          Siguiente
+                        </Link>
+                      ) : (
+                        <span className="px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-xl text-zinc-400 font-bold text-sm cursor-not-allowed">
+                          Siguiente
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-32 bg-white rounded-[48px] border-2 border-dashed border-zinc-100 shadow-inner">
+                  <Search className="mx-auto mb-6 text-zinc-200" size={64} />
+                  <h3 className="text-2xl font-black text-zinc-900 mb-2 uppercase italic tracking-tighter">
+                    No hay registros para {letter ? `la letra "${letter}"` : `"${query}"`}
+                  </h3>
+                  <p className="text-zinc-400 font-medium max-w-sm mx-auto">
+                    Verifica la ortografía o intenta buscar por apellido paterno solamente.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Access Control for Guests */}
+          {currentTier === "guest" && !query && !letter && (
+            <div className="mt-12 p-1 bg-gradient-to-r from-red-600 to-zinc-900 rounded-[40px]">
+              <AccessControl tier={currentTier} requiredTier="registered" className="h-64 rounded-[38px]" />
+            </div>
+          )}
         </section>
-      </section>
+      </div>
     </div>
   );
 }

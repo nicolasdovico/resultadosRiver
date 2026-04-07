@@ -3,7 +3,6 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
@@ -12,15 +11,22 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#b91c1c',
+        tabBarActiveTintColor: '#dc2626',
         headerShown: true,
         tabBarButton: HapticTab,
         headerStyle: {
-          backgroundColor: '#b91c1c',
+          backgroundColor: '#fff',
+          borderBottomWidth: 1,
+          borderBottomColor: '#f1f5f9',
+          elevation: 0,
+          shadowOpacity: 0,
         },
-        headerTintColor: '#fff',
+        headerTintColor: '#0f172a',
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontWeight: '900',
+          fontSize: 18,
+          textTransform: 'uppercase',
+          fontStyle: 'italic',
         },
       }}>
       <Tabs.Screen
@@ -38,6 +44,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="jugadores"
+        options={{
+          title: 'Figuras',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.3.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="stats"
         options={{
           title: 'Estadísticas',
@@ -47,7 +60,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Mi Perfil',
+          title: 'Perfil',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />

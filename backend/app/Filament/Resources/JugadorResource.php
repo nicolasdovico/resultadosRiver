@@ -3,32 +3,38 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\JugadorResource\Pages;
-use App\Filament\Resources\JugadorResource\RelationManagers;
 use App\Models\Jugador;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class JugadorResource extends Resource
 {
     protected static ?string $model = Jugador::class;
-
-    protected static ?string $pluralLabel = 'Jugadores';
-
-    protected static ?string $modelLabel = 'Jugador';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $pluralLabel = "Jugadores";
+    protected static ?string $modelLabel = "Jugador";
+    protected static ?string $navigationIcon = "heroicon-o-users";
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('pl_apno')
-                    ->label('Nombre'),
+                Forms\Components\Section::make("Información del Jugador")
+                    ->schema([
+                        Forms\Components\TextInput::make("pl_apno")
+                            ->label("Nombre Completo")
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\FileUpload::make("pl_foto")
+                            ->label("Foto del Jugador")
+                            ->image()
+                            ->directory("players-photos")
+                            ->visibility("public")
+                            ->imageEditor()
+                            ->circleCropper(),
+                    ])
             ]);
     }
 
@@ -36,12 +42,19 @@ class JugadorResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pl_apno')
-                    ->label('Nombre')
+                Tables\Columns\ImageColumn::make("pl_foto")
+                    ->label("Foto")
+                    ->circular(),
+                Tables\Columns\TextColumn::make("pl_apno")
+                    ->label("Nombre")
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make("goles_count")
+                    ->label("Goles")
+                    ->counts("goles")
+                    ->sortable(),
             ])
-            ->defaultSort('pl_apno')
+            ->defaultSort("pl_apno")
             ->filters([
                 //
             ])
@@ -57,17 +70,15 @@ class JugadorResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListJugadors::route('/'),
-            'create' => Pages\CreateJugador::route('/create'),
-            'edit' => Pages\EditJugador::route('/{record}/edit'),
+            "index" => Pages\ListJugadors::route("/"),
+            "create" => Pages\CreateJugador::route("/create"),
+            "edit" => Pages\EditJugador::route("/{record}/edit"),
         ];
     }
 }
