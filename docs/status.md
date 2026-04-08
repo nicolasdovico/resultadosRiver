@@ -64,6 +64,7 @@
         - [x] **Optimización de Fotos:** Eliminación de recortes circulares y habilitación de editor con ratios verticales (3:4, 2:3).
         - [x] **Analítica Scoped:** Cálculo de goles por periodos (1T, 2T) e intervalos de 10 min específicos por jugador.
         - [x] **Racha y Sequía:** Implementación de contadores de días y partidos desde el último gol.
+        - [x] **Fix de Numeración:** Implementación de `river_goals_offset` para numeración histórica precisa en paginación mixta.
     - [x] **Frontend Web:**
         - [x] Implementación de **Directorio Alfabético** (A-Z) con tarjetas compactas para exploración masiva.
         - [x] Rediseño de fichas de jugadores con estética "Data Console" y tableros de rendimiento.

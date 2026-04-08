@@ -1,5 +1,40 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-08: Implementación de Goles de la Victoria (Goles Decisivos) (Fase 6)
+- [x] **Backend**:
+  - [x] **Servicio**: Creación de `GoalAnalysisService` con lógica estricta: un gol es "de victoria" si rompe el empate final (`go_ad` a `go_ad`) para poner el marcador definitivo (`go_ad + 1`) en una victoria por la mínima diferencia.
+  - [x] **API**: Inclusión de `es_gol_victoria` en `GolResource` y `goles_victoria_count` en `JugadorResource` (Exclusivo Premium).
+  - [x] **Performance**: Implementación de caché `v4` para los cálculos de secuencias de goles por partido.
+- [x] **Frontend Web**:
+  - [x] **Resumen**: Adición del contador "Goles Decisivos" en el sidebar de la ficha del jugador con iconografía de trofeo.
+  - [x] **Historial**: Implementación de badge animado "GOL DE LA VICTORIA" para resaltar las anotaciones definitivas.
+- [x] **Frontend Mobile**:
+  - [x] **UI**: Integración del contador "Goles de la Victoria" con estética dorada (Crown icon) en la cabecera del perfil.
+  - [x] **Historial**: Adición de distintivo "Victoria" en las tarjetas de goles para usuarios Premium.
+
+### 2026-04-08: Corrección de Numeración de Goles en Paginación (Fase 6)
+- [x] **Backend**:
+  - [x] **Lógica**: Implementación de `river_goals_offset` en `JugadorResource` para calcular cuántos goles "para River" existen en páginas anteriores.
+  - [x] **Fix**: Exclusión de autogoles (`gol_penal = 6`) de los conteos oficiales de `goles_river_count` y `goles_rival_count` en `JugadorController`.
+- [x] **Frontend Web**:
+  - [x] **Fix**: Actualización de la fórmula de numeración histórica para usar el offset del backend, asegurando correlación perfecta entre páginas (Ej: Jugadores con goles a favor y en contra como Cedrés).
+- [x] **Frontend Mobile**:
+  - [x] **Fix**: Actualización de la interfaz y lógica de numeración para soportar el offset del backend.
+
+- [x] **Backend**:
+  - [x] **Lógica**: Actualización de `JugadorController` para calcular `goles_river_count` y `goles_rival_count` por separado.
+  - [x] **API**: Inclusión de `river_shield` (desde Settings) y `gol_penal` (desde DB) en los recursos del jugador y goles.
+  - [x] **Fix**: Corrección de filtros en `JugadorResource` para reconocer el valor `2` como gol de rival en la base de datos.
+- [x] **Frontend Web**:
+  - [x] **Visualización**: Implementación de 4 estados visuales en el historial: **Gol CARP** (Rojo), **Beneficio CARP/Autogol Rival** (Esmeralda), **Gol Rival** (Zinc) y **Autogol CARP** (Ámbar).
+  - [x] **Analytics**: Desglose de gráficos de "Goles por Tiempo" y "Forma de los Goles" diferenciando bando (River vs Rival).
+  - [x] **UI**: Integración del escudo oficial dinámico desde el Panel Administrativo (Settings) con fallback de seguridad.
+  - [x] **Fix**: Resolución de errores de referencia y conflictos de Server/Client Components en la ficha de jugador.
+- [x] **Frontend Mobile**:
+  - [x] **UI**: Replicación de la lógica de 4 estados en el historial de goles con iconografía y colores diferenciados.
+  - [x] **Estadísticas**: Actualización del encabezado con desglose de producción ofensiva (CARP vs Rival).
+  - [x] **Imagen**: Uso del escudo dinámico de River Plate desde la API.
+
 ### 2026-04-08: Limpieza de UI y Remoción de IDs Irrelevantes (Fase 6)
 - [x] **Frontend Web**:
   - [x] **UI**: Eliminación del dato "ID Registro" en las tarjetas del listado de jugadores.

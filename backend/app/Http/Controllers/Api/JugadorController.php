@@ -27,7 +27,14 @@ class JugadorController extends Controller
     )]
     public function index(Request $request)
     {
-        $query = Jugador::query()->withCount("goles");
+        $query = Jugador::query()
+            ->withCount(["goles as goles_count"])
+            ->withCount(["goles as goles_river_count" => function ($q) {
+                $q->where("gol_parariver", 1)->where("gol_penal", "!=", 6);
+            }])
+            ->withCount(["goles as goles_rival_count" => function ($q) {
+                $q->where("gol_parariver", 2)->where("gol_penal", "!=", 6);
+            }]);
 
         if ($request->has("q")) {
             $query->where("pl_apno", "ILIKE", "%{$request->q}%");
@@ -61,7 +68,15 @@ class JugadorController extends Controller
     )]
     public function show(Request $request, string $id)
     {
-        $jugador = Jugador::withCount("goles")->findOrFail($id);
+        $jugador = Jugador::query()
+            ->withCount(["goles as goles_count"])
+            ->withCount(["goles as goles_river_count" => function ($q) {
+                $q->where("gol_parariver", 1)->where("gol_penal", "!=", 6);
+            }])
+            ->withCount(["goles as goles_rival_count" => function ($q) {
+                $q->where("gol_parariver", 2)->where("gol_penal", "!=", 6);
+            }])
+            ->findOrFail($id);
 
         // Paginamos los goles (10 por página)
         $goles = $jugador->goles()

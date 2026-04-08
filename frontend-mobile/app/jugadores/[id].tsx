@@ -9,10 +9,15 @@ import { BlurView } from 'expo-blur';
 import { formatLocalDate } from '@/utils/date';
 
 const { width } = Dimensions.get('window');
+const RIVER_SHIELD_FALLBACK = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Escudo_del_C_A_River_Plate.svg/1200px-Escudo_del_C_A_River_Plate.svg.png';
 
 interface Gol {
+  gol_id: number;
   gol_fecha: string;
   minutos: number;
+  gol_parariver: number;
+  gol_penal: number;
+  es_gol_victoria?: boolean;
   tipo_gol_desc?: string;
   periodo_desc?: string;
   partido?: {
@@ -33,18 +38,40 @@ interface Hito {
   rival_escudo?: string | null;
 }
 
+interface IntervalData {
+  label: string;
+  count: number;
+  count_rival?: number;
+}
+
+interface PeriodStat {
+  period_name: string;
+  intervals: IntervalData[];
+}
+
 interface Jugador {
   pl_id: number;
   pl_apno: string;
   pl_foto?: string | null;
+  river_shield?: string | null;
   goles_count: number;
+  goles_river_count: number;
+  goles_rival_count: number;
+  goles_victoria_count?: number | null;
   dias_desde_ultimo_gol?: number | null;
   partidos_desde_ultimo_gol?: number | null;
+  goles_por_periodo?: PeriodStat[];
   dobletes_count: number;
   hat_tricks_count: number;
   dobletes: Hito[];
   hat_tricks: Hito[];
   goles: Gol[];
+  goles_meta?: {
+    current_page: number;
+    last_page: number;
+    total: number;
+    river_goals_offset?: number;
+  };
   is_premium_restricted?: boolean;
 }
 
@@ -90,6 +117,8 @@ export default function JugadorDetailScreen() {
     );
   }
 
+  const riverShieldUrl = jugador.river_shield || RIVER_SHIELD_FALLBACK;
+
   return (
     <ScrollView style={styles.container} bounces={false}>
       <Stack.Screen options={{ 
@@ -130,7 +159,7 @@ export default function JugadorDetailScreen() {
           </View>
 
           <View style={styles.badgeContainer}>
-             <View style={styles.riverTag}><Text style={styles.riverTagText}>River Plate</Text></View>
+             <View style={styles.riverTag}><Text style={styles.riverTagText}>Registro Histórico</Text></View>
           </View>
 
 
@@ -138,8 +167,8 @@ export default function JugadorDetailScreen() {
           
           <View style={styles.statsRow}>
             <View style={styles.mainStat}>
-              <Text style={styles.mainStatValue}>{jugador.goles_count}</Text>
-              <Text style={styles.mainStatLabel}>Goles</Text>
+              <Text style={styles.mainStatValue}>{jugador.goles_river_count}</Text>
+              <Text style={styles.mainStatLabel}>Goles CARP</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.mainStat}>
@@ -152,6 +181,21 @@ export default function JugadorDetailScreen() {
               <Text style={styles.mainStatLabel}>Sequía (PJ)</Text>
             </View>
           </View>
+
+          <View style={styles.subStatsRow}>
+             <Text style={styles.subStatText}>Goles Totales: <Text style={styles.subStatValue}>{jugador.goles_count}</Text></Text>
+             <Text style={styles.subStatDivider}>|</Text>
+             <Text style={styles.subStatText}>Goles Rival: <Text style={styles.subStatValue}>{jugador.goles_rival_count}</Text></Text>
+          </View>
+
+          {isPremium && (
+            <View style={styles.winningGoalsBadge}>
+               <MaterialCommunityIcons name="crown" size={14} color="#facc15" />
+               <Text style={styles.winningGoalsText}>
+                 Goles de la Victoria: <Text style={styles.winningGoalsValue}>{jugador.goles_victoria_count ?? 0}</Text>
+               </Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -163,7 +207,7 @@ export default function JugadorDetailScreen() {
           <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
               <MaterialCommunityIcons name="trophy-variant" size={20} color="#dc2626" />
-              <Text style={styles.sectionTitle}>Hall de Hitos</Text>
+              <Text style={styles.sectionTitle}>Hall de Hitos (CARP)</Text>
               <View style={styles.premiumBadge}>
                  <Text style={styles.premiumBadgeText}>PREMIUM</Text>
               </View>
@@ -246,35 +290,162 @@ export default function JugadorDetailScreen() {
           </View>
         )}
 
+        {/* Analytics Section - Intervals */}
+        {isPremium && jugador.goles_por_periodo && jugador.goles_por_periodo.length > 0 && (
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionHeader}>
+              <MaterialCommunityIcons name="chart-bar" size={20} color="#dc2626" />
+              <Text style={styles.sectionTitle}>Análisis por Tiempo</Text>
+            </View>
+            
+            <View style={styles.legendRow}>
+               <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: '#dc2626' }]} />
+                  <Text style={styles.legendText}>Para River</Text>
+               </View>
+               <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: '#94a3b8' }]} />
+                  <Text style={styles.legendText}>Contra River</Text>
+               </View>
+            </View>
+
+            {jugador.goles_por_periodo.map((period, idx) => (
+              <View key={idx} style={styles.periodContainer}>
+                <Text style={styles.periodLabel}>{period.period_name}</Text>
+                {period.intervals.map((interval, iIdx) => {
+                  const hasData = (interval.count || 0) > 0 || (interval.count_rival || 0) > 0;
+                  if (!hasData) return null;
+
+                  const maxVal = Math.max(...period.intervals.map(i => Math.max(i.count, i.count_rival || 0)));
+                  const widthRiver = maxVal > 0 ? (interval.count / maxVal) * 100 : 0;
+                  const widthRival = maxVal > 0 ? ((interval.count_rival || 0) / maxVal) * 100 : 0;
+
+                  return (
+                    <View key={iIdx} style={styles.intervalRow}>
+                      <Text style={styles.intervalText}>{interval.label}</Text>
+                      <View style={styles.barsContainer}>
+                        {interval.count > 0 && (
+                          <View style={styles.barWrapper}>
+                            <View style={[styles.bar, { width: `${widthRiver}%`, backgroundColor: '#dc2626' }]} />
+                            <Text style={styles.barValue}>{interval.count}</Text>
+                          </View>
+                        )}
+                        {(interval.count_rival || 0) > 0 && (
+                          <View style={styles.barWrapper}>
+                            <View style={[styles.bar, { width: `${widthRival}%`, backgroundColor: '#94a3b8' }]} />
+                            <Text style={styles.barValueRival}>{interval.count_rival}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={styles.sectionHeader}>
           <MaterialCommunityIcons name="soccer" size={20} color="#dc2626" />
           <Text style={styles.sectionTitle}>Historial de Goles</Text>
         </View>
 
-        {jugador.goles.map((gol, index) => (
-          <View key={index} style={styles.goalCard}>
-            <View style={styles.goalRival}>
-               <View style={styles.crestContainer}>
-                  {gol.partido?.rival?.escudo ? (
-                    <Image source={{ uri: gol.partido.rival.escudo }} style={styles.crestImage} />
-                  ) : (
-                    <MaterialCommunityIcons name="shield-outline" size={24} color="#e2e8f0" />
-                  )}
-               </View>
-               <View style={styles.goalInfo}>
-                  <Text style={styles.goalNumber}>Gol #{jugador.goles_count - index} • {formatLocalDate(gol.gol_fecha)}</Text>
-                  <Text style={styles.rivalName}>vs {gol.partido?.rival?.ri_desc}</Text>
-                  <View style={styles.scoreTag}>
-                     <Text style={styles.scoreText}>{gol.partido?.go_ri} - {gol.partido?.go_ad}</Text>
-                  </View>
-               </View>
+        {jugador.goles.map((gol, index) => {
+          // Categorización Fina
+          const isParaRiver = gol.gol_parariver === 1 && gol.gol_penal !== 6;
+          const isAutogolCarp = gol.gol_parariver === 2 && gol.gol_penal === 6;
+          const isAutogolRival = gol.gol_parariver === 1 && gol.gol_penal === 6;
+          
+          // Numbering goals for River (exclude own goals)
+          const riverGoalsAhead = jugador.goles
+            .slice(0, index)
+            .filter(g => g.gol_parariver === 1 && g.gol_penal !== 6).length;
+          
+          const riverGoalsOffset = jugador.goles_meta?.river_goals_offset || 0;
+          const riverGoalNumber = isParaRiver ? (jugador.goles_river_count - (riverGoalsOffset + riverGoalsAhead)) : null;
+
+          return (
+            <View key={index} style={[
+              styles.goalCard, 
+              !isParaRiver && styles.goalCardRival,
+              isAutogolCarp && styles.goalCardAutogol,
+              isAutogolRival && styles.goalCardBenefit
+            ]}>
+              <View style={styles.goalRival}>
+                 <View style={[
+                   styles.crestContainer, 
+                   isAutogolCarp && styles.crestContainerAutogol,
+                   isAutogolRival && styles.crestContainerBenefit
+                 ]}>
+                    {isParaRiver || isAutogolRival ? (
+                      gol.partido?.rival?.escudo ? (
+                        <Image source={{ uri: gol.partido.rival.escudo }} style={styles.crestImage} />
+                      ) : (
+                        <MaterialCommunityIcons name="shield-outline" size={24} color="#e2e8f0" />
+                      )
+                    ) : (
+                      <Image source={{ uri: riverShieldUrl }} style={styles.crestImage} />
+                    )}
+                 </View>
+                 <View style={styles.goalInfo}>
+                    <View style={styles.goalTitleRow}>
+                      <Text style={[
+                        styles.goalNumber, 
+                        !isParaRiver && styles.goalNumberRival,
+                        isAutogolCarp && styles.goalNumberAutogol,
+                        isAutogolRival && styles.goalNumberBenefit
+                      ]}>
+                        {isParaRiver ? `Gol #${riverGoalNumber}` : 
+                         isAutogolCarp ? 'Autogol (CARP)' : 
+                         isAutogolRival ? 'Beneficio CARP' : 'Anotación vs CARP'} • {formatLocalDate(gol.gol_fecha)}
+                      </Text>
+                      {gol.es_gol_victoria && (
+                        <View style={styles.winnerBadgeSmall}>
+                           <MaterialCommunityIcons name="crown" size={10} color="#fff" />
+                           <Text style={styles.winnerBadgeText}>Victoria</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[
+                      styles.rivalName, 
+                      !isParaRiver && styles.rivalNameRival,
+                      isAutogolCarp && styles.rivalNameAutogol,
+                      isAutogolRival && styles.rivalNameBenefit
+                    ]}>
+                      {isParaRiver 
+                        ? `vs ${gol.partido?.rival?.ri_desc}` 
+                        : isAutogolCarp 
+                          ? `En contra vs ${gol.partido?.rival?.ri_desc}`
+                          : isAutogolRival
+                            ? `Autogol Rival (con ${gol.partido?.rival?.ri_desc})`
+                            : `vs River Plate (con ${gol.partido?.rival?.ri_desc})`
+                      }
+                    </Text>
+                    <View style={[
+                      styles.scoreTag, 
+                      isAutogolCarp && styles.scoreTagAutogol,
+                      isAutogolRival && styles.scoreTagBenefit
+                    ]}>
+                       <Text style={styles.scoreText}>{gol.partido?.go_ri} - {gol.partido?.go_ad}</Text>
+                    </View>
+                 </View>
+              </View>
+              <View style={styles.goalTime}>
+                 <Text style={[
+                   styles.timeText, 
+                   !isParaRiver && styles.timeTextRival,
+                   isAutogolCarp && styles.timeTextAutogol,
+                   isAutogolRival && styles.timeTextBenefit
+                 ]}>{gol.minutos}'</Text>
+                 <Ionicons 
+                   name={isAutogolCarp ? "alert-circle" : isAutogolRival ? "checkmark-circle" : "timer-outline"} 
+                   size={14} 
+                   color={isParaRiver ? "#94a3b8" : isAutogolCarp ? "#b45309" : isAutogolRival ? "#059669" : "#64748b"} 
+                 />
+              </View>
             </View>
-            <View style={styles.goalTime}>
-               <Text style={styles.timeText}>{gol.minutos}'</Text>
-               <Ionicons name="timer-outline" size={14} color="#94a3b8" />
-            </View>
-          </View>
-        ))}
+          );
+        })}
 
         {jugador.is_premium_restricted && (
           <View style={styles.restrictedContainer}>
@@ -391,20 +562,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     textTransform: 'uppercase',
   },
-  idTag: {
-    backgroundColor: '#1e293b',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  idTagText: {
-    color: '#94a3b8',
-    fontSize: 10,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-  },
   playerName: {
     fontSize: 32,
     fontWeight: '900',
@@ -444,6 +601,48 @@ const styles = StyleSheet.create({
     height: 20,
     backgroundColor: '#334155',
     marginHorizontal: 10,
+  },
+  subStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  subStatText: {
+    color: '#64748b',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  subStatValue: {
+    color: '#94a3b8',
+    fontWeight: '900',
+  },
+  subStatDivider: {
+    color: '#334155',
+    fontSize: 10,
+  },
+  winningGoalsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(250, 204, 21, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(250, 204, 21, 0.2)',
+  },
+  winningGoalsText: {
+    color: '#facc15',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  winningGoalsValue: {
+    color: '#fff',
+    fontWeight: '900',
   },
   content: {
     padding: 24,
@@ -568,6 +767,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
+  },
+  goalTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  winnerBadgeSmall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  winnerBadgeText: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '900',
+    textTransform: 'uppercase',
   },
   hitoCrestContainerDark: {
     width: 40,
@@ -644,6 +864,81 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontStyle: 'italic',
   },
+  legendRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#64748b',
+    textTransform: 'uppercase',
+  },
+  periodContainer: {
+    marginBottom: 24,
+    backgroundColor: '#f8fafc',
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  periodLabel: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#0f172a',
+    textTransform: 'uppercase',
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  intervalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  intervalText: {
+    width: 50,
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#94a3b8',
+  },
+  barsContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  barWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  bar: {
+    height: 6,
+    borderRadius: 3,
+  },
+  barValue: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#dc2626',
+    width: 20,
+  },
+  barValueRival: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#64748b',
+    width: 20,
+  },
   goalCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -655,10 +950,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },
+  goalCardRival: {
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    opacity: 0.9,
+  },
+  goalCardAutogol: {
+    borderColor: '#fed7aa',
+    backgroundColor: '#fffbeb',
+  },
+  goalCardBenefit: {
+    borderColor: '#a7f3d0',
+    backgroundColor: '#f0fdf4',
+  },
   goalRival: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
+    flex: 1,
   },
   crestContainer: {
     width: 48,
@@ -670,6 +979,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },
+  crestContainerAutogol: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#fde68a',
+  },
+  crestContainerBenefit: {
+    backgroundColor: '#d1fae5',
+    borderColor: '#6ee7b7',
+  },
   crestImage: {
     width: 32,
     height: 32,
@@ -677,6 +994,7 @@ const styles = StyleSheet.create({
   },
   goalInfo: {
     gap: 2,
+    flex: 1,
   },
   goalNumber: {
     fontSize: 10,
@@ -684,11 +1002,29 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     textTransform: 'uppercase',
   },
+  goalNumberRival: {
+    color: '#64748b',
+  },
+  goalNumberAutogol: {
+    color: '#b45309',
+  },
+  goalNumberBenefit: {
+    color: '#059669',
+  },
   rivalName: {
     fontSize: 16,
     fontWeight: '900',
     color: '#0f172a',
     textTransform: 'uppercase',
+  },
+  rivalNameRival: {
+    color: '#475569',
+  },
+  rivalNameAutogol: {
+    color: '#92400e',
+  },
+  rivalNameBenefit: {
+    color: '#065f46',
   },
   scoreTag: {
     alignSelf: 'flex-start',
@@ -697,6 +1033,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
     marginTop: 2,
+  },
+  scoreTagAutogol: {
+    backgroundColor: '#fef3c7',
+  },
+  scoreTagBenefit: {
+    backgroundColor: '#d1fae5',
   },
   scoreText: {
     fontSize: 10,
@@ -711,6 +1053,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '900',
     color: '#0f172a',
+  },
+  timeTextRival: {
+    color: '#64748b',
+  },
+  timeTextAutogol: {
+    color: '#b45309',
+  },
+  timeTextBenefit: {
+    color: '#059669',
   },
   restrictedContainer: {
     marginTop: 20,

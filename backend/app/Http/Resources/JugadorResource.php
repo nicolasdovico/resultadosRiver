@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use App\Models\Partido;
 use App\Models\Periodo;
+use App\Models\Setting;
+use App\Services\GoalAnalysisService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,7 +19,11 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "pl_id", type: "integer"),
         new OA\Property(property: "pl_apno", type: "string"),
         new OA\Property(property: "pl_foto", type: "string", nullable: true),
+        new OA\Property(property: "river_shield", type: "string", nullable: true),
         new OA\Property(property: "goles_count", type: "integer"),
+        new OA\Property(property: "goles_river_count", type: "integer"),
+        new OA\Property(property: "goles_rival_count", type: "integer"),
+        new OA\Property(property: "goles_victoria_count", type: "integer", nullable: true),
         new OA\Property(property: "dias_desde_ultimo_gol", type: "integer", nullable: true),
         new OA\Property(property: "partidos_desde_ultimo_gol", type: "integer", nullable: true),
         new OA\Property(property: "goles_por_periodo", type: "array", items: new OA\Items(type: "object")),
@@ -34,7 +40,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "goles_meta", type: "object", properties: [
             new OA\Property(property: "current_page", type: "integer"),
             new OA\Property(property: "last_page", type: "integer"),
-            new OA\Property(property: "total", type: "integer")
+            new OA\Property(property: "total", type: "integer"),
+            new OA\Property(property: "river_goals_offset", type: "integer")
         ]),
         new OA\Property(property: "is_premium_restricted", type: "boolean")
     ]
@@ -55,6 +62,7 @@ class JugadorResource extends JsonResource
         $golesPorTipo = [];
         $diasDesdeUltimoGol = null;
         $partidosDesdeUltimoGol = null;
+        $golesVictoriaCount = null;
 
         $dobletes = [];
         $hatTricks = [];
@@ -64,9 +72,10 @@ class JugadorResource extends JsonResource
         // Solo procesamos datos pesados si la relación 'goles' está cargada (Vista de Detalle)
         if ($this->relationLoaded("goles")) {
             
-            // Hitos Goleadores (Solo en detalle)
+            // Hitos Goleadores (Solo goles PARA RIVER para los hitos positivos)
             $golesAgrupados = DB::table('goles')
                 ->where('gol_juga', $this->pl_id)
+                ->where('gol_parariver', 1) // Solo hitos con River
                 ->select('gol_fecha', DB::raw('count(*) as total'))
                 ->groupBy('gol_fecha')
                 ->havingRaw('count(*) >= 2')
@@ -95,10 +104,30 @@ class JugadorResource extends JsonResource
 
             if ($golesPaginator instanceof \Illuminate\Pagination\LengthAwarePaginator) {
                 $golesCollection = $golesPaginator->getCollection();
+                
+                // Calcular cuántos goles "para River" hay en las páginas anteriores para el offset
+                $currentPage = $golesPaginator->currentPage();
+                $perPage = $golesPaginator->perPage();
+                
+                $riverGoalsOffset = 0;
+                if ($currentPage > 1) {
+                    $limit = ($currentPage - 1) * $perPage;
+                    $riverGoalsOffset = DB::table('goles')
+                        ->where('gol_juga', $this->pl_id)
+                        ->orderBy('gol_fecha', 'desc')
+                        ->limit($limit)
+                        ->get()
+                        ->filter(function($g) {
+                            return $g->gol_parariver == 1 && $g->gol_penal != 6;
+                        })
+                        ->count();
+                }
+
                 $golesMeta = [
-                    "current_page" => $golesPaginator->currentPage(),
+                    "current_page" => $currentPage,
                     "last_page" => $golesPaginator->lastPage(),
                     "total" => $golesPaginator->total(),
+                    "river_goals_offset" => $riverGoalsOffset
                 ];
 
                 if (!$isPremium && $golesPaginator->currentPage() === 1) {
@@ -118,6 +147,8 @@ class JugadorResource extends JsonResource
 
             // Estadísticas de análisis (Solo en detalle y para Premium)
             if ($isPremium) {
+                $golesVictoriaCount = GoalAnalysisService::countWinningGoalsForPlayer($this->pl_id);
+
                 $intervals = [
                     ['label' => "0' - 10'", 'min' => 0, 'max' => 10],
                     ['label' => "11' - 20'", 'min' => 11, 'max' => 20],
@@ -133,14 +164,24 @@ class JugadorResource extends JsonResource
                 foreach ($activePeriods as $period) {
                     $intervalsData = [];
                     foreach ($intervals as $interval) {
-                        $count = \App\Models\Gol::where("gol_juga", $this->pl_id)
+                        // Goles River
+                        $countRiver = \App\Models\Gol::where("gol_juga", $this->pl_id)
                             ->where("periodo", $period->id_periodo)
+                            ->where("gol_parariver", 1)
+                            ->whereBetween("minutos", [$interval['min'], $interval['max']])
+                            ->count();
+                        
+                        // Goles Rival (Contra River) - El valor en DB es 2
+                        $countRival = \App\Models\Gol::where("gol_juga", $this->pl_id)
+                            ->where("periodo", $period->id_periodo)
+                            ->where("gol_parariver", 2)
                             ->whereBetween("minutos", [$interval['min'], $interval['max']])
                             ->count();
                         
                         $intervalsData[] = [
                             'label' => $interval['label'],
-                            'count' => $count
+                            'count' => $countRiver,
+                            'count_rival' => $countRival
                         ];
                     }
 
@@ -153,17 +194,25 @@ class JugadorResource extends JsonResource
                 $golesPorTipo = DB::table('goles')
                     ->join('tipo_gol', 'goles.gol_penal', '=', 'tipo_gol.tipo_gol')
                     ->where('goles.gol_juga', $this->pl_id)
-                    ->select('tipo_gol.tipo_gol_descripcion as label', DB::raw('count(*) as value'))
+                    ->select(
+                        'tipo_gol.tipo_gol_descripcion as label', 
+                        DB::raw('SUM(CASE WHEN gol_parariver = 1 THEN 1 ELSE 0 END) as value'),
+                        DB::raw('SUM(CASE WHEN gol_parariver = 2 THEN 1 ELSE 0 END) as value_rival')
+                    )
                     ->groupBy('tipo_gol.tipo_gol_descripcion')
                     ->get();
             }
 
-            // Cálculos de racha (Solo en detalle)
-            $ultimoGol = \App\Models\Gol::where("gol_juga", $this->pl_id)->orderBy("gol_fecha", "desc")->first();
-            if ($ultimoGol && $ultimoGol->gol_fecha) {
-                $fechaUltimo = Carbon::parse($ultimoGol->gol_fecha);
+            // Cálculos de racha (Solo goles PARA RIVER para la vigencia del jugador como goleador del club)
+            $ultimoGolRiver = \App\Models\Gol::where("gol_juga", $this->pl_id)
+                ->where('gol_parariver', 1)
+                ->orderBy("gol_fecha", "desc")
+                ->first();
+                
+            if ($ultimoGolRiver && $ultimoGolRiver->gol_fecha) {
+                $fechaUltimo = Carbon::parse($ultimoGolRiver->gol_fecha);
                 $diasDesdeUltimoGol = (int) $fechaUltimo->diffInDays(now());
-                $partidosDesdeUltimoGol = Partido::where("fecha", ">", $ultimoGol->gol_fecha)->count();
+                $partidosDesdeUltimoGol = Partido::where("fecha", ">", $ultimoGolRiver->gol_fecha)->count();
             }
         }
 
@@ -171,7 +220,11 @@ class JugadorResource extends JsonResource
             "pl_id" => $this->pl_id,
             "pl_apno" => $this->pl_apno,
             "pl_foto" => $this->pl_foto ? Storage::disk("public")->url($this->pl_foto) : null,
-            "goles_count" => $this->whenCounted("goles"),
+            "river_shield" => Setting::getUrl("river_shield"),
+            "goles_count" => $this->goles_count,
+            "goles_river_count" => $this->goles_river_count,
+            "goles_rival_count" => $this->goles_rival_count,
+            "goles_victoria_count" => $golesVictoriaCount,
             "dias_desde_ultimo_gol" => $diasDesdeUltimoGol,
             "partidos_desde_ultimo_gol" => $partidosDesdeUltimoGol,
             "goles_por_periodo" => $periodStats,

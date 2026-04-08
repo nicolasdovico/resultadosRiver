@@ -6,6 +6,7 @@ import { BarChart3 } from 'lucide-react';
 interface Interval {
   label: string;
   count: number;
+  count_rival?: number;
 }
 
 interface PeriodStat {
@@ -49,9 +50,17 @@ export default function PlayerGoalsAnalysis({ data, total }: PlayerGoalsAnalysis
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-red-600 rounded-full" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{total} Goles Totales</span>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-600 rounded-full" />
+            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Para River</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-zinc-400 rounded-full" />
+            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Contra River</span>
+          </div>
+          <div className="h-4 w-px bg-zinc-200 mx-2" />
+          <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest tabular-nums">{total} Goles</span>
         </div>
       </div>
       
@@ -67,29 +76,55 @@ export default function PlayerGoalsAnalysis({ data, total }: PlayerGoalsAnalysis
 
             <div className="space-y-10">
               {period.intervals.map((interval) => {
-                const percentage = total > 0 ? Math.round((interval.count / total) * 100) : 0;
+                const countRiver = interval.count || 0;
+                const countRival = interval.count_rival || 0;
+                const totalInterval = countRiver + countRival;
+                
+                const percentageRiver = total > 0 ? Math.round((countRiver / total) * 100) : 0;
+                const percentageRival = total > 0 ? Math.round((countRival / total) * 100) : 0;
+
+                if (totalInterval === 0) return null;
+
                 return (
-                  <div key={interval.label} className="grid grid-cols-[80px_1fr_80px] items-center group">
+                  <div key={interval.label} className="grid grid-cols-[80px_1fr_120px] items-center group">
                     <span className="text-[10px] font-black text-zinc-400 uppercase group-hover:text-zinc-900 transition-colors">
                       {interval.label}
                     </span>
                     
-                    <div className="flex flex-col gap-1.5 px-4 border-l border-zinc-50">
-                      <div className="relative flex items-center">
-                        <div className="flex-1 h-3 bg-zinc-50 rounded-full overflow-hidden relative border border-zinc-100/50">
-                          <div 
-                            className="h-full bg-red-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(220,38,38,0.1)]"
-                            style={{ width: `${percentage}%` }} 
-                          />
+                    <div className="flex flex-col gap-2 px-4 border-l border-zinc-50">
+                      {/* Barra River */}
+                      {countRiver > 0 && (
+                        <div className="relative flex items-center">
+                          <div className="flex-1 h-2 bg-zinc-50 rounded-full overflow-hidden relative border border-zinc-100/50">
+                            <div 
+                              className="h-full bg-red-600 rounded-full transition-all duration-1000 ease-out"
+                              style={{ width: `${percentageRiver}%` }} 
+                            />
+                          </div>
+                          <span className="ml-4 text-[10px] font-black text-red-600 w-16 tabular-nums">
+                            {countRiver} <span className="text-[8px] text-red-300">({percentageRiver}%)</span>
+                          </span>
                         </div>
-                        <span className="ml-4 text-[10px] font-black text-red-600 w-16 tabular-nums">
-                          {interval.count} <span className="text-[8px] text-red-300">({percentage}%)</span>
-                        </span>
-                      </div>
+                      )}
+
+                      {/* Barra Rival */}
+                      {countRival > 0 && (
+                        <div className="relative flex items-center">
+                          <div className="flex-1 h-2 bg-zinc-50 rounded-full overflow-hidden relative border border-zinc-100/50">
+                            <div 
+                              className="h-full bg-zinc-400 rounded-full transition-all duration-1000 ease-out"
+                              style={{ width: `${percentageRival}%` }} 
+                            />
+                          </div>
+                          <span className="ml-4 text-[10px] font-black text-zinc-500 w-16 tabular-nums">
+                            {countRival} <span className="text-[8px] text-zinc-300">({percentageRival}%)</span>
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-col items-end">
-                      {percentage >= 20 ? (
+                      {percentageRiver >= 20 ? (
                         <div className="text-[8px] font-black text-green-600 uppercase bg-green-50 px-1.5 py-0.5 rounded leading-none">
                           Zona Letal
                         </div>

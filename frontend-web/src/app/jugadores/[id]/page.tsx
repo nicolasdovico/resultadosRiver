@@ -1,5 +1,5 @@
 import { formatLocalDate } from "@/utils/date";
-import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight, Flame, Lock } from "lucide-react";
+import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight, Flame, Lock, AlertTriangle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
@@ -9,9 +9,15 @@ import { sanitizeImageUrl } from "@/utils/image";
 import PlayerGoalsAnalysis from "@/components/player/PlayerGoalsAnalysis";
 import PlayerGoalMethodAnalysis from "@/components/player/PlayerGoalMethodAnalysis";
 
+const RIVER_SHIELD_FALLBACK = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Escudo_del_C_A_River_Plate.svg/1200px-Escudo_del_C_A_River_Plate.svg.png';
+
 interface Gol {
+  gol_id: number;
   gol_fecha: string;
   minutos: number;
+  gol_parariver: number;
+  gol_penal: number;
+  es_gol_victoria?: boolean;
   tipo_gol_desc?: string;
   periodo_desc?: string;
   partido?: {
@@ -35,11 +41,15 @@ interface Jugador {
   pl_id: number;
   pl_apno: string;
   pl_foto?: string | null;
+  river_shield?: string | null;
   goles_count: number;
+  goles_river_count: number;
+  goles_rival_count: number;
+  goles_victoria_count?: number | null;
   dias_desde_ultimo_gol?: number | null;
   partidos_desde_ultimo_gol?: number | null;
   goles_por_periodo?: Record<string, any>;
-  goles_por_tipo?: { label: string; value: number }[];
+  goles_por_tipo?: { label: string; value: number; value_rival?: number }[];
   dobletes_count: number;
   hat_tricks_count: number;
   dobletes: Hito[];
@@ -49,6 +59,7 @@ interface Jugador {
     current_page: number;
     last_page: number;
     total: number;
+    river_goals_offset?: number;
   } | null;
   is_premium_restricted?: boolean;
 }
@@ -102,6 +113,7 @@ export default async function JugadorDetailPage({
   }
 
   const jugadorFotoUrl = sanitizeImageUrl(jugador.pl_foto);
+  const riverShieldUrl = jugador.river_shield ? sanitizeImageUrl(jugador.river_shield) : RIVER_SHIELD_FALLBACK;
 
   return (
     <div className="min-h-screen bg-zinc-50/30 pb-24">
@@ -159,7 +171,7 @@ export default async function JugadorDetailPage({
             
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
-                <span className="bg-red-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20">River Plate</span>
+                <span className="bg-red-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20">Registro Histórico</span>
               </div>
               <h1 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-10 italic">
                 {jugador.pl_apno}
@@ -170,31 +182,44 @@ export default async function JugadorDetailPage({
                 <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
                   <div className="flex items-center space-x-2 mb-2">
                     <Zap size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Goles Totales</span>
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Producción de Goles</span>
                   </div>
-                  <span className="block text-4xl font-black text-white tabular-nums">{jugador.goles_count}</span>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-4xl font-black text-white tabular-nums">{jugador.goles_count}</span>
+                    <span className="text-[10px] font-black text-zinc-500 uppercase">Totales</span>
+                  </div>
+                  <div className="flex items-center space-x-4 mt-2 pt-2 border-t border-white/5">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
+                      <span className="text-[10px] font-black text-white tabular-nums">{jugador.goles_river_count} <span className="text-zinc-500 text-[8px] uppercase ml-0.5">CARP</span></span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full" />
+                      <span className="text-[10px] font-black text-white tabular-nums">{jugador.goles_rival_count} <span className="text-zinc-500 text-[8px] uppercase ml-0.5">Rival</span></span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
                   <div className="flex items-center space-x-2 mb-2">
                     <Calendar size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Vigencia (Días)</span>
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Vigencia CARP (Días)</span>
                   </div>
                   <span className="block text-4xl font-black text-white tabular-nums">
                     {jugador.dias_desde_ultimo_gol ?? "-"}
                   </span>
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Días desde su último gol</span>
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Días desde su último gol para River</span>
                 </div>
 
                 <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
                   <div className="flex items-center space-x-2 mb-2">
                     <Activity size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Sequía (Partidos)</span>
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Sequía CARP (PJ)</span>
                   </div>
                   <span className="block text-4xl font-black text-white tabular-nums">
                     {jugador.partidos_desde_ultimo_gol ?? "-"}
                   </span>
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Partidos de River sin convertir</span>
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Partidos de River sin su aporte</span>
                 </div>
               </div>
             </div>
@@ -210,7 +235,7 @@ export default async function JugadorDetailPage({
               </div>
               <div>
                 <h2 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase italic">Hall de Hitos</h2>
-                <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Partidos con múltiples anotaciones</p>
+                <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Partidos con múltiples anotaciones para River</p>
               </div>
             </div>
 
@@ -320,7 +345,7 @@ export default async function JugadorDetailPage({
                             </div>
                             <div>
                               <div className="flex items-center space-x-2">
-                                <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{formatLocalDate(hito.fecha)}</span>
+                                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">{formatLocalDate(hito.fecha)}</span>
                               </div>
                               <h4 className="font-black text-zinc-900 text-md uppercase tracking-tight group-hover:text-red-600 transition-colors">
                                 vs {hito.rival}
@@ -366,56 +391,136 @@ export default async function JugadorDetailPage({
 
             <div className="space-y-4">
               {jugador.goles.map((gol, index) => {
-                // Cálculo del número de gol descendente (ej: Gol #12, #11...)
                 const currentPage = jugador.goles_meta?.current_page || 1;
-                const totalGoals = jugador.goles_count;
-                const globalGoalNumber = totalGoals - ((currentPage - 1) * 10 + index);
+                const totalGoalsForRiver = jugador.goles_river_count;
+                
+                // Categorización Fina
+                const isParaRiver = gol.gol_parariver === 1 && gol.gol_penal !== 6;
+                const isAutogolCarp = gol.gol_parariver === 2 && gol.gol_penal === 6;
+                const isGoalContraRiver = gol.gol_parariver === 2 && gol.gol_penal !== 6;
+                const isAutogolRival = gol.gol_parariver === 1 && gol.gol_penal === 6;
+                
+                const goalsAheadInCurrentPage = jugador.goles
+                  .slice(0, index)
+                  .filter(g => g.gol_parariver === 1 && g.gol_penal !== 6).length;
+                
+                const globalGoalNumber = isParaRiver 
+                  ? totalGoalsForRiver - ((jugador.goles_meta?.river_goals_offset || 0) + goalsAheadInCurrentPage)
+                  : null;
 
                 return (
-                  <div key={index} className="bg-white p-6 rounded-[40px] border border-zinc-100 flex items-center justify-between shadow-sm group hover:border-red-600 transition-all duration-300">
+                  <div key={index} className={`bg-white p-6 rounded-[40px] border flex items-center justify-between shadow-sm group transition-all duration-300 ${
+                    isParaRiver ? 'border-zinc-100 hover:border-red-600' : 
+                    isAutogolCarp ? 'border-amber-200 bg-amber-50/30 hover:border-amber-500' :
+                    isAutogolRival ? 'border-emerald-200 bg-emerald-50/30 hover:border-emerald-500' :
+                    'border-zinc-300 opacity-80 hover:border-zinc-900 bg-zinc-50/50'
+                  }`}>
                     <div className="flex items-center space-x-6">
-                      {/* Rival Crest Placeholder */}
-                      <div className="w-16 h-16 bg-zinc-50 rounded-3xl flex items-center justify-center border border-zinc-100 shadow-inner group-hover:scale-110 transition-transform overflow-hidden relative">
-                        {gol.partido?.rival?.escudo ? (
-                          <Image 
-                            src={sanitizeImageUrl(gol.partido.rival.escudo)} 
-                            alt="" 
-                            fill 
-                            unoptimized
-                            className="object-contain p-2" 
-                          />
+                      {/* Shield Display */}
+                      <div className={`w-16 h-16 rounded-3xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform overflow-hidden relative p-2 ${
+                        isAutogolCarp ? 'bg-amber-100' : 
+                        isAutogolRival ? 'bg-emerald-100' : 
+                        'bg-zinc-50 border border-zinc-100'
+                      }`}>
+                        {isParaRiver || isAutogolRival ? (
+                          gol.partido?.rival?.escudo ? (
+                            <Image 
+                              src={sanitizeImageUrl(gol.partido.rival.escudo)} 
+                              alt="" 
+                              fill 
+                              unoptimized
+                              className="object-contain p-2" 
+                            />
+                          ) : (
+                            <Trophy size={24} className="text-zinc-200" />
+                          )
                         ) : (
-                          <Trophy size={24} className="text-zinc-200" />
+                          <img 
+                            src={riverShieldUrl} 
+                            alt="River Plate" 
+                            className="w-full h-full object-contain p-1" 
+                          />
                         )}
                       </div>
 
                       <div className="flex flex-col">
                         <div className="flex items-center space-x-2 mb-1">
-                          <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">Gol #{globalGoalNumber}</span>
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${
+                            isParaRiver ? 'text-red-600' : 
+                            isAutogolCarp ? 'text-amber-600' : 
+                            isAutogolRival ? 'text-emerald-600' :
+                            'text-zinc-500'
+                          }`}>
+                            {isParaRiver ? `Gol #${globalGoalNumber}` : 
+                             isAutogolCarp ? 'Autogol (CARP)' : 
+                             isAutogolRival ? 'Beneficio CARP (Autogol Rival)' :
+                             'Anotación vs CARP'}
+                          </span>
                           <span className="w-1 h-1 bg-zinc-300 rounded-full" />
                           <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatLocalDate(gol.gol_fecha)}</span>
+                          {gol.es_gol_victoria && (
+                            <>
+                              <span className="w-1 h-1 bg-zinc-300 rounded-full" />
+                              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter flex items-center animate-pulse">
+                                <Trophy size={8} className="mr-1 fill-current" />
+                                Gol de la Victoria
+                              </span>
+                            </>
+                          )}
                         </div>
-                        <h4 className="font-black text-zinc-900 text-lg uppercase tracking-tight group-hover:text-red-600 transition-colors">
-                          vs {gol.partido?.rival?.ri_desc || "Rival Desconocido"}
+                        <h4 className={`font-black text-lg uppercase tracking-tight transition-colors ${
+                          isParaRiver ? 'text-zinc-900 group-hover:text-red-600' : 
+                          isAutogolCarp ? 'text-amber-900 group-hover:text-amber-600' :
+                          isAutogolRival ? 'text-emerald-900 group-hover:text-emerald-600' :
+                          'text-zinc-500 group-hover:text-zinc-900'
+                        }`}>
+                          {isParaRiver 
+                            ? `vs ${gol.partido?.rival?.ri_desc || "Rival Desconocido"}`
+                            : isAutogolCarp 
+                              ? `En contra vs ${gol.partido?.rival?.ri_desc || "Rival"}`
+                              : isAutogolRival
+                                ? `Autogol de ${gol.partido?.rival?.ri_desc || "Rival"} a favor de River`
+                                : `vs River Plate (jugando para ${gol.partido?.rival?.ri_desc || "Rival"})`
+                          }
                         </h4>
                         <div className="flex items-center space-x-3 mt-1">
                           <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                            isAutogolCarp ? "bg-amber-100 text-amber-700" :
+                            isAutogolRival ? "bg-emerald-100 text-emerald-700" :
                             gol.partido && gol.partido.go_ri > gol.partido.go_ad ? "bg-green-100 text-green-700" : 
                             gol.partido && gol.partido.go_ri < gol.partido.go_ad ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
                           }`}>
                             {gol.partido ? `${gol.partido.go_ri} - ${gol.partido.go_ad}` : "N/D"}
                           </div>
                           {gol.tipo_gol_desc && (
-                            <span className="text-[9px] font-black text-yellow-600 uppercase tracking-[0.2em]">• {gol.tipo_gol_desc}</span>
+                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${
+                              isAutogolCarp ? 'text-amber-600' : 
+                              isAutogolRival ? 'text-emerald-600' :
+                              'text-yellow-600'
+                            }`}>
+                              • {gol.tipo_gol_desc}
+                            </span>
                           )}
+                          {isAutogolCarp && <AlertTriangle size={12} className="text-amber-500" />}
+                          {isAutogolRival && <CheckCircle2 size={12} className="text-emerald-500" />}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end">
-                      <div className="flex items-center space-x-2 text-zinc-900">
+                      <div className={`flex items-center space-x-2 ${
+                        isParaRiver ? 'text-zinc-900' : 
+                        isAutogolCarp ? 'text-amber-700' : 
+                        isAutogolRival ? 'text-emerald-700' :
+                        'text-zinc-400'
+                      }`}>
                         <span className="text-3xl font-black tabular-nums">{gol.minutos}<span className="text-sm ml-0.5">'</span></span>
-                        <Timer size={18} className="text-red-600" />
+                        <Timer size={18} className={
+                          isParaRiver ? 'text-red-600' : 
+                          isAutogolCarp ? 'text-amber-500' : 
+                          isAutogolRival ? 'text-emerald-500' :
+                          'text-zinc-400'
+                        } />
                       </div>
                       <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-1">
                         {gol.periodo_desc || "Tiempo Regular"}
@@ -425,8 +530,7 @@ export default async function JugadorDetailPage({
                 );
               })}
 
-              {/* Paginación */}
-              {jugador.goles_meta && jugador.goles_meta.last_page > 1 && !jugador.is_premium_restricted && (
+              {!jugador.is_premium_restricted && (jugador.goles_meta?.last_page || 1) > 1 && (
                 <div className="flex justify-center items-center space-x-2 mt-12 py-8">
                   {currentPage > 1 ? (
                     <Link 
@@ -443,11 +547,11 @@ export default async function JugadorDetailPage({
 
                   <div className="bg-zinc-100 px-6 py-3 rounded-2xl">
                     <span className="text-zinc-600 font-black text-xs uppercase tracking-widest">
-                      Página {currentPage} de {jugador.goles_meta.last_page}
+                      Página {currentPage} de {jugador.goles_meta?.last_page}
                     </span>
                   </div>
 
-                  {currentPage < jugador.goles_meta.last_page ? (
+                  {currentPage < (jugador.goles_meta?.last_page || 1) ? (
                     <Link 
                       href={`/jugadores/${id}?page=${currentPage + 1}`}
                       className="px-6 py-3 bg-white border border-zinc-200 rounded-2xl text-zinc-600 font-black text-xs uppercase tracking-widest hover:border-red-200 hover:text-red-600 transition-all shadow-sm"
@@ -491,7 +595,6 @@ export default async function JugadorDetailPage({
             </div>
           </div>
 
-          {/* Sidebar: Resumen Info - Restricted to Premium */}
           <div className="lg:col-span-1">
             <div className="bg-zinc-900 rounded-[48px] p-10 text-white shadow-2xl relative overflow-hidden border-4 border-white min-h-[500px] flex flex-col">
               <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -519,30 +622,41 @@ export default async function JugadorDetailPage({
                 <div className="space-y-8 relative z-10">
                   <div>
                     <div className="flex justify-between text-[10px] font-black uppercase mb-3 tracking-widest opacity-60">
-                      <span>Goles Totales</span>
-                      <span>{jugador.goles_count}</span>
+                      <span>Goles CARP</span>
+                      <span>{jugador.goles_river_count}</span>
                     </div>
                     <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden border border-white/5 p-0.5">
-                      <div className="h-full bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]" style={{ width: '100%' }} />
+                      <div className="h-full bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]" style={{ width: `${(jugador.goles_river_count / (jugador.goles_count || 1)) * 100}%` }} />
                     </div>
                   </div>
 
-                  {/* Additional Sidebar Stats */}
                   <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-white/10">
                     <div>
-                      <span className="text-[9px] font-black uppercase text-zinc-500 block mb-1">Hat-Tricks</span>
+                      <span className="text-[9px] font-black uppercase text-zinc-500 block mb-1">Hat-Tricks CARP</span>
                       <span className="text-2xl font-black italic">{jugador.hat_tricks_count}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] font-black uppercase text-zinc-500 block mb-1">Dobletes</span>
+                      <span className="text-[9px] font-black uppercase text-zinc-500 block mb-1">Dobletes CARP</span>
                       <span className="text-2xl font-black italic">{jugador.dobletes_count}</span>
                     </div>
                   </div>
+
+                  {isPremium && (
+                    <div className="mt-6 p-4 bg-red-600/10 rounded-2xl border border-red-600/20 flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white">
+                          <Trophy size={16} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Goles Decisivos</span>
+                      </div>
+                      <span className="text-2xl font-black italic text-white">{jugador.goles_victoria_count ?? 0}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-12 pt-12 border-t border-white/10">
                   <p className="text-xs font-medium text-zinc-400 mb-8 leading-relaxed uppercase tracking-tight">
-                    Este jugador representa una pieza clave de la efectividad histórica del club en su posición.
+                    Este jugador ha marcado <span className="text-white font-bold">{jugador.goles_river_count}</span> goles defendiendo a River y <span className="text-white font-bold">{jugador.goles_rival_count}</span> goles en contra.
                   </p>
 
                   <div className="p-6 bg-white/5 rounded-[32px] border border-white/5 group hover:bg-white/10 transition-colors cursor-pointer">
@@ -556,7 +670,6 @@ export default async function JugadorDetailPage({
           </div>
         </div>
 
-        {/* New Analytics Section - Full Width, matching Partidos style */}
         <section className="mt-20">
           <div className="flex flex-col mb-10">
             <h2 className="text-3xl font-black text-zinc-900 mb-2 tracking-tight uppercase italic">Analítica de Resultados</h2>
@@ -580,7 +693,7 @@ export default async function JugadorDetailPage({
             <div className={`rounded-[40px] overflow-hidden shadow-2xl border border-zinc-100 ${!isPremium ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
               <div className="flex flex-col">
                 <PlayerGoalsAnalysis 
-                  data={jugador.goles_por_periodo || {}} 
+                  data={jugador.goles_por_periodo || []} 
                   total={jugador.goles_count} 
                 />
                 <PlayerGoalMethodAnalysis 
