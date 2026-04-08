@@ -231,12 +231,12 @@ export default async function JugadoresPage({
                             <div className="w-12 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center text-white font-black text-xl uppercase group-hover:bg-red-600 transition-colors shadow-lg shadow-zinc-200 overflow-hidden relative border-2 border-white">
                               {fotoUrl ? (
                                 <>
-                                  <Image 
-                                    src={fotoUrl} 
-                                    alt="" 
-                                    fill 
+                                  <Image
+                                    src={fotoUrl}
+                                    alt=""
+                                    fill
                                     unoptimized
-                                    className={`object-cover object-top transition-all duration-500 ${!isPremium ? 'blur-[3px] grayscale opacity-50' : ''}`} 
+                                    className={`object-cover object-top transition-all duration-500 ${!isPremium ? 'blur-[3px] grayscale opacity-50' : ''}`}
                                   />
                                   {!isPremium && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -248,12 +248,7 @@ export default async function JugadoresPage({
                                 jugador.pl_apno ? jugador.pl_apno.charAt(0) : "?"
                               )}
                             </div>
-                            <div className="flex flex-col items-end">
-                              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">ID Registro</span>
-                              <span className="text-xs font-black text-zinc-900 tabular-nums"># {jugador.pl_id}</span>
-                            </div>
                           </div>
-
                           <div className="mt-auto">
                             <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-lg uppercase leading-tight mb-4">
                               {jugador.pl_apno}

@@ -136,7 +136,6 @@ export default function JugadoresScreen() {
         </View>
         <View style={styles.nameContainer}>
           <Text style={styles.playerName} numberOfLines={1}>{item.pl_apno}</Text>
-          <Text style={styles.playerSub}>ID #{item.pl_id}</Text>
         </View>
       </View>
       

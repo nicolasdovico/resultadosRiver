@@ -160,7 +160,6 @@ export default async function JugadorDetailPage({
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
                 <span className="bg-red-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20">River Plate</span>
-                <span className="bg-zinc-800 text-zinc-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-zinc-700">Registro ID: {jugador.pl_id}</span>
               </div>
               <h1 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-10 italic">
                 {jugador.pl_apno}

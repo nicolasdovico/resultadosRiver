@@ -1,5 +1,13 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-08: Limpieza de UI y Remoción de IDs Irrelevantes (Fase 6)
+- [x] **Frontend Web**:
+  - [x] **UI**: Eliminación del dato "ID Registro" en las tarjetas del listado de jugadores.
+  - [x] **UI**: Eliminación del dato "Registro ID" en la ficha de detalle del jugador.
+- [x] **Frontend Mobile**:
+  - [x] **UI**: Eliminación de la etiqueta "ID #" en las tarjetas de la pestaña "Figuras".
+  - [x] **UI**: Eliminación de la etiqueta "ID #" en el perfil detallado del jugador.
+
 ### 2026-04-08: Implementación de Hitos Goleadores (Dobletes y Hat-tricks) y Refuerzo de Paywall (Fase 6)
 - [x] **Backend**:
   - [x] **Lógica**: Implementación de agrupación de goles por fecha en `JugadorResource` para identificar Dobletes (2 goles) y Hat-tricks (3+ goles).

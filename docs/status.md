@@ -78,6 +78,7 @@
         - [x] **Hall de Hitos:** Implementación de tarjetas visuales para múltiples goles con efecto `BlurView` para Free.
         - [x] Detalle de jugador con `BlurView` para contenido Premium.
         - [x] **Mejora de Encuadre:** Migración a `expo-image` con `contentPosition="top center"` y proporciones tipo cromo.
+    - [x] **Limpieza de UI:** Eliminación de IDs de registro irrelevantes en las tarjetas y perfiles de jugadores (Web y Mobile).
 - [x] **Sección de Torneos:**
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.

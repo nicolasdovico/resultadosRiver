@@ -131,8 +131,8 @@ export default function JugadorDetailScreen() {
 
           <View style={styles.badgeContainer}>
              <View style={styles.riverTag}><Text style={styles.riverTagText}>River Plate</Text></View>
-             <View style={styles.idTag}><Text style={styles.idTagText}>ID #{jugador.pl_id}</Text></View>
           </View>
+
 
           <Text style={styles.playerName}>{jugador.pl_apno}</Text>
           
