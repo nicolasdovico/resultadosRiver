@@ -1,5 +1,5 @@
 import { formatLocalDate } from "@/utils/date";
-import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight } from "lucide-react";
+import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight, Flame, Lock } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
@@ -24,6 +24,13 @@ interface Gol {
   };
 }
 
+interface Hito {
+  fecha: string;
+  goles_count: number;
+  rival: string;
+  rival_escudo?: string | null;
+}
+
 interface Jugador {
   pl_id: number;
   pl_apno: string;
@@ -31,8 +38,12 @@ interface Jugador {
   goles_count: number;
   dias_desde_ultimo_gol?: number | null;
   partidos_desde_ultimo_gol?: number | null;
-  goles_por_periodo?: Record<string, number>;
+  goles_por_periodo?: Record<string, any>;
   goles_por_tipo?: { label: string; value: number }[];
+  dobletes_count: number;
+  hat_tricks_count: number;
+  dobletes: Hito[];
+  hat_tricks: Hito[];
   goles: Gol[];
   goles_meta?: {
     current_page: number;
@@ -191,6 +202,149 @@ export default async function JugadorDetailPage({
           </div>
         </section>
 
+        {/* Hitos Goleadores Section - Restricted to Premium */}
+        {(jugador.dobletes_count > 0 || jugador.hat_tricks_count > 0) && (
+          <section className="mb-16 relative">
+            <div className="flex items-center space-x-4 mb-10">
+              <div className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
+                <Trophy size={24} />
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase italic">Hall de Hitos</h2>
+                <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Partidos con múltiples anotaciones</p>
+              </div>
+            </div>
+
+            <div className="relative">
+              {!isPremium && (
+                <div className="absolute inset-0 z-20 backdrop-blur-xl bg-white/40 flex flex-col items-center justify-center p-12 text-center rounded-[48px] border-4 border-dashed border-red-100 shadow-2xl shadow-red-900/5">
+                  <div className="w-20 h-20 bg-red-600 rounded-3xl flex items-center justify-center mb-6 shadow-xl rotate-3">
+                    <Shield size={40} className="text-white" />
+                  </div>
+                  <h4 className="font-black text-zinc-900 uppercase tracking-tighter text-4xl mb-4 italic">Estadísticas Exclusivas</h4>
+                  <p className="text-zinc-500 text-lg font-medium mb-10 max-w-md leading-relaxed">
+                    El registro detallado de <span className="text-zinc-900 font-bold">Dobletes y Hat-tricks</span> históricos está reservado para nuestros socios Premium.
+                  </p>
+                  <Link href="/premium" className="bg-zinc-900 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-red-600 transition-all shadow-2xl hover:scale-105 active:scale-95">
+                    Desbloquear Ahora
+                  </Link>
+                </div>
+              )}
+
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 ${!isPremium ? 'opacity-20 grayscale pointer-events-none' : ''}`}>
+                {/* Hat-Tricks Column */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-4">
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400 flex items-center">
+                      <Flame size={14} className="mr-2 text-red-600" />
+                      Hat-Tricks & Más
+                    </span>
+                    <span className="bg-zinc-100 text-zinc-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tabular-nums border border-zinc-200">
+                      {jugador.hat_tricks_count} Totales
+                    </span>
+                  </div>
+                  
+                  {jugador.hat_tricks_count > 0 ? (
+                    <div className="space-y-3">
+                      {jugador.hat_tricks.map((hito, idx) => (
+                        <div key={idx} className="bg-zinc-900 p-4 rounded-[32px] flex items-center justify-between border-2 border-transparent hover:border-red-600 transition-all group overflow-hidden relative shadow-xl">
+                          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform">
+                            <Trophy size={64} className="text-white" />
+                          </div>
+                          <div className="flex items-center space-x-4 relative z-10">
+                            <div className="w-12 h-12 bg-zinc-800 rounded-2xl flex items-center justify-center border border-zinc-700 shadow-inner group-hover:scale-110 transition-transform overflow-hidden">
+                              {hito.rival_escudo ? (
+                                <Image 
+                                  src={sanitizeImageUrl(hito.rival_escudo)} 
+                                  alt="" 
+                                  width={32} 
+                                  height={32} 
+                                  unoptimized
+                                  className="object-contain p-1" 
+                                />
+                              ) : (
+                                <Target size={20} className="text-zinc-600" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">{formatLocalDate(hito.fecha)}</span>
+                              </div>
+                              <h4 className="font-black text-white text-md uppercase tracking-tight group-hover:text-red-500 transition-colors">
+                                vs {hito.rival}
+                              </h4>
+                            </div>
+                          </div>
+                          <div className="bg-red-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-xl italic shadow-lg shadow-red-900/40 relative z-10">
+                            {hito.goles_count}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-zinc-50 border border-dashed border-zinc-200 rounded-[32px] p-8 text-center">
+                      <p className="text-zinc-400 font-black uppercase text-[10px] tracking-widest">Sin Hat-Tricks registrados</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dobletes Column */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-4">
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400 flex items-center">
+                      <Star size={14} className="mr-2 text-red-600" />
+                      Dobletes
+                    </span>
+                    <span className="bg-zinc-100 text-zinc-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tabular-nums border border-zinc-200">
+                      {jugador.dobletes_count} Totales
+                    </span>
+                  </div>
+                  
+                  {jugador.dobletes_count > 0 ? (
+                    <div className="space-y-3">
+                      {jugador.dobletes.map((hito, idx) => (
+                        <div key={idx} className="bg-white p-4 rounded-[32px] flex items-center justify-between border border-zinc-100 hover:border-red-600 transition-all group shadow-sm">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-zinc-50 rounded-2xl flex items-center justify-center border border-zinc-100 shadow-inner group-hover:scale-110 transition-transform overflow-hidden">
+                              {hito.rival_escudo ? (
+                                <Image 
+                                  src={sanitizeImageUrl(hito.rival_escudo)} 
+                                  alt="" 
+                                  width={32} 
+                                  height={32} 
+                                  unoptimized
+                                  className="object-contain p-1" 
+                                />
+                              ) : (
+                                <Target size={20} className="text-zinc-200" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{formatLocalDate(hito.fecha)}</span>
+                              </div>
+                              <h4 className="font-black text-zinc-900 text-md uppercase tracking-tight group-hover:text-red-600 transition-colors">
+                                vs {hito.rival}
+                              </h4>
+                            </div>
+                          </div>
+                          <div className="bg-zinc-100 text-zinc-900 w-10 h-10 rounded-full flex items-center justify-center font-black text-lg italic border border-zinc-200">
+                            {hito.goles_count}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-zinc-50 border border-dashed border-zinc-200 rounded-[32px] p-8 text-center">
+                      <p className="text-zinc-400 font-black uppercase text-[10px] tracking-widest">Sin Dobletes registrados</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
           {/* Main Content: History */}
           <div className="lg:col-span-2">
@@ -338,36 +492,65 @@ export default async function JugadorDetailPage({
             </div>
           </div>
 
-          {/* Sidebar: Resumen Info */}
+          {/* Sidebar: Resumen Info - Restricted to Premium */}
           <div className="lg:col-span-1">
-            <div className="bg-zinc-900 rounded-[48px] p-10 text-white shadow-2xl relative overflow-hidden border-4 border-white">
+            <div className="bg-zinc-900 rounded-[48px] p-10 text-white shadow-2xl relative overflow-hidden border-4 border-white min-h-[500px] flex flex-col">
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Activity size={120} />
               </div>
 
-              <h3 className="font-black text-xs uppercase tracking-[0.3em] mb-10 text-red-500 italic">Resumen de Carrera</h3>
-
-              <div className="space-y-8 relative z-10">
-                <div>
-                  <div className="flex justify-between text-[10px] font-black uppercase mb-3 tracking-widest opacity-60">
-                    <span>Goles Totales</span>
-                    <span>{jugador.goles_count}</span>
+              {!isPremium && (
+                <div className="absolute inset-0 z-30 backdrop-blur-md bg-black/40 flex flex-col items-center justify-center p-10 text-center">
+                  <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                    <Lock size={28} className="text-red-500" />
                   </div>
-                  <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden border border-white/5 p-0.5">
-                    <div className="h-full bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]" style={{ width: '100%' }} />
+                  <h4 className="text-white font-black uppercase tracking-tighter text-xl mb-3 italic">Análisis de Carrera</h4>
+                  <p className="text-zinc-300 text-[10px] font-medium mb-8 leading-relaxed uppercase tracking-wider">
+                    Desbloquea métricas de eficiencia, <span className="text-white font-bold">hitos históricos</span> y proyecciones exclusivas para socios.
+                  </p>
+                  <Link href="/premium" className="bg-red-600 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-red-700 transition-all shadow-2xl hover:scale-105 active:scale-95">
+                    Hacerme Premium
+                  </Link>
+                </div>
+              )}
+
+              <div className={!isPremium ? "opacity-20 grayscale pointer-events-none blur-sm" : ""}>
+                <h3 className="font-black text-xs uppercase tracking-[0.3em] mb-10 text-red-500 italic">Resumen de Carrera</h3>
+
+                <div className="space-y-8 relative z-10">
+                  <div>
+                    <div className="flex justify-between text-[10px] font-black uppercase mb-3 tracking-widest opacity-60">
+                      <span>Goles Totales</span>
+                      <span>{jugador.goles_count}</span>
+                    </div>
+                    <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden border border-white/5 p-0.5">
+                      <div className="h-full bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]" style={{ width: '100%' }} />
+                    </div>
+                  </div>
+
+                  {/* Additional Sidebar Stats */}
+                  <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-white/10">
+                    <div>
+                      <span className="text-[9px] font-black uppercase text-zinc-500 block mb-1">Hat-Tricks</span>
+                      <span className="text-2xl font-black italic">{jugador.hat_tricks_count}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-black uppercase text-zinc-500 block mb-1">Dobletes</span>
+                      <span className="text-2xl font-black italic">{jugador.dobletes_count}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-12 pt-12 border-t border-white/10">
-                <p className="text-xs font-medium text-zinc-400 mb-8 leading-relaxed uppercase tracking-tight">
-                  Este jugador representa una pieza clave de la efectividad histórica del club en su posición.
-                </p>
+                <div className="mt-12 pt-12 border-t border-white/10">
+                  <p className="text-xs font-medium text-zinc-400 mb-8 leading-relaxed uppercase tracking-tight">
+                    Este jugador representa una pieza clave de la efectividad histórica del club en su posición.
+                  </p>
 
-                <div className="p-6 bg-white/5 rounded-[32px] border border-white/5 group hover:bg-white/10 transition-colors cursor-pointer">
-                  <Target className="text-red-500 mb-4" size={32} />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Eficiencia de Remate</p>
-                  <p className="text-xl font-black text-white italic tracking-tighter uppercase">Análisis Proyectado</p>
+                  <div className="p-6 bg-white/5 rounded-[32px] border border-white/5 group hover:bg-white/10 transition-colors cursor-pointer">
+                    <Target className="text-red-500 mb-4" size={32} />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Eficiencia de Remate</p>
+                    <p className="text-xl font-black text-white italic tracking-tighter uppercase">Análisis Proyectado</p>
+                  </div>
                 </div>
               </div>
             </div>

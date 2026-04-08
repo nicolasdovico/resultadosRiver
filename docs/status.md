@@ -60,24 +60,25 @@
         - [x] Implementación de filtros por letra inicial (`letter`) y soporte de paginación real.
         - [x] Lógica de privacidad para fotos e historial de goles (Restricción Free vs Full Premium).
         - [x] Carga de relaciones para historial detallado (Rivales, Escudos, Resultados).
+        - [x] **Hitos Goleadores:** Cálculo dinámico de Dobletes y Hat-tricks agrupados por partido con detalle de rival.
         - [x] **Optimización de Fotos:** Eliminación de recortes circulares y habilitación de editor con ratios verticales (3:4, 2:3).
         - [x] **Analítica Scoped:** Cálculo de goles por periodos (1T, 2T) e intervalos de 10 min específicos por jugador.
         - [x] **Racha y Sequía:** Implementación de contadores de días y partidos desde el último gol.
     - [x] **Frontend Web:**
         - [x] Implementación de **Directorio Alfabético** (A-Z) con tarjetas compactas para exploración masiva.
         - [x] Rediseño de fichas de jugadores con estética "Data Console" y tableros de rendimiento.
+        - [x] **Hall de Hitos:** Visualización destacada de Dobletes y Hat-tricks con restricción Premium.
+        - [x] **Paywall Reforzado:** Bloqueo con efecto `blur` en secciones de Hitos, Resumen de Carrera y Analítica Avanzada.
         - [x] Sistema de paginación dinámica (10 por página) con numeración histórica descendente.
         - [x] **Mejora de Encuadre:** Ajuste de contenedores verticales y alineación `object-top` para evitar cabezas recortadas.
         - [x] **Analítica de Resultados:** Integración de gráficos de torta y barras de progreso para el análisis de goles (Premium).
-        - [x] **Conversión:** Banners dinámicos y efectos blur para incentivar la suscripción Premium.
     - [x] **Frontend Mobile:**
         - [x] Nueva pestaña de navegación "Figuras".
         - [x] Carrusel de ídolos y buscador optimizado.
+        - [x] **Hall de Hitos:** Implementación de tarjetas visuales para múltiples goles con efecto `BlurView` para Free.
         - [x] Detalle de jugador con `BlurView` para contenido Premium.
         - [x] **Mejora de Encuadre:** Migración a `expo-image` con `contentPosition="top center"` y proporciones tipo cromo.
 - [x] **Sección de Torneos:**
-...
-
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.
         - [x] Lógica de cálculo de estadísticas avanzadas (PJ, PG, PE, PP, GF, GC, DG, Efectividad, Vallas Invictas) en el modelo `Torneo`.

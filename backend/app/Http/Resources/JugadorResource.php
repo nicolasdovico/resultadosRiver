@@ -22,6 +22,10 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "partidos_desde_ultimo_gol", type: "integer", nullable: true),
         new OA\Property(property: "goles_por_periodo", type: "array", items: new OA\Items(type: "object")),
         new OA\Property(property: "goles_por_tipo", type: "array", items: new OA\Items(type: "object")),
+        new OA\Property(property: "dobletes_count", type: "integer"),
+        new OA\Property(property: "hat_tricks_count", type: "integer"),
+        new OA\Property(property: "dobletes", type: "array", items: new OA\Items(type: "object")),
+        new OA\Property(property: "hat_tricks", type: "array", items: new OA\Items(type: "object")),
         new OA\Property(
             property: "goles",
             type: "array",
@@ -52,8 +56,43 @@ class JugadorResource extends JsonResource
         $diasDesdeUltimoGol = null;
         $partidosDesdeUltimoGol = null;
 
+        $dobletes = [];
+        $hatTricks = [];
+        $dobletesCount = 0;
+        $hatTricksCount = 0;
+
         // Solo procesamos datos pesados si la relación 'goles' está cargada (Vista de Detalle)
         if ($this->relationLoaded("goles")) {
+            
+            // Hitos Goleadores (Solo en detalle)
+            $golesAgrupados = DB::table('goles')
+                ->where('gol_juga', $this->pl_id)
+                ->select('gol_fecha', DB::raw('count(*) as total'))
+                ->groupBy('gol_fecha')
+                ->havingRaw('count(*) >= 2')
+                ->orderBy('gol_fecha', 'desc')
+                ->get();
+
+            foreach ($golesAgrupados as $grupo) {
+                $partido = Partido::with('rival')->find($grupo->gol_fecha);
+                if ($partido) {
+                    $item = [
+                        'fecha' => $grupo->gol_fecha,
+                        'goles_count' => (int)$grupo->total,
+                        'rival' => $partido->rival->ri_desc ?? 'Desconocido',
+                        'rival_escudo' => $partido->rival->ri_escudo ? Storage::disk('public')->url($partido->rival->ri_escudo) : null,
+                    ];
+
+                    if ($grupo->total == 2) {
+                        $dobletes[] = $item;
+                        $dobletesCount++;
+                    } else {
+                        $hatTricks[] = $item;
+                        $hatTricksCount++;
+                    }
+                }
+            }
+
             if ($golesPaginator instanceof \Illuminate\Pagination\LengthAwarePaginator) {
                 $golesCollection = $golesPaginator->getCollection();
                 $golesMeta = [
@@ -137,6 +176,10 @@ class JugadorResource extends JsonResource
             "partidos_desde_ultimo_gol" => $partidosDesdeUltimoGol,
             "goles_por_periodo" => $periodStats,
             "goles_por_tipo" => $golesPorTipo,
+            "dobletes_count" => $dobletesCount,
+            "hat_tricks_count" => $hatTricksCount,
+            "dobletes" => $dobletes,
+            "hat_tricks" => $hatTricks,
             "goles" => GolResource::collection($golesCollection),
             "goles_meta" => $golesMeta,
             "is_premium_restricted" => $isRestricted

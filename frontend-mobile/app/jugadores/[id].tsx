@@ -20,9 +20,17 @@ interface Gol {
     go_ad: number;
     rival: {
       ri_desc: string;
+      ri_nombre?: string;
       escudo?: string;
     };
   };
+}
+
+interface Hito {
+  fecha: string;
+  goles_count: number;
+  rival: string;
+  rival_escudo?: string | null;
 }
 
 interface Jugador {
@@ -32,6 +40,10 @@ interface Jugador {
   goles_count: number;
   dias_desde_ultimo_gol?: number | null;
   partidos_desde_ultimo_gol?: number | null;
+  dobletes_count: number;
+  hat_tricks_count: number;
+  dobletes: Hito[];
+  hat_tricks: Hito[];
   goles: Gol[];
   is_premium_restricted?: boolean;
 }
@@ -98,13 +110,18 @@ export default function JugadorDetailScreen() {
               {jugador.pl_foto ? (
                 <Image 
                   source={{ uri: jugador.pl_foto }} 
-                  style={styles.avatarImage} 
+                  style={[styles.avatarImage, !isPremium && styles.blurredAvatar]} 
                   contentFit="cover"
                   contentPosition="top center"
                   transition={500}
                 />
               ) : (
                 <Text style={styles.avatarText}>{jugador.pl_apno.charAt(0)}</Text>
+              )}
+              {!isPremium && (
+                <View style={styles.premiumOverlaySmall}>
+                   <Ionicons name="lock-closed" size={16} color="#fff" />
+                </View>
               )}
             </View>
             <View style={styles.starBadge}>
@@ -140,6 +157,95 @@ export default function JugadorDetailScreen() {
 
       {/* Content Section */}
       <View style={styles.content}>
+        
+        {/* Hitos Goleadores - Exclusive Premium Section */}
+        {(jugador.dobletes_count > 0 || jugador.hat_tricks_count > 0) && (
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionHeader}>
+              <MaterialCommunityIcons name="trophy-variant" size={20} color="#dc2626" />
+              <Text style={styles.sectionTitle}>Hall de Hitos</Text>
+              <View style={styles.premiumBadge}>
+                 <Text style={styles.premiumBadgeText}>PREMIUM</Text>
+              </View>
+            </View>
+
+            <View style={styles.milestonesContainer}>
+              {!isPremium && (
+                <BlurView intensity={95} tint="light" style={styles.milestoneBlur}>
+                   <View style={styles.lockContent}>
+                      <Ionicons name="lock-closed" size={32} color="#dc2626" />
+                      <Text style={styles.lockTitle}>Desbloquea Estadísticas</Text>
+                      <TouchableOpacity 
+                        style={styles.unlockButton}
+                        onPress={() => router.push('/premium')}
+                      >
+                        <Text style={styles.unlockButtonText}>VER HITOS</Text>
+                      </TouchableOpacity>
+                   </View>
+                </BlurView>
+              )}
+
+              {/* Hat Tricks Section */}
+              <View style={styles.milestoneGroup}>
+                <View style={styles.groupHeader}>
+                  <MaterialCommunityIcons name="fire" size={16} color="#dc2626" />
+                  <Text style={styles.groupTitle}>Hat-Tricks & Más</Text>
+                  <Text style={styles.groupCount}>{jugador.hat_tricks_count}</Text>
+                </View>
+                {jugador.hat_tricks.map((hito, idx) => (
+                  <View key={`ht-${idx}`} style={styles.hitoCardDark}>
+                    <View style={styles.hitoInfo}>
+                       <View style={styles.hitoCrestContainerDark}>
+                          {hito.rival_escudo ? (
+                            <Image source={{ uri: hito.rival_escudo }} style={styles.hitoCrest} />
+                          ) : (
+                            <MaterialCommunityIcons name="target" size={18} color="#475569" />
+                          )}
+                       </View>
+                       <View>
+                          <Text style={styles.hitoDateRed}>{formatLocalDate(hito.fecha)}</Text>
+                          <Text style={styles.hitoRivalWhite}>vs {hito.rival}</Text>
+                       </View>
+                    </View>
+                    <View style={styles.hitoCountCircle}>
+                       <Text style={styles.hitoCountText}>{hito.goles_count}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              {/* Dobletes Section */}
+              <View style={styles.milestoneGroup}>
+                <View style={styles.groupHeader}>
+                  <Ionicons name="star" size={14} color="#dc2626" />
+                  <Text style={styles.groupTitle}>Dobletes</Text>
+                  <Text style={styles.groupCount}>{jugador.dobletes_count}</Text>
+                </View>
+                {jugador.dobletes.map((hito, idx) => (
+                  <View key={`db-${idx}`} style={styles.hitoCardLight}>
+                    <View style={styles.hitoInfo}>
+                       <View style={styles.hitoCrestContainerLight}>
+                          {hito.rival_escudo ? (
+                            <Image source={{ uri: hito.rival_escudo }} style={styles.hitoCrest} />
+                          ) : (
+                            <MaterialCommunityIcons name="target" size={18} color="#e2e8f0" />
+                          )}
+                       </View>
+                       <View>
+                          <Text style={styles.hitoDateRed}>{formatLocalDate(hito.fecha)}</Text>
+                          <Text style={styles.hitoRivalDark}>vs {hito.rival}</Text>
+                       </View>
+                    </View>
+                    <View style={styles.hitoCountCircleLight}>
+                       <Text style={styles.hitoCountTextDark}>{hito.goles_count}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+        )}
+
         <View style={styles.sectionHeader}>
           <MaterialCommunityIcons name="soccer" size={20} color="#dc2626" />
           <Text style={styles.sectionTitle}>Historial de Goles</Text>
@@ -156,7 +262,7 @@ export default function JugadorDetailScreen() {
                   )}
                </View>
                <View style={styles.goalInfo}>
-                  <Text style={styles.goalNumber}>Gol #{index + 1} • {formatLocalDate(gol.gol_fecha)}</Text>
+                  <Text style={styles.goalNumber}>Gol #{jugador.goles_count - index} • {formatLocalDate(gol.gol_fecha)}</Text>
                   <Text style={styles.rivalName}>vs {gol.partido?.rival?.ri_desc}</Text>
                   <View style={styles.scoreTag}>
                      <Text style={styles.scoreText}>{gol.partido?.go_ri} - {gol.partido?.go_ad}</Text>
@@ -240,6 +346,15 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: '100%',
     height: '100%',
+  },
+  blurredAvatar: {
+    opacity: 0.3,
+  },
+  premiumOverlaySmall: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatarText: {
     color: '#334155',
@@ -333,6 +448,9 @@ const styles = StyleSheet.create({
   content: {
     padding: 24,
   },
+  sectionContainer: {
+    marginBottom: 32,
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -344,6 +462,186 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#0f172a',
     textTransform: 'uppercase',
+    fontStyle: 'italic',
+  },
+  premiumBadge: {
+    backgroundColor: '#fef2f2',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+  },
+  premiumBadgeText: {
+    color: '#dc2626',
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  milestonesContainer: {
+    gap: 16,
+    position: 'relative',
+    borderRadius: 32,
+    overflow: 'hidden',
+  },
+  milestoneBlur: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockContent: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  lockTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0f172a',
+    textTransform: 'uppercase',
+    fontStyle: 'italic',
+  },
+  unlockButton: {
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  unlockButtonText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  milestoneGroup: {
+    gap: 8,
+  },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 8,
+    marginBottom: 4,
+  },
+  groupTitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#64748b',
+    textTransform: 'uppercase',
+  },
+  groupCount: {
+    backgroundColor: '#f1f5f9',
+    color: '#0f172a',
+    fontSize: 10,
+    fontWeight: '900',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  hitoCardDark: {
+    backgroundColor: '#0f172a',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+  },
+  hitoCardLight: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  hitoInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  hitoCrestContainerDark: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#1e293b',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hitoCrestContainerLight: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  hitoCrest: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  hitoDateRed: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#dc2626',
+    textTransform: 'uppercase',
+  },
+  hitoRivalWhite: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#fff',
+    textTransform: 'uppercase',
+  },
+  hitoRivalDark: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#0f172a',
+    textTransform: 'uppercase',
+  },
+  hitoCountCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#dc2626',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#dc2626',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+  hitoCountCircleLight: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  hitoCountText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '900',
+    fontStyle: 'italic',
+  },
+  hitoCountTextDark: {
+    color: '#0f172a',
+    fontSize: 16,
+    fontWeight: '900',
     fontStyle: 'italic',
   },
   goalCard: {
