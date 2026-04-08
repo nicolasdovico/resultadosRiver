@@ -1,4 +1,5 @@
-import { StyleSheet, FlatList, View, Text, TouchableOpacity, ActivityIndicator, TextInput, Image, Dimensions } from 'react-native';
+import { StyleSheet, FlatList, View, Text, TouchableOpacity, ActivityIndicator, TextInput, Dimensions, ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { useState, useEffect } from 'react';
 import { getJugadores } from '@/api/generated/endpoints/jugadores/jugadores';
 import { useRouter } from 'expo-router';
@@ -123,7 +124,12 @@ export default function JugadoresScreen() {
       <View style={styles.playerInfo}>
         <View style={styles.avatarContainer}>
           {item.pl_foto ? (
-            <Image source={{ uri: item.pl_foto }} style={styles.avatarImage} />
+            <Image 
+              source={{ uri: item.pl_foto }} 
+              style={styles.avatarImage} 
+              contentFit="cover"
+              contentPosition="top center"
+            />
           ) : (
             <Text style={styles.avatarText}>{item.pl_apno.charAt(0)}</Text>
           )}

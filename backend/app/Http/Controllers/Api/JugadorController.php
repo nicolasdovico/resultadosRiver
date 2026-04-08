@@ -52,21 +52,25 @@ class JugadorController extends Controller
         security: [["sanctum" => []]],
         tags: ["Jugadores"],
         parameters: [
-            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer")),
+            new OA\Parameter(name: "page", in: "query", required: false, schema: new OA\Schema(type: "integer"))
         ],
         responses: [
             new OA\Response(response: 200, description: "Successful operation")
         ]
     )]
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        $jugador = Jugador::with([
-            "goles.tipo_gol_rel", 
-            "goles.periodo_rel",
-            "goles.partido.rival" // Importante para el historial detallado
-        ])
-        ->withCount("goles")
-        ->findOrFail($id);
+        $jugador = Jugador::withCount("goles")->findOrFail($id);
+
+        // Paginamos los goles (10 por página)
+        $goles = $jugador->goles()
+            ->with(["tipo_gol_rel", "periodo_rel", "partido.rival"])
+            ->orderBy("gol_fecha", "desc")
+            ->paginate(10);
+
+        // Cargamos la relación paginada
+        $jugador->setRelation("goles", $goles);
 
         return new JugadorResource($jugador);
     }

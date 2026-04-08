@@ -228,7 +228,7 @@ export default async function JugadoresPage({
                           className="bg-white p-6 rounded-[36px] border border-zinc-100 flex flex-col group hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-red-900/5"
                         >
                           <div className="flex items-center justify-between mb-6">
-                            <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-white font-black text-xl uppercase group-hover:bg-red-600 transition-colors shadow-lg shadow-zinc-200 overflow-hidden relative border-2 border-white">
+                            <div className="w-12 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center text-white font-black text-xl uppercase group-hover:bg-red-600 transition-colors shadow-lg shadow-zinc-200 overflow-hidden relative border-2 border-white">
                               {fotoUrl ? (
                                 <>
                                   <Image 
@@ -236,7 +236,7 @@ export default async function JugadoresPage({
                                     alt="" 
                                     fill 
                                     unoptimized
-                                    className={`object-cover transition-all duration-500 ${!isPremium ? 'blur-[3px] grayscale opacity-50' : ''}`} 
+                                    className={`object-cover object-top transition-all duration-500 ${!isPremium ? 'blur-[3px] grayscale opacity-50' : ''}`} 
                                   />
                                   {!isPremium && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/20">

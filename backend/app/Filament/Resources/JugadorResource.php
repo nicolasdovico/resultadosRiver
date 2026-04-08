@@ -33,7 +33,14 @@ class JugadorResource extends Resource
                             ->directory("players-photos")
                             ->visibility("public")
                             ->imageEditor()
-                            ->circleCropper(),
+                            ->imageEditorAspectRatios([
+                                '3:4',
+                                '2:3',
+                                '1:1',
+                            ])
+                            ->extraAttributes([
+                                'style' => 'object-position: top !important;',
+                            ]),
                     ])
             ]);
     }
@@ -44,7 +51,10 @@ class JugadorResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make("pl_foto")
                     ->label("Foto")
-                    ->circular(),
+                    ->height(80)
+                    ->extraImgAttributes([
+                        'style' => 'object-position: top !important; object-fit: cover !important;',
+                    ]),
                 Tables\Columns\TextColumn::make("pl_apno")
                     ->label("Nombre")
                     ->searchable()

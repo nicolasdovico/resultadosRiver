@@ -1,5 +1,26 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-07: Optimización Integral de Fichas de Jugadores y Analítica Premium (Fase 6)
+- [x] **Backend**:
+  - [x] **UI**: Ajuste de previsualización en Filament con `object-position: top` y ratios 3:4/2:3.
+  - [x] **API**: Inclusión de relación `partido.rival` y `escudo_url` en `GolResource` para cálculos de historial.
+  - [x] **Lógica**: Implementación de cálculos de racha ("Días desde último gol" y "Partidos de sequía").
+  - [x] **Analytics**: Desglose de goles por periodos (1T, 2T) e intervalos de 10 min, y agrupación por tipo de gol (SQL).
+  - [x] **Privacidad**: Lógica de restricción dinámica (50% de goles para Free) y metadata de paginación.
+  - [x] **Fix**: Corrección de error 500 en listado mediante aislamiento de carga de relaciones pesadas.
+- [x] **Frontend Web**:
+  - [x] **UI**: Rediseño vertical de avatares y contenedores de fotos para evitar cortes en cabezas.
+  - [x] **Funcionalidad**: Paginación del historial de goles (10 por página) con numeración histórica descendente.
+  - [x] **Analytics**: Integración de secciones "Goles por Tiempo" y "Método de Definición" con PieCharts y barras de progreso.
+  - [x] **Conversión**: Banner de bloqueo Premium con efecto blur para el 50% del historial y analítica avanzada.
+- [x] **Frontend Mobile**:
+  - [x] **Imagen**: Migración a `expo-image` con `contentPosition="top center"`.
+  - [x] **UI**: Estética de "cromo" vertical y visualización de nuevas estadísticas de vigencia.
+  - [x] **Premium**: Bloqueo de historial mediante `BlurView` y Call-to-Action.
+
+### 2026-04-07: Corrección Integral del Sistema de Fotos de Jugadores (Fase 6 - Estadísticas Avanzadas)
+... rest of the file ...
+
 ### 2026-04-06: Directorio de Figuras y Rediseño de Fichas de Jugadores (Fase 6 - Estadísticas Avanzadas)
 - [x] **Backend**:
   - [x] **Migración**: Adición de la columna `pl_foto` a la tabla `players`.
@@ -63,3 +84,15 @@
   - [x] **Mejora**: Navegación enriquecida desde la lista de resultados hacia el detalle del partido.
   - [x] **Fix**: URLs de escudos dinámicas para evitar problemas de `localhost` en dispositivos móviles.
   - [x] **Mejora**: Implementación de placeholders y transiciones suaves para carga de imágenes con `expo-image`.
+### 2026-04-07: Optimización de Encuadre y Proporciones de Fotos de Jugadores (Fase 6)
+- [x] **Backend**:
+  - [x] Eliminación de recorte circular en Filament para permitir fichas rectangulares.
+  - [x] Configuración de relaciones de aspecto verticales (3:4, 2:3) en el editor de imágenes.
+- [x] **Frontend Web**:
+  - [x] Rediseño de contenedores de avatar a formato vertical (Portrait) en detalle y listados.
+  - [x] Implementación de 'object-top' para asegurar la visibilidad de las cabezas en fotos recortadas.
+  - [x] Aumento de la superficie de visualización en la ficha del jugador.
+- [x] **Frontend Mobile**:
+  - [x] Migración a 'expo-image' para control de posición de contenido.
+  - [x] Implementación de 'contentPosition="top center"' en avatares.
+  - [x] Ajuste de proporciones verticales en tarjetas y perfiles.

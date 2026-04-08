@@ -1,4 +1,5 @@
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -29,6 +30,8 @@ interface Jugador {
   pl_apno: string;
   pl_foto?: string | null;
   goles_count: number;
+  dias_desde_ultimo_gol?: number | null;
+  partidos_desde_ultimo_gol?: number | null;
   goles: Gol[];
   is_premium_restricted?: boolean;
 }
@@ -93,7 +96,13 @@ export default function JugadorDetailScreen() {
           <View style={styles.avatarWrapper}>
             <View style={styles.avatar}>
               {jugador.pl_foto ? (
-                <Image source={{ uri: jugador.pl_foto }} style={styles.avatarImage} />
+                <Image 
+                  source={{ uri: jugador.pl_foto }} 
+                  style={styles.avatarImage} 
+                  contentFit="cover"
+                  contentPosition="top center"
+                  transition={500}
+                />
               ) : (
                 <Text style={styles.avatarText}>{jugador.pl_apno.charAt(0)}</Text>
               )}
@@ -113,17 +122,17 @@ export default function JugadorDetailScreen() {
           <View style={styles.statsRow}>
             <View style={styles.mainStat}>
               <Text style={styles.mainStatValue}>{jugador.goles_count}</Text>
-              <Text style={styles.mainStatLabel}>Goles Totales</Text>
+              <Text style={styles.mainStatLabel}>Goles</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.mainStat}>
-              <Text style={styles.mainStatValue}>-</Text>
-              <Text style={styles.mainStatLabel}>Presencias</Text>
+              <Text style={styles.mainStatValue}>{jugador.dias_desde_ultimo_gol ?? "-"}</Text>
+              <Text style={styles.mainStatLabel}>Vigencia (Días)</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.mainStat}>
-              <Text style={styles.mainStatValue}>100%</Text>
-              <Text style={styles.mainStatLabel}>Efectividad</Text>
+              <Text style={styles.mainStatValue}>{jugador.partidos_desde_ultimo_gol ?? "-"}</Text>
+              <Text style={styles.mainStatLabel}>Sequía (PJ)</Text>
             </View>
           </View>
         </View>
@@ -163,18 +172,16 @@ export default function JugadorDetailScreen() {
 
         {jugador.is_premium_restricted && (
           <View style={styles.restrictedContainer}>
-            <BlurView intensity={30} style={styles.blurContainer} tint="light">
+            <BlurView intensity={80} tint="light" style={styles.blurContainer}>
               <View style={styles.premiumBox}>
-                <MaterialCommunityIcons name="crown" size={40} color="#dc2626" />
-                <Text style={styles.premiumTitle}>HISTORIAL COMPLETO</Text>
-                <Text style={styles.premiumDesc}>
-                  Solo los usuarios Premium pueden acceder al archivo histórico completo de goles y estadísticas avanzadas.
-                </Text>
+                <Ionicons name="lock-closed" size={40} color="#dc2626" />
+                <Text style={styles.premiumTitle}>Contenido Premium</Text>
+                <Text style={styles.premiumDesc}>Estás viendo una versión limitada.{'\n'}Hazte premium para ver el historial completo.</Text>
                 <TouchableOpacity 
                   style={styles.premiumButton}
                   onPress={() => router.push('/premium')}
                 >
-                  <Text style={styles.premiumButtonText}>HACERSE PREMIUM</Text>
+                  <Text style={styles.premiumButtonText}>HACERME PREMIUM</Text>
                 </TouchableOpacity>
               </View>
             </BlurView>
@@ -221,8 +228,8 @@ const styles = StyleSheet.create({
   },
   avatar: {
     width: 140,
-    height: 140,
-    borderRadius: 48,
+    height: 180,
+    borderRadius: 32,
     backgroundColor: '#1e293b',
     borderWidth: 4,
     borderColor: '#334155',

@@ -28,7 +28,7 @@ class RivalResource extends JsonResource
         return [
             'ri_id' => $this->ri_id,
             'ri_desc' => $this->ri_desc,
-            'escudo' => $this->escudo,
+            'escudo' => $this->escudo_url, // Usamos la URL completa para compatibilidad
             'escudo_url' => $this->escudo_url,
         ];
     }
