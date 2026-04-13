@@ -21,7 +21,9 @@
 - [x] **Procesamiento Asíncrono:** Configuración de colas con Redis y Workers (Supervisor) para correos y actualización de roles.
 
 ## Fase 4: Panel Administrativo y Visualización MVP (Completada)
-- [x] **Dashboard Administrativo:** Implementación de CRUDs completos con Laravel Filament.
+- [x] **Dashboard Administrativo:** 
+    - [x] Implementación de CRUDs completos con Laravel Filament.
+    - [x] **Mejora UX:** Sistema de creación de registros "al vuelo" (modales) para Torneos, Fases, Rivales, Estadios, Árbitros y Jugadores desde el formulario de Partidos.
 - [x] **Frontend Web (Next.js):** 
     - [x] Landing page con "Resumen Histórico".
     - [x] Listado de partidos con filtros y lógica "Un día como hoy".
@@ -80,6 +82,8 @@
         - [x] Detalle de jugador con `BlurView` para contenido Premium.
         - [x] **Mejora de Encuadre:** Migración a `expo-image` con `contentPosition="top center"` y proporciones tipo cromo.
     - [x] **Limpieza de UI:** Eliminación de IDs de registro irrelevantes en las tarjetas y perfiles de jugadores (Web y Mobile).
+    - [x] **Flashback Millonario:** Implementación de sección de curiosidades globales en la landing page mostrando el último doblete, hat-trick y el podio de marcadores más repetidos (Tendencia Histórica).
+    - [x] **Fix de Datos:** Corrección de mapeo de nombres de jugadores (`pl_apno`) en el Dashboard de estadísticas.
 - [x] **Sección de Torneos:**
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.

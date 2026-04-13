@@ -9,7 +9,9 @@ import {
   Shield, 
   Award, 
   History,
-  Users
+  Users,
+  Calendar,
+  Sword
 } from 'lucide-react';
 import ClubShield from './ClubShield';
 
@@ -43,6 +45,31 @@ interface Curiosity {
   } | null;
   total_rivales: number;
   total_torneos: number;
+  latest_brace: {
+    jugador: string;
+    jugador_id: number;
+    fecha: string;
+    rival: string;
+    rival_escudo: string | null;
+  } | null;
+  latest_hat_trick: {
+    jugador: string;
+    jugador_id: number;
+    fecha: string;
+    rival: string;
+    rival_escudo: string | null;
+    goles_count: number;
+  } | null;
+  top_results: {
+    resultado: string;
+    count: number;
+    percentage: number;
+    last_occurrence: {
+      fecha: string;
+      rival: string;
+      torneo: string;
+    } | null;
+  }[] | null;
 }
 
 interface GeneralStats {
@@ -60,6 +87,7 @@ export default function StatsDashboard() {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/stats/general`);
         if (response.ok) {
           const data = await response.json();
+          console.log('Stats Dashboard Data:', data);
           setStats(data);
         }
       } catch (error) {
@@ -230,6 +258,143 @@ export default function StatsDashboard() {
             </div>
           )}
         </div>
+
+        {/* New "Sabías que...?" Section */}
+        {(curiosities.latest_brace || curiosities.latest_hat_trick || (curiosities.top_results && curiosities.top_results.length > 0)) && (
+          <div className="mt-12 bg-zinc-900 rounded-[40px] p-8 md:p-12 text-white relative overflow-hidden border border-zinc-800 shadow-2xl">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <Zap size={200} className="text-yellow-400" />
+            </div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center space-x-3 mb-8">
+                <div className="w-10 h-10 bg-yellow-400 rounded-xl flex items-center justify-center text-zinc-900">
+                  <Zap size={20} className="fill-current" />
+                </div>
+                <h3 className="text-2xl font-black uppercase tracking-tight">Sabías que...? <span className="text-zinc-500 text-lg font-bold ml-2">Flashback Millonario</span></h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Latest Brace */}
+                {curiosities.latest_brace && (
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-colors group">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="text-[10px] font-black text-yellow-400 uppercase tracking-[0.2em] bg-yellow-400/10 px-3 py-1 rounded-full">Último Doblete</span>
+                      <span className="text-xs font-bold text-zinc-500 tracking-tight">
+                        {new Date(curiosities.latest_brace.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="flex-1">
+                        <h4 className="text-2xl font-black mb-1 group-hover:text-yellow-400 transition-colors tracking-tight">{curiosities.latest_brace.jugador}</h4>
+                        <p className="text-zinc-400 font-medium leading-relaxed">Marcó dos goles ante <span className="text-white font-bold">{curiosities.latest_brace.rival}</span></p>
+                      </div>
+                      <div className="shrink-0 bg-white p-2 rounded-2xl shadow-xl shadow-black/20">
+                        <ClubShield 
+                          src={curiosities.latest_brace.rival_escudo || undefined} 
+                          alt={curiosities.latest_brace.rival}
+                          className="w-12 h-12"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Latest Hat-trick */}
+                {curiosities.latest_hat_trick && (
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-colors group">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] bg-red-500/10 px-3 py-1 rounded-full">Último Hat-trick</span>
+                        {curiosities.latest_hat_trick.goles_count > 3 && (
+                          <span className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em] bg-white/10 px-3 py-1 rounded-full">{curiosities.latest_hat_trick.goles_count} Goles</span>
+                        )}
+                      </div>
+                      <span className="text-xs font-bold text-zinc-500 tracking-tight">
+                        {new Date(curiosities.latest_hat_trick.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="flex-1">
+                        <h4 className="text-2xl font-black mb-1 group-hover:text-red-500 transition-colors tracking-tight">{curiosities.latest_hat_trick.jugador}</h4>
+                        <p className="text-zinc-400 font-medium leading-relaxed">Logró la hazaña ante <span className="text-white font-bold">{curiosities.latest_hat_trick.rival}</span></p>
+                      </div>
+                      <div className="shrink-0 bg-white p-2 rounded-2xl shadow-xl shadow-black/20">
+                        <ClubShield 
+                          src={curiosities.latest_hat_trick.rival_escudo || undefined} 
+                          alt={curiosities.latest_hat_trick.rival}
+                          className="w-12 h-12"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Top Results */}
+                {curiosities.top_results && curiosities.top_results.length > 0 && (
+                  <div className="md:col-span-2 bg-gradient-to-r from-red-950/50 to-zinc-900/50 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:from-red-900/50 transition-all group">
+                    <div className="flex items-center justify-between mb-8">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] bg-white/5 px-3 py-1 rounded-full group-hover:text-red-400 transition-colors">Tendencia Histórica</span>
+                      <h4 className="text-zinc-400 text-sm font-bold uppercase tracking-widest">Marcadores más Repetidos</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {curiosities.top_results.map((item, index) => (
+                        <div key={index} className="flex flex-col bg-white/5 p-6 rounded-2xl border border-white/5 group-hover:border-red-500/20 transition-all">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Puesto #{index + 1}</span>
+                              <span className="text-4xl font-black text-white tracking-tighter">{item.resultado}</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center justify-end space-x-2 mb-1">
+                                <span className="text-xl font-black text-red-500">{item.count}</span>
+                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Partidos</span>
+                              </div>
+                              <span className="text-xs font-bold text-zinc-500 bg-white/5 px-2 py-0.5 rounded-full">{item.percentage}%</span>
+                            </div>
+                          </div>
+                          
+                          {item.last_occurrence && (
+                            <div className="mt-4 pt-4 border-t border-white/5">
+                              <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2 flex items-center">
+                                <History size={10} className="mr-1" /> Última Ocurrencia
+                              </p>
+                              <div className="flex flex-col space-y-1">
+                                <div className="flex items-center text-xs text-zinc-300 font-medium">
+                                  <Calendar size={12} className="mr-1.5 text-zinc-500" />
+                                  {new Date(item.last_occurrence.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </div>
+                                <div className="flex items-center text-xs text-zinc-300 font-medium">
+                                  <Sword size={12} className="mr-1.5 text-zinc-500" />
+                                  vs {item.last_occurrence.rival}
+                                </div>
+                                <div className="flex items-center text-[10px] text-zinc-500 font-bold uppercase truncate">
+                                  <Award size={12} className="mr-1.5 text-zinc-600" />
+                                  {item.last_occurrence.torneo}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="mt-8 pt-6 border-t border-white/5 text-center md:text-left">
+                      <p className="text-zinc-500 text-xs font-medium italic">
+                        {curiosities.top_results.length > 1 && (
+                          <>
+                            Diferencia de solo <span className="text-white font-bold">{curiosities.top_results[0].count - curiosities.top_results[1].count}</span> partidos para un cambio en el podio histórico.
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,5 +1,22 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-13: Optimización de UX en Panel Administrativo (Filament)
+- [x] **Backend (Filament)**:
+  - [x] **UI**: Implementación de `createOptionForm` en el recurso de `Partido` para permitir el alta de entidades relacionadas sin abandonar el formulario principal.
+  - [x] **Funcionalidad**: Soporte para creación "al vuelo" de **Torneos**, **Fases**, **Rivales**, **Estadios**, **Árbitros** y **Jugadores** (dentro del repetidor de goles).
+  - [x] **UX**: Integración de validaciones mínimas y editores multimedia (escudos y fotos) dentro de los modales de creación rápida.
+
+### 2026-04-08: Implementación de Sección "Flashback Millonario" (Sabías que...?) (Fase 6)
+- [x] **Backend**:
+  - [x] **Lógica**: Actualización de `generalStats` en `PartidoController` para calcular y devolver el último doblete y hat-trick globales a favor de River Plate.
+  - [x] **Lógica**: Implementación de `top_results` para identificar los marcadores históricos más frecuentes (Top 2) con porcentaje y detalle de última ocurrencia.
+  - [x] **API**: Inclusión de `latest_brace`, `latest_hat_trick` y `top_results` en el objeto de curiosidades.
+  - [x] **Fix**: Corrección del campo de nombre de jugador (`pl_apno`) en la respuesta de hitos globales.
+- [x] **Frontend Web**:
+  - [x] **UI**: Creación de la sección "Flashback Millonario" (Sabías que...?) dentro del `StatsDashboard` con estética de "Data Console" oscura y resaltados dorados/rojos.
+  - [x] **UI**: Implementación de la sección "Tendencia Histórica" para visualizar el podio de marcadores más repetidos con indicadores de última ocurrencia.
+  - [x] **UX**: Visualización detallada del hito, jugador, fecha formateada localmente y escudo del rival.
+
 ### 2026-04-08: Implementación de Goles de la Victoria (Goles Decisivos) (Fase 6)
 - [x] **Backend**:
   - [x] **Servicio**: Creación de `GoalAnalysisService` con lógica estricta: un gol es "de victoria" si rompe el empate final (`go_ad` a `go_ad`) para poner el marcador definitivo (`go_ad + 1`) en una victoria por la mínima diferencia.

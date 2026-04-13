@@ -32,7 +32,8 @@ class PartidoController extends Controller
     )]
     public function generalStats()
     {
-        return Cache::remember('general_stats', 86400, function () {
+        // Cache::forget('general_stats'); // Uncomment if needed to force clear
+        return Cache::remember('general_stats', 10, function () {
             $total = Partido::count();
             
             if ($total === 0) {
@@ -96,6 +97,83 @@ class PartidoController extends Controller
                 })
                 ->count();
 
+            // Último Doblete Global
+            $latestBraceRaw = DB::table('goles')
+                ->where('gol_parariver', 1)
+                ->select('gol_juga', 'gol_fecha', DB::raw('count(*) as total'))
+                ->groupBy('gol_juga', 'gol_fecha')
+                ->havingRaw('count(*) = 2')
+                ->orderBy('gol_fecha', 'desc')
+                ->first();
+            
+            $latestBrace = null;
+            if ($latestBraceRaw) {
+                $player = \App\Models\Jugador::find($latestBraceRaw->gol_juga);
+                $partido = Partido::with('rival')->find($latestBraceRaw->gol_fecha);
+                if ($player && $partido) {
+                    $latestBrace = [
+                        'jugador' => $player->pl_apno, // Corregido pl_nombre -> pl_apno
+                        'jugador_id' => $player->pl_id,
+                        'fecha' => $partido->fecha,
+                        'rival' => $partido->rival->ri_desc,
+                        'rival_escudo' => $partido->rival->escudo_url,
+                    ];
+                }
+            }
+
+            // Último Hat-trick Global
+            $latestHatTrickRaw = DB::table('goles')
+                ->where('gol_parariver', 1)
+                ->select('gol_juga', 'gol_fecha', DB::raw('count(*) as total'))
+                ->groupBy('gol_juga', 'gol_fecha')
+                ->havingRaw('count(*) >= 3')
+                ->orderBy('gol_fecha', 'desc')
+                ->first();
+            
+            $latestHatTrick = null;
+            if ($latestHatTrickRaw) {
+                $player = \App\Models\Jugador::find($latestHatTrickRaw->gol_juga);
+                $partido = Partido::with('rival')->find($latestHatTrickRaw->gol_fecha);
+                if ($player && $partido) {
+                    $latestHatTrick = [
+                        'jugador' => $player->pl_apno, // Corregido pl_nombre -> pl_apno
+                        'jugador_id' => $player->pl_id,
+                        'fecha' => $partido->fecha,
+                        'rival' => $partido->rival->ri_desc,
+                        'rival_escudo' => $partido->rival->escudo_url,
+                        'goles_count' => (int)$latestHatTrickRaw->total
+                    ];
+                }
+            }
+
+            // Resultados más repetidos (Top 2)
+            $topResultsRaw = DB::table('estadisticas')
+                ->select('go_ri', 'go_ad', DB::raw('count(*) as total'))
+                ->groupBy('go_ri', 'go_ad')
+                ->orderBy('total', 'desc')
+                ->limit(2)
+                ->get();
+
+            $topResults = $topResultsRaw->map(function ($item) use ($total) {
+                // Buscar último encuentro con este resultado
+                $lastMatch = Partido::with(['rival', 'torneo_rel'])
+                    ->where('go_ri', $item->go_ri)
+                    ->where('go_ad', $item->go_ad)
+                    ->orderBy('fecha', 'desc')
+                    ->first();
+
+                return [
+                    'resultado' => "{$item->go_ri} - {$item->go_ad}",
+                    'count' => (int)$item->total,
+                    'percentage' => $total > 0 ? round(($item->total / $total) * 100, 2) : 0,
+                    'last_occurrence' => $lastMatch ? [
+                        'fecha' => $lastMatch->fecha,
+                        'rival' => $lastMatch->rival->ri_desc,
+                        'torneo' => $lastMatch->torneo_rel->tor_desc
+                    ] : null
+                ];
+            });
+
             return [
                 'summary' => [
                     'pj' => $total,
@@ -125,7 +203,10 @@ class PartidoController extends Controller
                         'partidos' => $mostActiveYear->total
                     ] : null,
                     'total_rivales' => $totalRivales,
-                    'total_torneos' => DB::table('torneos')->count()
+                    'total_torneos' => DB::table('torneos')->count(),
+                    'latest_brace' => $latestBrace,
+                    'latest_hat_trick' => $latestHatTrick,
+                    'top_results' => $topResults
                 ]
             ];
         });

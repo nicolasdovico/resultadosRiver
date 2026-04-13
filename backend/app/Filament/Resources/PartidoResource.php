@@ -40,7 +40,19 @@ class PartidoResource extends Resource
                                             ->relationship('torneo_rel', 'tor_desc')
                                             ->searchable()
                                             ->preload()
-                                            ->required(),
+                                            ->required()
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make('tor_desc')
+                                                    ->label('Nombre')
+                                                    ->required(),
+                                                Forms\Components\Select::make('tor_nivel')
+                                                    ->label('Nivel')
+                                                    ->options([
+                                                        'Nacional' => 'Nacional',
+                                                        'Internacional' => 'Internacional',
+                                                    ])
+                                                    ->required(),
+                                            ]),
                                         Forms\Components\Grid::make(2)
                                             ->schema([
                                                 Forms\Components\TextInput::make('fecha_nro')
@@ -54,7 +66,13 @@ class PartidoResource extends Resource
                                                         modifyQueryUsing: fn (Builder $query) => $query->orderBy('fase', 'asc'),
                                                     )
                                                     ->searchable()
-                                                    ->preload(),
+                                                    ->preload()
+                                                    ->createOptionForm([
+                                                        Forms\Components\TextInput::make('fase')
+                                                            ->label('Nombre de la Fase')
+                                                            ->required()
+                                                            ->maxLength(50),
+                                                    ]),
                                             ]),
                                     ])->compact(),
 
@@ -66,7 +84,20 @@ class PartidoResource extends Resource
                                             ->relationship('rival', 'ri_desc')
                                             ->searchable()
                                             ->preload()
-                                            ->required(),
+                                            ->required()
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make('ri_desc')
+                                                    ->label('Nombre')
+                                                    ->required(),
+                                                Forms\Components\FileUpload::make('escudo')
+                                                    ->label('Escudo')
+                                                    ->image()
+                                                    ->disk('public')
+                                                    ->directory('rivales')
+                                                    ->visibility('public')
+                                                    ->maxSize(2048)
+                                                    ->nullable(),
+                                            ]),
                                         Forms\Components\Select::make('condicion')
                                             ->label('Condición')
                                             ->relationship('condicion_rel', 'descripcion')
@@ -76,12 +107,22 @@ class PartidoResource extends Resource
                                             ->label('Estadio')
                                             ->relationship('estadio_rel', 'es_desc')
                                             ->searchable()
-                                            ->preload(),
+                                            ->preload()
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make('es_desc')
+                                                    ->label('Nombre')
+                                                    ->required(),
+                                            ]),
                                         Forms\Components\Select::make('arbitro')
                                             ->label('Arbitro')
                                             ->relationship('arbitro_rel', 'ar_apno')
                                             ->searchable()
-                                            ->preload(),
+                                            ->preload()
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make('ar_apno')
+                                                    ->label('Nombre')
+                                                    ->required(),
+                                            ]),
                                     ])->compact(),
                             ])->columnSpan(2),
 
@@ -136,7 +177,24 @@ class PartidoResource extends Resource
                                             ->searchable()
                                             ->preload()
                                             ->required()
-                                            ->columnSpan(2),
+                                            ->columnSpan(2)
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make("pl_apno")
+                                                    ->label("Nombre Completo")
+                                                    ->required()
+                                                    ->maxLength(255),
+                                                Forms\Components\FileUpload::make("pl_foto")
+                                                    ->label("Foto del Jugador")
+                                                    ->image()
+                                                    ->directory("players-photos")
+                                                    ->visibility("public")
+                                                    ->imageEditor()
+                                                    ->imageEditorAspectRatios([
+                                                        '3:4',
+                                                        '2:3',
+                                                        '1:1',
+                                                    ]),
+                                            ]),
                                         Forms\Components\Select::make('gol_parariver')
                                             ->label('Equipo')
                                             ->options([1 => 'River', 2 => 'Rival'])
