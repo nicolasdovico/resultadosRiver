@@ -84,6 +84,7 @@
     - [x] **Limpieza de UI:** Eliminación de IDs de registro irrelevantes en las tarjetas y perfiles de jugadores (Web y Mobile).
     - [x] **Flashback Millonario:** Implementación de sección de curiosidades globales en la landing page mostrando el último doblete, hat-trick y el podio de marcadores más repetidos (Tendencia Histórica).
     - [x] **Fix de Datos:** Corrección de mapeo de nombres de jugadores (`pl_apno`) en el Dashboard de estadísticas.
+    - [x] **Sección de Técnicos (Fix):** Resolución de error `Cannot read properties of undefined (reading 'charAt')` mediante la actualización de `TecnicoResource` y adición de safety checks en el frontend.
 - [x] **Sección de Torneos:**
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.
@@ -106,5 +107,10 @@
 - [x] **Mejoras de Navegación y Componentes:**
     - [x] Creación del componente reutilizable `GoBack` para mejorar el flujo de navegación en el frontend web.
     - [x] Unificación de escudos oficiales y de clubes en las vistas de detalle.
+- [x] **Bug Fixes:**
+    - [x] Corrección de error 500 (Internal Server Error) en la página de técnicos del frontend web provocado por la colisión de nombres entre métodos de consulta y relaciones mágicas de Laravel.
+    - [x] Corrección de error `Award is not defined` en el detalle de técnicos (`/tecnicos/[id]`) por falta de importación de componentes de `lucide-react`.
+    - [x] Corrección de error `Cannot read properties of undefined (reading 'map')` en el detalle de técnicos mediante la normalización de la respuesta en `TecnicoResource` y adición de safety checks en el frontend.
+
 - [ ] Sistema de notificaciones push para recordatorios históricos.
 - [ ] Refactorización de visualizaciones de estadísticas dinámicas.

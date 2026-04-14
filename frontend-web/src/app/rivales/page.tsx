@@ -93,7 +93,7 @@ export default async function RivalesPage({
                 className="bg-white p-6 rounded-[32px] border border-zinc-100 flex flex-col items-center justify-center group hover:border-red-200 transition-all text-center aspect-square shadow-sm"
               >
                 <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 font-black text-2xl mb-4 group-hover:bg-red-50 group-hover:text-red-600 transition-all uppercase">
-                  {rival.ri_desc?.charAt(0)}
+                  {rival.ri_desc?.charAt(0) || "?"}
                 </div>
                 <span className="font-black text-zinc-700 tracking-tight text-[10px] uppercase leading-tight line-clamp-2 px-2 group-hover:text-red-600 transition-colors">
                   {rival.ri_desc}

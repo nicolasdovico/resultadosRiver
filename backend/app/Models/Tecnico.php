@@ -15,9 +15,62 @@ class Tecnico extends Model
     public $timestamps = false;
     protected $guarded = [];
 
-    public function partidos(): HasMany
+    public function getPartidosQuery()
     {
-        return $this->hasMany(Partido::class, 'tecnico', 'id_tecnicos');
+        $query = Partido::query()
+            ->where('fecha', '>=', $this->desde);
+
+        if ($this->hasta) {
+            $query->where('fecha', '<=', $this->hasta);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Get aggregate statistics for the technical director's cycle.
+     */
+    public function getStatsAttribute(): array
+    {
+        $partidos = $this->getPartidosQuery()->get();
+        
+        $pj = $partidos->count();
+        $pg = 0;
+        $pe = 0;
+        $pp = 0;
+        $gf = 0;
+        $gc = 0;
+
+        foreach ($partidos as $partido) {
+            $golesRiver = $partido->go_ri;
+            $golesRival = $partido->go_ad;
+
+            $gf += $golesRiver;
+            $gc += $golesRival;
+
+            if ($golesRiver > $golesRival) {
+                $pg++;
+            } elseif ($golesRiver < $golesRival) {
+                $pp++;
+            } else {
+                $pe++;
+            }
+        }
+
+        $puntos = ($pg * 3) + $pe;
+        $efectividad = $pj > 0 ? round(($puntos / ($pj * 3)) * 100, 2) : 0;
+
+        return [
+            'pj' => $pj,
+            'pg' => $pg,
+            'pe' => $pe,
+            'pp' => $pp,
+            'gf' => $gf,
+            'gc' => $gc,
+            'dg' => $gf - $gc,
+            'puntos' => $puntos,
+            'efectividad' => $efectividad,
+        ];
     }
 
     public static function getForFecha($fecha)

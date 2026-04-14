@@ -160,7 +160,7 @@ export default async function JugadorDetailPage({
                   </>
                 ) : (
                   <div className="flex flex-col items-center">
-                    <span className="leading-none">{jugador.pl_apno.charAt(0)}</span>
+                    <span className="leading-none">{jugador.pl_apno?.charAt(0) || "?"}</span>
                   </div>
                 )}
               </div>

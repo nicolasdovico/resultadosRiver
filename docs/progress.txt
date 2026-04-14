@@ -1,5 +1,28 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-14: Corrección de Error "Técnico no encontrado" en Detalle
+- [x] **Backend**:
+  - [x] **Fix**: Resolución de error "Maximum stack depth exceeded" (500) en `PartidoResource` mediante la eliminación de la recursión infinita con `TecnicoResource`. Ahora `PartidoResource` devuelve un objeto simple para el técnico.
+  - [x] **Mejora**: Aplicación de `trim()` en `TecnicoResource` para limpiar espacios en blanco de los campos `tec_ape_nom` y `cargo`.
+- [x] **Frontend Web**:
+  - [x] **Validación**: Confirmación de que la página de detalle del técnico ya carga correctamente al recibir el JSON válido de la API.
+
+### 2026-04-14: Refactorización de Sección de Técnicos (Fase 6)
+- [x] **Backend**:
+  - [x] **API**: Soporte para filtrado por letra inicial (`letter`) en `TecnicoController`.
+  - [x] **API**: Mejora de `TecnicoResource` para incluir conteo de partidos, historial de partidos con relaciones y lógica de restricción Premium.
+- [x] **Frontend Web**:
+  - [x] **Navegación**: Implementación de **Directorio Alfabético** (A-Z) similar al de Jugadores.
+  - [x] **UI/UX**: Rediseño de tarjetas de técnicos con estética "Data Console" y "Cromos".
+  - [x] **Ficha de Detalle**: Nueva página `/tecnicos/[id]` con cabecera inmersiva, historial de partidos y tableros de resumen.
+  - [x] **Paywall**: Restricción de resultados (max 15) y bloqueo de historial avanzado (max 5 partidos) para usuarios Free con banners de conversión.
+
+### 2026-04-14: Corrección de Error en Página de Técnicos
+- [x] **Backend**:
+  - [x] **API**: Actualización de `TecnicoResource` para incluir `tec_ape_nom`, `desde` y `hasta`, manteniendo `te_desc` para compatibilidad con vistas existentes.
+- [x] **Frontend Web**:
+  - [x] **Fix**: Implementación de encadenamiento opcional (`?.`) y fallbacks en la lista de técnicos para evitar errores de `undefined` al acceder a `tec_ape_nom`.
+
 ### 2026-04-13: Optimización de UX en Panel Administrativo (Filament)
 - [x] **Backend (Filament)**:
   - [x] **UI**: Implementación de `createOptionForm` en el recurso de `Partido` para permitir el alta de entidades relacionadas sin abandonar el formulario principal.

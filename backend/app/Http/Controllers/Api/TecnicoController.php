@@ -27,10 +27,23 @@ class TecnicoController extends Controller
     public function index(Request $request)
     {
         $query = Tecnico::query();
+        
         if ($request->has('q')) {
             $query->where('tec_ape_nom', 'ILIKE', "%{$request->q}%");
         }
-        return TecnicoResource::collection($query->paginate(50));
+
+        if ($request->has('letter')) {
+            $query->where('tec_ape_nom', 'ILIKE', "{$request->letter}%");
+        }
+
+        $query->orderBy('tec_ape_nom', 'asc');
+
+        $limit = $request->input('limit', 50);
+        if ($limit == -1) {
+            return TecnicoResource::collection($query->get());
+        }
+
+        return TecnicoResource::collection($query->paginate($limit));
     }
 
     #[OA\Post(

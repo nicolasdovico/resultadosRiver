@@ -55,7 +55,12 @@ class PartidoResource extends JsonResource
             'estadio' => new EstadioResource($this->whenLoaded('estadio_rel')),
             'condicion' => new CondicionResource($this->whenLoaded('condicion_rel')),
             'fase' => new FaseResource($this->whenLoaded('fase_rel')),
-            'tecnico' => new TecnicoResource($this->tecnico),
+            'tecnico' => [
+                'id_tecnicos' => $this->tecnico?->id_tecnicos,
+                'tec_ape_nom' => $this->tecnico?->tec_ape_nom,
+                'te_desc' => $this->tecnico?->tec_ape_nom,
+                'cargo' => $this->tecnico?->cargo,
+            ],
             'goles' => GolResource::collection($this->whenLoaded('goles')),
         ];
     }

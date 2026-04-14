@@ -64,7 +64,7 @@ export default async function ArbitrosPage({
                 className="bg-white p-6 rounded-[32px] border border-zinc-100 flex items-center space-x-4 group hover:border-zinc-300 transition-all shadow-sm"
               >
                 <div className="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 font-black text-xs group-hover:bg-zinc-900 group-hover:text-white transition-all uppercase">
-                  {arbitro.ar_apno.charAt(0)}
+                  {arbitro.ar_apno?.charAt(0) || "?"}
                 </div>
                 <span className="font-black text-zinc-800 text-[10px] uppercase tracking-tight leading-tight line-clamp-1 group-hover:text-red-600 transition-colors">{arbitro.ar_apno}</span>
               </Link>
