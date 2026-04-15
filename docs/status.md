@@ -84,7 +84,22 @@
     - [x] **Limpieza de UI:** Eliminación de IDs de registro irrelevantes en las tarjetas y perfiles de jugadores (Web y Mobile).
     - [x] **Flashback Millonario:** Implementación de sección de curiosidades globales en la landing page mostrando el último doblete, hat-trick y el podio de marcadores más repetidos (Tendencia Histórica).
     - [x] **Fix de Datos:** Corrección de mapeo de nombres de jugadores (`pl_apno`) en el Dashboard de estadísticas.
+    - [x] **Sección de Técnicos (Analítica):**
+        - [x] **Backend:** Implementación de lógica para `goles_por_periodo` e intervalos de 10 min y `goles_por_tipo` específicos para el ciclo del técnico.
+        - [x] **Frontend Web:** Corrección de visualización de escudos de rivales (`escudo_url`) e instancia real del torneo (`fa_desc`).
+        - [x] **UI/UX:** Nueva sección "Analítica de Resultados" con gráficos de rendimiento y restricción Premium (efecto blur).
+        - [x] **Optimización:** Ajuste de paginación del historial a 10 partidos por página.
+    - [x] **Sección de Técnicos (Mejoras Integrales):**
+        - [x] **Infraestructura:** Migración para añadir la columna `tec_foto` y soporte multimedia en el panel administrativo.
+        - [x] **Filament:** Implementación de carga de fotos con editor vertical (3:4, 2:3) y previsualización en listados.
+        - [x] **Fix de Rutas:** Ajuste en el trait `UpperCaseStrings` para permitir rutas de archivos en minúsculas.
+        - [x] **Backend (Analítica):** Implementación de lógica para `goles_por_periodo` e intervalos de 10 min y `goles_por_tipo` específicos para el ciclo del técnico.
+        - [x] **Frontend Web (Fotos):** Integración de fotos en tarjetas y perfiles con restricción Premium (efecto blur para Free).
+        - [x] **Frontend Web (UI Fixes):** Corrección de visualización de escudos de rivales (`escudo_url`), instancia real del torneo (`fa_desc`) y reemplazo de leyenda estática por campo dinámico `cargo` (Titular/Interino).
+        - [x] **Sección Analítica:** Nueva sección "Analítica de Resultados" con gráficos de rendimiento y paywall reforzado.
+        - [x] **Optimización:** Ajuste de paginación del historial a 10 partidos por página para mejorar la UX.
     - [x] **Sección de Técnicos (Fix):** Resolución de error `Cannot read properties of undefined (reading 'charAt')` mediante la actualización de `TecnicoResource` y adición de safety checks en el frontend.
+    - [x] **Sección de Técnicos (Stats Fix):** Corrección de valores hardcodeados en la ficha de detalle y rediseño del "Resumen de Ciclo" para mostrar estadísticas reales (PG, PE, PP, Puntos, GF, GC) y efectividad dinámica.
 - [x] **Sección de Torneos:**
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.

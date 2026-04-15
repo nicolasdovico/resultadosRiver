@@ -23,12 +23,38 @@ class TecnicoResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('tec_ape_nom')
-                    ->maxLength(50),
-                Forms\Components\DatePicker::make('desde'),
-                Forms\Components\DatePicker::make('hasta'),
-                Forms\Components\TextInput::make('cargo')
-                    ->maxLength(30),
+                Forms\Components\Section::make('Información del Técnico')
+                    ->schema([
+                        Forms\Components\TextInput::make('tec_ape_nom')
+                            ->label('Nombre Completo')
+                            ->maxLength(50)
+                            ->required(),
+                        Forms\Components\FileUpload::make('tec_foto')
+                            ->label('Foto del Técnico')
+                            ->image()
+                            ->directory('fotos-tecnicos')
+                            ->visibility('public')
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                '3:4',
+                                '2:3',
+                                '1:1',
+                            ])
+                            ->extraAttributes([
+                                'style' => 'object-position: top !important;',
+                            ]),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\DatePicker::make('desde')
+                                    ->label('Desde'),
+                                Forms\Components\DatePicker::make('hasta')
+                                    ->label('Hasta'),
+                            ]),
+                        Forms\Components\TextInput::make('cargo')
+                            ->label('Cargo')
+                            ->maxLength(30)
+                            ->default('Entrenador'),
+                    ])
             ]);
     }
 
@@ -36,15 +62,25 @@ class TecnicoResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('tec_foto')
+                    ->label('Foto')
+                    ->height(80)
+                    ->extraImgAttributes([
+                        'style' => 'object-position: top !important; object-fit: cover !important;',
+                    ]),
                 Tables\Columns\TextColumn::make('tec_ape_nom')
+                    ->label('Nombre')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('desde')
+                    ->label('Desde')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('hasta')
+                    ->label('Hasta')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('cargo')
+                    ->label('Cargo')
                     ->searchable(),
             ])
             ->defaultSort('tec_ape_nom')

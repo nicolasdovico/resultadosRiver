@@ -1,5 +1,28 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-15: Fotos, Analítica y Mejoras en Sección de Técnicos (Fase 6)
+- [x] **Backend**:
+  - [x] **Base de Datos**: Adición de la columna `tec_foto` a la tabla `tecnicos`.
+  - [x] **Filament**: Implementación de carga de fotos con editor integrado (ratios 3:4, 2:3) y columna de previsualización.
+  - [x] **Fix**: Actualización del trait `UpperCaseStrings` para excluir `tec_foto` y evitar la corrupción de rutas de archivos.
+  - [x] **API**: Implementación de lógica para `goles_por_periodo` (intervalos de 10 min) y `goles_por_tipo` en `TecnicoResource`.
+  - [x] **Paginación**: Ajuste del historial de partidos a 10 resultados por página.
+- [x] **Frontend Web**:
+  - [x] **UI/UX**: Visualización de fotos de técnicos en el listado y detalle con estética de "cromo".
+  - [x] **Paywall**: Implementación de efecto `blur` y candado de restricción en fotos y analítica para usuarios Free.
+  - [x] **Fix**: Corrección de propiedad de imagen (`escudo_url`) y fase del torneo (`fa_desc`) en el historial.
+  - [x] **Fix**: Reemplazo de leyenda estática "Status Oficial" por el valor dinámico del campo `cargo` (Titular/Interino).
+  - [x] **Analytics**: Integración de secciones de distribución de goles por tiempo y método de definición.
+
+### 2026-04-14: Corrección y Mejora de Estadísticas en Detalle de Técnicos
+... (rest of content)
+
+  - [x] **Validación**: Confirmación de cálculo correcto de `stats` (PJ, PG, PE, PP, GF, GC, DG, Puntos, Efectividad) en el modelo `Tecnico`.
+- [x] **Frontend Web**:
+  - [x] **Fix**: Eliminación de valores hardcodeados para "Efectividad" y "Resumen de Ciclo" en la ficha de detalle.
+  - [x] **UI/UX**: Rediseño del "Resumen de Ciclo" con métricas reales y desglose completo (Victorias, Empates, Derrotas, Puntos, GF, GC).
+  - [x] **Lógica**: Mejora en la visualización de efectividad para mostrar `0%` en lugar de `---` en casos con rendimiento nulo.
+
 ### 2026-04-14: Corrección de Error "Técnico no encontrado" en Detalle
 - [x] **Backend**:
   - [x] **Fix**: Resolución de error "Maximum stack depth exceeded" (500) en `PartidoResource` mediante la eliminación de la recursión infinita con `TecnicoResource`. Ahora `PartidoResource` devuelve un objeto simple para el técnico.

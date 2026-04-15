@@ -35,6 +35,7 @@ trait UpperCaseStrings
             'api_token',
             'escudo',
             'pl_foto',
+            'tec_foto',
             'foto',
             'id',
             'ar_id', 'es_id', 'pl_id', 'ri_id', 'tor_id', 'id_condicion', 'id_fase',

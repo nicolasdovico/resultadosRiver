@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { UserRound, ChevronRight, Award, Percent, Users, Search, X, Info, Star, Activity } from "lucide-react";
+import { UserRound, ChevronRight, Award, Percent, Users, Search, X, Info, Star, Activity, Lock, Shield } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { customInstance } from "@/api/custom-instance";
 import { cookies } from "next/headers";
+import Image from "next/image";
+import { sanitizeImageUrl } from "@/utils/image";
 
 interface Tecnico {
   id_tecnicos: number;
   tec_ape_nom: string;
+  tec_foto?: string | null;
   desde: string;
   hasta: string;
   cargo: string;
@@ -219,15 +222,37 @@ export default async function TecnicosPage({
                       <Link 
                         key={tecnico.id_tecnicos}
                         href={`/tecnicos/${tecnico.id_tecnicos}`}
-                        className="bg-white p-8 rounded-[40px] border border-zinc-100 flex flex-col group hover:border-zinc-900 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-zinc-900/5"
+                        className="bg-white p-8 rounded-[40px] border border-zinc-100 flex flex-col group hover:border-zinc-900 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-zinc-900/5 overflow-hidden"
                       >
-                        <div className="flex items-center justify-between mb-8">
-                          <div className="w-14 h-14 bg-zinc-900 text-white rounded-2xl flex items-center justify-center font-black text-2xl uppercase group-hover:bg-red-600 transition-colors shadow-lg">
-                            {tecnico.tec_ape_nom?.[0] || "?"}
+                        <div className="flex items-start justify-between mb-8">
+                          <div className="w-24 h-32 md:w-32 md:h-40 bg-zinc-900 text-white rounded-[24px] flex items-center justify-center font-black text-2xl uppercase group-hover:bg-red-600 transition-all duration-500 shadow-lg relative overflow-hidden shrink-0">
+                            {tecnico.tec_foto ? (
+                              <>
+                                <Image 
+                                  src={sanitizeImageUrl(tecnico.tec_foto)} 
+                                  alt="" 
+                                  fill 
+                                  unoptimized
+                                  className={`object-cover object-top transition-all duration-700 ${!isPremium ? 'blur-xl grayscale scale-110' : 'group-hover:scale-110'}`} 
+                                />
+                                {!isPremium && (
+                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 backdrop-blur-sm">
+                                    <Lock size={20} className="text-red-500" />
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <span className="group-hover:scale-110 transition-transform duration-500">{tecnico.tec_ape_nom?.[0] || "?"}</span>
+                            )}
                           </div>
                           <div className="flex flex-col text-right">
                              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Partidos</span>
-                             <span className="text-xl font-black text-zinc-900">{tecnico.partidos_count || 0}</span>
+                             <span className="text-xl font-black text-zinc-900 tabular-nums">{tecnico.partidos_count || 0}</span>
+                             
+                             <div className="mt-4 bg-zinc-50 rounded-2xl p-3 border border-zinc-100 group-hover:bg-red-50 group-hover:border-red-100 transition-colors">
+                                <span className="block text-[8px] font-black text-zinc-400 uppercase tracking-tighter mb-1">Cargo</span>
+                                <span className="block text-[10px] font-black text-zinc-900 uppercase italic">{tecnico.cargo || 'Oficial'}</span>
+                             </div>
                           </div>
                         </div>
                         
@@ -237,7 +262,7 @@ export default async function TecnicosPage({
                         
                         <div className="mt-auto pt-6 border-t border-zinc-50 flex items-center justify-between">
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Periodo</span>
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Periodo del Ciclo</span>
                             <div className="flex flex-col">
                               <span className="text-[10px] font-bold text-zinc-600">Desde: {tecnico.desde ? tecnico.desde.split('-').reverse().join('-') : 'N/A'}</span>
                               <span className="text-[10px] font-bold text-zinc-600">Hasta: {tecnico.hasta ? tecnico.hasta.split('-').reverse().join('-') : 'Actualidad'}</span>

@@ -14,6 +14,7 @@ class Tecnico extends Model
     protected $primaryKey = 'id_tecnicos';
     public $timestamps = false;
     protected $guarded = [];
+    protected $fillable = ['tec_ape_nom', 'desde', 'hasta', 'cargo', 'tec_foto'];
 
     public function getPartidosQuery()
     {

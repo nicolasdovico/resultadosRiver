@@ -6,6 +6,8 @@ import { customInstance } from "@/api/custom-instance";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import { sanitizeImageUrl } from "@/utils/image";
+import PlayerGoalsAnalysis from "@/components/player/PlayerGoalsAnalysis";
+import PlayerGoalMethodAnalysis from "@/components/player/PlayerGoalMethodAnalysis";
 
 interface Partido {
   fecha: string;
@@ -13,13 +15,14 @@ interface Partido {
   goles_rival: number;
   resultado: 'G' | 'E' | 'P';
   torneo?: { tor_desc: string };
-  rival?: { ri_desc: string, ri_escudo?: string };
-  fase?: { fase_desc: string };
+  rival?: { ri_desc: string, escudo_url?: string };
+  fase?: { fa_desc: string };
 }
 
 interface Tecnico {
   id_tecnicos: number;
   tec_ape_nom: string;
+  tec_foto?: string | null;
   desde: string;
   hasta: string;
   cargo: string;
@@ -35,6 +38,8 @@ interface Tecnico {
     puntos: number;
     efectividad: number;
   };
+  goles_por_periodo?: any[];
+  goles_por_tipo?: any[];
   partidos: Partido[];
   partidos_meta?: {
     current_page: number;
@@ -114,9 +119,29 @@ export default async function TecnicoDetailPage({
           
           <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
             <div className="relative">
-              <div className="w-48 h-48 md:w-64 md:h-64 bg-zinc-800 rounded-[40px] flex items-center justify-center text-white font-black text-8xl shadow-2xl border-4 border-zinc-700 relative group overflow-hidden">
-                <span className="relative z-10">{tecnico.tec_ape_nom?.charAt(0) || "?"}</span>
-                <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-transparent" />
+              <div className="w-48 h-64 md:w-64 md:h-80 bg-zinc-800 rounded-[40px] flex items-center justify-center text-white font-black text-8xl shadow-2xl border-4 border-zinc-700 relative group overflow-hidden">
+                {tecnico.tec_foto ? (
+                  <>
+                    <Image 
+                      src={sanitizeImageUrl(tecnico.tec_foto)} 
+                      alt="" 
+                      fill 
+                      unoptimized
+                      className={`object-cover object-top transition-all duration-700 ${!isPremium ? 'blur-2xl grayscale scale-110' : 'group-hover:scale-105'}`} 
+                    />
+                    {!isPremium && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 backdrop-blur-sm">
+                        <div className="flex flex-col items-center px-6 text-center">
+                          <Lock size={24} className="text-red-500 mb-2" />
+                          <span className="text-[10px] text-white font-black uppercase tracking-widest leading-tight">Contenido<br/>Premium</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <span className="relative z-10">{tecnico.tec_ape_nom?.charAt(0) || "?"}</span>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-transparent pointer-events-none" />
               </div>
               <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-red-600 rounded-3xl flex items-center justify-center text-white shadow-xl border-4 border-zinc-900">
                 <Award size={24} className="fill-current" />
@@ -193,9 +218,9 @@ export default async function TecnicoDetailPage({
                 <div key={index} className="bg-white p-6 rounded-[40px] border border-zinc-100 flex items-center justify-between shadow-sm group hover:border-red-600 transition-all duration-300">
                   <div className="flex items-center space-x-6">
                     <div className="w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center border border-zinc-100 shadow-inner group-hover:scale-110 transition-transform overflow-hidden relative p-2">
-                      {partido.rival?.ri_escudo ? (
+                      {partido.rival?.escudo_url ? (
                         <Image 
-                          src={sanitizeImageUrl(partido.rival.ri_escudo)} 
+                          src={sanitizeImageUrl(partido.rival.escudo_url)} 
                           alt="" 
                           fill 
                           unoptimized
@@ -221,7 +246,7 @@ export default async function TecnicoDetailPage({
                          }`}>
                            {partido.goles_river} - {partido.goles_rival}
                          </span>
-                         <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">• {partido.fase?.fase_desc || 'Fase Regular'}</span>
+                         <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">• {partido.fase?.fa_desc || 'Fase No Definida'}</span>
                       </div>
                     </div>
                   </div>
@@ -346,6 +371,41 @@ export default async function TecnicoDetailPage({
              </div>
           </div>
         </div>
+
+        <section className="mt-20">
+          <div className="flex flex-col mb-10">
+            <h2 className="text-3xl font-black text-zinc-900 mb-2 tracking-tight uppercase italic">Analítica de Resultados</h2>
+            <p className="text-zinc-500 font-medium uppercase text-xs tracking-widest">Distribución de goles (a favor y en contra) durante el ciclo.</p>
+          </div>
+
+          <div className="relative">
+            {!isPremium && (
+              <div className="absolute inset-0 z-20 backdrop-blur-md bg-white/30 flex flex-col items-center justify-center p-8 text-center rounded-[48px] border-2 border-dashed border-red-200">
+                <Shield size={48} className="text-red-600 mb-4" />
+                <h4 className="font-black text-zinc-900 uppercase tracking-tighter text-3xl mb-4 italic">Análisis Exclusivo para Socios</h4>
+                <p className="text-zinc-500 text-lg font-medium mb-10 max-w-md">
+                  El desglose por tiempo y método de definición del ciclo completo está disponible solo para socios Premium.
+                </p>
+                <Link href="/premium" className="bg-zinc-900 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl">
+                  Quiero ser Premium
+                </Link>
+              </div>
+            )}
+
+            <div className={`rounded-[40px] overflow-hidden shadow-2xl border border-zinc-100 ${!isPremium ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+              <div className="flex flex-col">
+                <PlayerGoalsAnalysis 
+                  data={tecnico.goles_por_periodo || []} 
+                  total={tecnico.stats?.gf ? tecnico.stats.gf + tecnico.stats.gc : 0} 
+                />
+                <PlayerGoalMethodAnalysis 
+                  data={tecnico.goles_por_tipo || []} 
+                  total={tecnico.stats?.gf ? tecnico.stats.gf + tecnico.stats.gc : 0} 
+                />
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
