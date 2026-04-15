@@ -9,8 +9,69 @@ use Illuminate\Support\Facades\Cache;
 class GoalAnalysisService
 {
     /**
+     * Determina si un partido fue una "remontada" (darlo vuelta).
+     * River debe haber ganado el partido, pero en algún momento debió estar perdiendo.
+     */
+    public static function isComeback(Partido $partido): bool
+    {
+        // Solo aplica si River ganó
+        if (!$partido || $partido->go_ri <= $partido->go_ad) {
+            return false;
+        }
+
+        return Cache::remember("is_comeback_{$partido->fecha}", 3600, function () use ($partido) {
+            $goles = Gol::where('gol_fecha', $partido->fecha)
+                ->orderBy('periodo')
+                ->orderBy('minutos')
+                ->orderBy('gol_id')
+                ->get();
+
+            $ri_score = 0;
+            $ad_score = 0;
+            $was_losing = false;
+
+            foreach ($goles as $gol) {
+                if ($gol->gol_parariver == 1) {
+                    $ri_score++;
+                } else {
+                    $ad_score++;
+                }
+
+                if ($ad_score > $ri_score) {
+                    $was_losing = true;
+                    break; // Ya detectamos que estuvo perdiendo
+                }
+            }
+
+            return $was_losing;
+        });
+    }
+
+    /**
+     * Obtiene el último partido dado vuelta para una condición específica.
+     */
+    public static function getLatestComeback(int $condicion): ?Partido
+    {
+        // Buscamos victorias de River en esa condición, ordenadas por fecha desc
+        $victorias = Partido::where('condicion', $condicion)
+            ->whereRaw('go_ri > go_ad')
+            ->orderBy('fecha', 'desc')
+            ->limit(500) // Ampliamos el rango para encontrar registros más antiguos
+            ->get();
+
+        foreach ($victorias as $partido) {
+            if (self::isComeback($partido)) {
+                return $partido;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Determina el ID del gol de la victoria para un partido dado.
-     * CRITERIO ESTRICTO:
+...
+
      * 1. River debe haber ganado por EXACTAMENTE un gol de diferencia (go_ri == go_ad + 1).
      * 2. El gol de la victoria debe ser el que puso el marcador definitivo (go_ad + 1).
      * 3. Justo antes de ese gol, el partido debía estar EMPATADO (go_ad == go_ad).

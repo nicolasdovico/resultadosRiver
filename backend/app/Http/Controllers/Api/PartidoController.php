@@ -7,6 +7,7 @@ use App\Models\Partido;
 use App\Models\Rival;
 use App\Models\Periodo;
 use App\Http\Resources\PartidoResource;
+use App\Services\GoalAnalysisService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -32,7 +33,7 @@ class PartidoController extends Controller
     )]
     public function generalStats()
     {
-        // Cache::forget('general_stats'); // Uncomment if needed to force clear
+        // Cache::forget('general_stats'); 
         return Cache::remember('general_stats', 10, function () {
             $total = Partido::count();
             
@@ -112,7 +113,7 @@ class PartidoController extends Controller
                 $partido = Partido::with('rival')->find($latestBraceRaw->gol_fecha);
                 if ($player && $partido) {
                     $latestBrace = [
-                        'jugador' => $player->pl_apno, // Corregido pl_nombre -> pl_apno
+                        'jugador' => $player->pl_apno,
                         'jugador_id' => $player->pl_id,
                         'fecha' => $partido->fecha,
                         'rival' => $partido->rival->ri_desc,
@@ -136,7 +137,7 @@ class PartidoController extends Controller
                 $partido = Partido::with('rival')->find($latestHatTrickRaw->gol_fecha);
                 if ($player && $partido) {
                     $latestHatTrick = [
-                        'jugador' => $player->pl_apno, // Corregido pl_nombre -> pl_apno
+                        'jugador' => $player->pl_apno,
                         'jugador_id' => $player->pl_id,
                         'fecha' => $partido->fecha,
                         'rival' => $partido->rival->ri_desc,
@@ -155,7 +156,6 @@ class PartidoController extends Controller
                 ->get();
 
             $topResults = $topResultsRaw->map(function ($item) use ($total) {
-                // Buscar último encuentro con este resultado
                 $lastMatch = Partido::with(['rival', 'torneo_rel'])
                     ->where('go_ri', $item->go_ri)
                     ->where('go_ad', $item->go_ad)
@@ -173,6 +173,43 @@ class PartidoController extends Controller
                     ] : null
                 ];
             });
+
+            // Últimos 20 partidos para el semáforo
+            $latestMatches = Partido::with('rival')
+                ->orderBy('fecha', 'desc')
+                ->limit(20)
+                ->get()
+                ->map(function($match) {
+                    $outcome = 'E';
+                    if ($match->go_ri > $match->go_ad) $outcome = 'G';
+                    if ($match->go_ri < $match->go_ad) $outcome = 'P';
+
+                    return [
+                        'fecha' => $match->fecha,
+                        'go_ri' => $match->go_ri,
+                        'go_ad' => $match->go_ad,
+                        'resultado' => $outcome,
+                        'rival' => $match->rival->ri_desc,
+                        'rival_escudo' => $match->rival->escudo_url
+                    ];
+                });
+
+            // Últimas Remontadas (Dar vuelta el partido)
+            $comebackHome = GoalAnalysisService::getLatestComeback(1); // Local
+            $comebackAway = GoalAnalysisService::getLatestComeback(2); // Visitante
+
+            $formatComeback = function($match) {
+                if (!$match) return null;
+                $date = \Carbon\Carbon::parse($match->fecha);
+                return [
+                    'fecha' => $match->fecha,
+                    'resultado' => "{$match->go_ri} - {$match->go_ad}",
+                    'rival' => $match->rival->ri_desc,
+                    'rival_escudo' => $match->rival->escudo_url,
+                    'torneo' => $match->torneo_rel?->tor_desc ?? 'Amistoso',
+                    'dias_pasados' => (int) $date->diffInDays(now())
+                ];
+            };
 
             return [
                 'summary' => [
@@ -206,7 +243,10 @@ class PartidoController extends Controller
                     'total_torneos' => DB::table('torneos')->count(),
                     'latest_brace' => $latestBrace,
                     'latest_hat_trick' => $latestHatTrick,
-                    'top_results' => $topResults
+                    'top_results' => $topResults,
+                    'latest_matches' => $latestMatches,
+                    'latest_comeback_home' => $formatComeback($comebackHome),
+                    'latest_comeback_away' => $formatComeback($comebackAway)
                 ]
             ];
         });

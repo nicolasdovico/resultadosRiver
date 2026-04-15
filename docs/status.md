@@ -56,6 +56,10 @@
     - [x] Configuración de Mailpit para entorno de desarrollo.
     - [x] Solución de errores de hidratación en Next.js y manejo de Client Components.
 ## Fase 6: Estadísticas Avanzadas y Engagement (En Progreso)
+- [x] **Landing Page (Estadísticas Globales):**
+    - [x] **Semáforo de Forma:** Implementación de secuencia cronológica de los últimos 20 resultados con tooltips detallados.
+    - [x] **Épica Millonaria:** Detección y visualización de las últimas remontadas históricas (Local/Visitante) con cálculo de días transcurridos y nombre del torneo.
+    - [x] **Backend:** Optimización de `GoalAnalysisService` para escaneo profundo (hasta 500 partidos) de hitos de resiliencia.
 - [x] **Sección de Figuras (Jugadores):**
     - [x] **Infraestructura:** Migración para fotos de jugadores y actualización del panel Filament para gestión multimedia.
     - [x] **Backend:** 

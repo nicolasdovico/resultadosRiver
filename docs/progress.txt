@@ -1,5 +1,15 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-15: Épica Millonaria y Semáforo de Forma (Fase 6)
+- [x] **Backend**:
+  - [x] **Lógica**: Implementación de `isComeback` en `GoalAnalysisService` para detectar victorias tras estar en desventaja.
+  - [x] **API**: Inclusión de `latest_matches` (últimos 20 resultados) y `latest_comeback` (home/away) en las estadísticas globales.
+  - [x] **API**: Soporte para relación de torneos y cálculo de días transcurridos en hitos históricos.
+- [x] **Frontend Web**:
+  - [x] **UI/UX**: Implementación del sistema de "Semáforo" (Guía de Forma) con 20 resultados en una sola fila y tooltips enriquecidos.
+  - [x] **UI/UX**: Nueva subsección "Épica Millonaria" en el Dashboard mostrando las remontadas más recientes por condición.
+  - [x] **Fix**: Resolución de error de sintaxis en `StatsDashboard.tsx`.
+
 ### 2026-04-15: Fotos, Analítica y Mejoras en Sección de Técnicos (Fase 6)
 - [x] **Backend**:
   - [x] **Base de Datos**: Adición de la columna `tec_foto` a la tabla `tecnicos`.
