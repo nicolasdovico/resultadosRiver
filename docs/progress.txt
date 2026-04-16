@@ -1,5 +1,12 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-16: Paginación de Partidos en Detalle de Torneos (Fase 6)
+- [x] **Frontend Web**:
+  - [x] **Componente**: Creación de `TorneoMatches.tsx` como componente de cliente para manejar la visualización de partidos.
+  - [x] **Lógica**: Implementación de paginación (10 partidos por página) y ordenamiento cronológico.
+  - [x] **UI/UX**: Integración de controles de navegación (Anterior/Siguiente) y contador de páginas con estética "Data Console".
+  - [x] **Refactor**: Actualización de la página de detalle de torneos (`/torneos/[id]`) para delegar el listado de resultados al nuevo componente.
+
 ### 2026-04-15: Épica Millonaria y Semáforo de Forma (Fase 6)
 - [x] **Backend**:
   - [x] **Lógica**: Implementación de `isComeback` en `GoalAnalysisService` para detectar victorias tras estar en desventaja.

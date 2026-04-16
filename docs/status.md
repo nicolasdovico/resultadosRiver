@@ -115,6 +115,7 @@
         - [x] Lógica de restricción dinámica para usuarios Free (límite de 10 resultados).
         - [x] Rediseño completo de la ficha de detalle del torneo (`/torneos/[id]`) con:
             - [x] Listado detallado de partidos con escudos y resultados visuales.
+            - [x] **Paginación:** Implementación de paginación en el cliente (10 partidos por página) para mejorar la navegabilidad en torneos largos.
             - [x] Visualización de racha (Form Guide) interactiva para usuarios Premium.
             - [x] Gráficos de efectividad y desglose de estadísticas (Puntos, DG, Vallas Invictas).
             - [x] Integración de componentes de análisis de goles (`GoalsAnalysis`, `GoalMethodAnalysis`).
