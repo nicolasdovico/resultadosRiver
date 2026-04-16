@@ -43,7 +43,14 @@ use OpenApi\Attributes as OA;
             new OA\Property(property: "total", type: "integer"),
             new OA\Property(property: "river_goals_offset", type: "integer")
         ]),
-        new OA\Property(property: "is_premium_restricted", type: "boolean")
+        new OA\Property(property: "is_premium_restricted", type: "boolean"),
+        new OA\Property(property: "scoring_streak", type: "object", properties: [
+            new OA\Property(property: "max_matches", type: "integer"),
+            new OA\Property(property: "start_date", type: "string", nullable: true),
+            new OA\Property(property: "end_date", type: "string", nullable: true),
+            new OA\Property(property: "total_goals", type: "integer"),
+            new OA\Property(property: "matches", type: "array", items: new OA\Items(type: "object"))
+        ])
     ]
 )]
 class JugadorResource extends JsonResource
@@ -63,6 +70,7 @@ class JugadorResource extends JsonResource
         $diasDesdeUltimoGol = null;
         $partidosDesdeUltimoGol = null;
         $golesVictoriaCount = null;
+        $scoringStreak = null;
 
         $dobletes = [];
         $hatTricks = [];
@@ -89,7 +97,7 @@ class JugadorResource extends JsonResource
                         'fecha' => $grupo->gol_fecha,
                         'goles_count' => (int)$grupo->total,
                         'rival' => $partido->rival->ri_desc ?? 'Desconocido',
-                        'rival_escudo' => $partido->rival->ri_escudo ? Storage::disk('public')->url($partido->rival->ri_escudo) : null,
+                        'rival_escudo' => $partido->rival->escudo_url ?? null,
                     ];
 
                     if ($grupo->total == 2) {
@@ -148,6 +156,7 @@ class JugadorResource extends JsonResource
             // Estadísticas de análisis (Solo en detalle y para Premium)
             if ($isPremium) {
                 $golesVictoriaCount = GoalAnalysisService::countWinningGoalsForPlayer($this->pl_id);
+                $scoringStreak = GoalAnalysisService::calculateMaxScoringStreak($this->pl_id);
 
                 $intervals = [
                     ['label' => "0' - 10'", 'min' => 0, 'max' => 10],
@@ -201,6 +210,16 @@ class JugadorResource extends JsonResource
                     )
                     ->groupBy('tipo_gol.tipo_gol_descripcion')
                     ->get();
+            } else {
+                // Para no premium, devolvemos solo el número máximo de partidos de la racha si corresponde
+                $rawStreak = GoalAnalysisService::calculateMaxScoringStreak($this->pl_id);
+                $scoringStreak = [
+                    'max_matches' => $rawStreak['max_matches'],
+                    'start_date' => null,
+                    'end_date' => null,
+                    'total_goals' => 0,
+                    'matches' => []
+                ];
             }
 
             // Cálculos de racha (Solo goles PARA RIVER para la vigencia del jugador como goleador del club)
@@ -235,7 +254,8 @@ class JugadorResource extends JsonResource
             "hat_tricks" => $hatTricks,
             "goles" => GolResource::collection($golesCollection),
             "goles_meta" => $golesMeta,
-            "is_premium_restricted" => $isRestricted
+            "is_premium_restricted" => $isRestricted,
+            "scoring_streak" => $scoringStreak
         ];
     }
 }

@@ -67,25 +67,27 @@
         - [x] Lógica de privacidad para fotos e historial de goles (Restricción Free vs Full Premium).
         - [x] Carga de relaciones para historial detallado (Rivales, Escudos, Resultados).
         - [x] **Hitos Goleadores:** Cálculo dinámico de Dobletes y Hat-tricks agrupados por partido con detalle de rival.
+        - [x] **Racha Goleadora:** Implementación de lógica para detectar la racha máxima de partidos consecutivos anotando.
         - [x] **Optimización de Fotos:** Eliminación de recortes circulares y habilitación de editor con ratios verticales (3:4, 2:3).
         - [x] **Analítica Scoped:** Cálculo de goles por periodos (1T, 2T) e intervalos de 10 min específicos por jugador.
         - [x] **Racha y Sequía:** Implementación de contadores de días y partidos desde el último gol.
         - [x] **Fix de Numeración:** Implementación de `river_goals_offset` para numeración histórica precisa en paginación mixta.
-    - [x] **Frontend Web:**
-        - [x] Implementación de **Directorio Alfabético** (A-Z) con tarjetas compactas para exploración masiva.
-        - [x] Rediseño de fichas de jugadores con estética "Data Console" y tableros de rendimiento.
-        - [x] **Hall de Hitos:** Visualización destacada de Dobletes y Hat-tricks con restricción Premium.
-        - [x] **Paywall Reforzado:** Bloqueo con efecto `blur` en secciones de Hitos, Resumen de Carrera y Analítica Avanzada.
-        - [x] Sistema de paginación dinámica (10 por página) con numeración histórica descendente.
-        - [x] **Mejora de Encuadre:** Ajuste de contenedores verticales y alineación `object-top` para evitar cabezas recortadas.
-        - [x] **Analítica de Resultados:** Integración de gráficos de torta y barras de progreso para el análisis de goles (Premium).
-    - [x] **Frontend Mobile:**
-        - [x] Nueva pestaña de navegación "Figuras".
-        - [x] Carrusel de ídolos y buscador optimizado.
-        - [x] **Hall de Hitos:** Implementación de tarjetas visuales para múltiples goles con efecto `BlurView` para Free.
-        - [x] Detalle de jugador con `BlurView` para contenido Premium.
-        - [x] **Mejora de Encuadre:** Migración a `expo-image` con `contentPosition="top center"` y proporciones tipo cromo.
-    - [x] **Limpieza de UI:** Eliminación de IDs de registro irrelevantes en las tarjetas y perfiles de jugadores (Web y Mobile).
+- [x] **Frontend Web:**
+    - [x] Implementación de **Directorio Alfabético** (A-Z) con tarjetas compactas para exploración masiva.
+    - [x] Rediseño de fichas de jugadores con estética "Data Console" y tableros de rendimiento.
+    - [x] **Hall de Hitos:** Visualización destacada de Dobletes y Hat-tricks con restricción Premium.
+    - [x] **Racha Máxima:** Nueva visualización destacada de partidos consecutivos anotando (Premium).
+    - [x] **Paywall Reforzado:** Bloqueo con efecto `blur` en secciones de Hitos, Racha, Resumen de Carrera y Analítica Avanzada.
+    - [x] Sistema de paginación dinámica (10 por página) con numeración histórica descendente.
+    - [x] **Mejora de Encuadre:** Ajuste de contenedores verticales y alineación `object-top` para evitar cabezas recortadas.
+    - [x] **Analítica de Resultados:** Integración de gráficos de torta y barras de progreso para el análisis de goles (Premium).
+- [x] **Frontend Mobile:**
+    - [x] Nueva pestaña de navegación "Figuras".
+    - [x] Carrusel de ídolos y buscador optimizado.
+    - [x] **Hall de Hitos:** Implementación de tarjetas visuales para múltiples goles con efecto `BlurView` para Free.
+    - [x] **Racha Goleadora:** Integración de tarjeta de racha máxima en el perfil (Premium).
+    - [x] Detalle de jugador con `BlurView` para contenido Premium.
+    - [x] **Mejora de Encuadre:** Migración a `expo-image` con `contentPosition="top center"` y proporciones tipo cromo.    - [x] **Limpieza de UI:** Eliminación de IDs de registro irrelevantes en las tarjetas y perfiles de jugadores (Web y Mobile).
     - [x] **Flashback Millonario:** Implementación de sección de curiosidades globales en la landing page mostrando el último doblete, hat-trick y el podio de marcadores más repetidos (Tendencia Histórica).
     - [x] **Fix de Datos:** Corrección de mapeo de nombres de jugadores (`pl_apno`) en el Dashboard de estadísticas.
     - [x] **Sección de Técnicos (Analítica):**

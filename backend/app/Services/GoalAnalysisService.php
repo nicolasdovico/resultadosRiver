@@ -70,8 +70,8 @@ class GoalAnalysisService
 
     /**
      * Determina el ID del gol de la victoria para un partido dado.
-...
-
+     * 
+     * Lógica estricta:
      * 1. River debe haber ganado por EXACTAMENTE un gol de diferencia (go_ri == go_ad + 1).
      * 2. El gol de la victoria debe ser el que puso el marcador definitivo (go_ad + 1).
      * 3. Justo antes de ese gol, el partido debía estar EMPATADO (go_ad == go_ad).
@@ -145,6 +145,100 @@ class GoalAnalysisService
                 }
             }
             return $count;
+        });
+    }
+
+    /**
+     * Calcula la racha máxima de partidos consecutivos anotando de un jugador.
+     * Retorna [max_matches, start_date, end_date, total_goals, matches]
+     */
+    public static function calculateMaxScoringStreak(int $playerId): array
+    {
+        return Cache::remember("player_{$playerId}_scoring_streak_v3", 3600, function () use ($playerId) {
+            // 1. Obtener fechas de todos los goles del jugador (para River)
+            $golesJugador = Gol::where('gol_juga', $playerId)
+                ->where('gol_parariver', 1)
+                ->orderBy('gol_fecha', 'asc')
+                ->get();
+
+            if ($golesJugador->isEmpty()) {
+                return [
+                    'max_matches' => 0,
+                    'start_date' => null,
+                    'end_date' => null,
+                    'total_goals' => 0,
+                    'matches' => []
+                ];
+            }
+
+            $primerGolFecha = $golesJugador->first()->gol_fecha;
+            $ultimoGolFecha = $golesJugador->last()->gol_fecha;
+
+            // 2. Obtener TODOS los partidos de River en ese rango de fechas con sus rivales
+            $todosLosPartidos = Partido::with('rival')
+                ->whereBetween('fecha', [$primerGolFecha, $ultimoGolFecha])
+                ->orderBy('fecha', 'asc')
+                ->get();
+
+            // 3. Crear un set de fechas donde el jugador anotó y mapear goles por fecha
+            $fechasGoleador = [];
+            $golesPorFecha = [];
+            foreach ($golesJugador as $gol) {
+                $fechasGoleador[$gol->gol_fecha] = true;
+                $golesPorFecha[$gol->gol_fecha] = ($golesPorFecha[$gol->gol_fecha] ?? 0) + 1;
+            }
+
+            $currentStreak = 0;
+            $currentStart = null;
+            $currentGoals = 0;
+            $currentMatches = [];
+            
+            $maxStreak = 0;
+            $maxStart = null;
+            $maxEnd = null;
+            $maxGoals = 0;
+            $maxMatchesDetails = [];
+
+            foreach ($todosLosPartidos as $partido) {
+                if (isset($fechasGoleador[$partido->fecha])) {
+                    if ($currentStreak == 0) {
+                        $currentStart = $partido->fecha;
+                    }
+                    $currentStreak++;
+                    $currentGoals += $golesPorFecha[$partido->fecha];
+                    $currentMatches[] = [
+                        'fecha' => $partido->fecha,
+                        'rival' => $partido->rival->ri_desc ?? 'Desconocido',
+                        'rival_escudo' => $partido->rival->escudo_url ?? null,
+                        'resultado' => $partido->resultado, // G, E, P
+                        'marcador' => "{$partido->go_ri}-{$partido->go_ad}",
+                        'goles_jugador' => $golesPorFecha[$partido->fecha]
+                    ];
+                    
+                    // Actualizar máximo si corresponde
+                    if ($currentStreak >= $maxStreak) {
+                        $maxStreak = $currentStreak;
+                        $maxStart = $currentStart;
+                        $maxEnd = $partido->fecha;
+                        $maxGoals = $currentGoals;
+                        $maxMatchesDetails = $currentMatches;
+                    }
+                } else {
+                    // Se rompió la racha
+                    $currentStreak = 0;
+                    $currentStart = null;
+                    $currentGoals = 0;
+                    $currentMatches = [];
+                }
+            }
+
+            return [
+                'max_matches' => $maxStreak,
+                'start_date' => $maxStart,
+                'end_date' => $maxEnd,
+                'total_goals' => $maxGoals,
+                'matches' => $maxMatchesDetails
+            ];
         });
     }
 }

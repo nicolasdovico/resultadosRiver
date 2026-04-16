@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { sanitizeImageUrl } from "@/utils/image";
 import PlayerGoalsAnalysis from "@/components/player/PlayerGoalsAnalysis";
 import PlayerGoalMethodAnalysis from "@/components/player/PlayerGoalMethodAnalysis";
+import PlayerScoringStreak from "@/components/player/PlayerScoringStreak";
 
 const RIVER_SHIELD_FALLBACK = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Escudo_del_C_A_River_Plate.svg/1200px-Escudo_del_C_A_River_Plate.svg.png';
 
@@ -62,6 +63,12 @@ interface Jugador {
     river_goals_offset?: number;
   } | null;
   is_premium_restricted?: boolean;
+  scoring_streak?: {
+    max_matches: number;
+    start_date: string | null;
+    end_date: string | null;
+    total_goals: number;
+  } | null;
 }
 
 export default async function JugadorDetailPage({
@@ -391,7 +398,6 @@ export default async function JugadorDetailPage({
 
             <div className="space-y-4">
               {jugador.goles.map((gol, index) => {
-                const currentPage = jugador.goles_meta?.current_page || 1;
                 const totalGoalsForRiver = jugador.goles_river_count;
                 
                 // Categorización Fina
@@ -692,6 +698,11 @@ export default async function JugadorDetailPage({
 
             <div className={`rounded-[40px] overflow-hidden shadow-2xl border border-zinc-100 ${!isPremium ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
               <div className="flex flex-col">
+                <PlayerScoringStreak 
+                  streak={jugador.scoring_streak || null} 
+                  isPremium={isPremium} 
+                  playerName={jugador.pl_apno} 
+                />
                 <PlayerGoalsAnalysis 
                   data={jugador.goles_por_periodo || []} 
                   total={jugador.goles_count} 

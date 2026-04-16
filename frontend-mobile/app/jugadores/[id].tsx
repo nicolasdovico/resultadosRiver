@@ -73,6 +73,12 @@ interface Jugador {
     river_goals_offset?: number;
   };
   is_premium_restricted?: boolean;
+  scoring_streak?: {
+    max_matches: number;
+    start_date: string | null;
+    end_date: string | null;
+    total_goals: number;
+  } | null;
 }
 
 export default function JugadorDetailScreen() {
@@ -201,6 +207,45 @@ export default function JugadorDetailScreen() {
 
       {/* Content Section */}
       <View style={styles.content}>
+
+        {/* Scoring Streak Section */}
+        {jugador.scoring_streak && jugador.scoring_streak.max_matches > 1 && (
+          <View style={styles.sectionContainer}>
+             <View style={styles.sectionHeader}>
+                <MaterialCommunityIcons name="fire" size={20} color="#dc2626" />
+                <Text style={styles.sectionTitle}>Racha Goleadora Máxima</Text>
+             </View>
+             
+             <View style={styles.streakCard}>
+                {!isPremium && (
+                  <BlurView intensity={60} tint="light" style={styles.streakBlur}>
+                    <Ionicons name="lock-closed" size={24} color="#dc2626" />
+                    <Text style={styles.streakLockText}>Contenido Premium</Text>
+                  </BlurView>
+                )}
+
+                <View style={styles.streakMainStat}>
+                   <Text style={styles.streakValue}>{jugador.scoring_streak.max_matches}</Text>
+                   <Text style={styles.streakLabel}>Partidos Seguidos</Text>
+                </View>
+
+                <View style={styles.streakDetails}>
+                   <View style={styles.streakDetailItem}>
+                      <MaterialCommunityIcons name="zap" size={14} color="#facc15" />
+                      <Text style={styles.streakDetailLabel}>Goles: <Text style={styles.streakDetailValue}>{jugador.scoring_streak.total_goals}</Text></Text>
+                   </View>
+                   <View style={styles.streakDetailItem}>
+                      <MaterialCommunityIcons name="calendar-play" size={14} color="#dc2626" />
+                      <Text style={styles.streakDetailLabel}>Desde: <Text style={styles.streakDetailValue}>{isPremium ? formatLocalDate(jugador.scoring_streak.start_date || "") : "??/??/????"}</Text></Text>
+                   </View>
+                   <View style={styles.streakDetailItem}>
+                      <MaterialCommunityIcons name="calendar-check" size={14} color="#dc2626" />
+                      <Text style={styles.streakDetailLabel}>Hasta: <Text style={styles.streakDetailValue}>{isPremium ? formatLocalDate(jugador.scoring_streak.end_date || "") : "??/??/????"}</Text></Text>
+                   </View>
+                </View>
+             </View>
+          </View>
+        )}
         
         {/* Hitos Goleadores - Exclusive Premium Section */}
         {(jugador.dobletes_count > 0 || jugador.hat_tricks_count > 0) && (

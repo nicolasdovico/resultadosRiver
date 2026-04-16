@@ -1,5 +1,15 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-16: Racha Goleadora Máxima en Figuras (Fase 6)
+- [x] **Backend**:
+  - [x] **Lógica**: Implementación de `calculateMaxScoringStreak` en `GoalAnalysisService` para identificar la secuencia más larga de partidos consecutivos anotando.
+  - [x] **API**: Inclusión de `scoring_streak` en `JugadorResource` con lógica de caché y restricción de detalles para usuarios no-Premium.
+- [x] **Frontend Web**:
+  - [x] **Componente**: Creación de `PlayerScoringStreak.tsx` con estética "Data Console" y contador destacado.
+  - [x] **Paywall**: Implementación de efecto `blur`, candado de seguridad y banner de conversión para la racha en usuarios Free.
+- [x] **Frontend Mobile**:
+  - [x] **UI**: Integración de tarjeta de racha en el perfil del jugador con soporte para `BlurView` y restricción Premium.
+
 ### 2026-04-16: Paginación de Partidos en Detalle de Torneos (Fase 6)
 - [x] **Frontend Web**:
   - [x] **Componente**: Creación de `TorneoMatches.tsx` como componente de cliente para manejar la visualización de partidos.
