@@ -40,6 +40,12 @@ interface Tecnico {
   };
   goles_por_periodo?: any[];
   goles_por_tipo?: any[];
+  top_scorers?: {
+    pl_id: number;
+    name: string;
+    goals: number;
+    pl_foto: string | null;
+  }[];
   partidos: Partido[];
   partidos_meta?: {
     current_page: number;
@@ -402,6 +408,65 @@ export default async function TecnicoDetailPage({
                   data={tecnico.goles_por_tipo || []} 
                   total={tecnico.stats?.gf ? tecnico.stats.gf + tecnico.stats.gc : 0} 
                 />
+
+                {/* Top Scorers during Cycle */}
+                {tecnico.top_scorers && tecnico.top_scorers.length > 0 && (
+                  <div className="bg-zinc-900 p-8 md:p-12 border-t border-white/5">
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] bg-red-500/10 px-3 py-1 rounded-full w-fit mb-2">Artilleros del Ciclo</span>
+                        <h4 className="text-2xl font-black tracking-tight text-white">Máximos Goleadores</h4>
+                      </div>
+                      <div className="flex items-center text-zinc-400">
+                        <Award size={16} className="mr-2 text-yellow-500" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Podio del Ciclo</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                      {tecnico.top_scorers.map((scorer, idx) => (
+                        <div key={scorer.pl_id} className="relative bg-white/5 rounded-3xl p-4 border border-white/5 hover:bg-white/10 transition-all group/scorer overflow-hidden">
+                          {/* Position Badge */}
+                          <div className={`absolute top-0 right-0 w-8 h-8 flex items-center justify-center font-black text-xs rounded-bl-xl z-20 ${
+                            idx === 0 ? 'bg-yellow-500 text-zinc-900' :
+                            idx === 1 ? 'bg-zinc-300 text-zinc-900' :
+                            'bg-orange-700 text-white'
+                          }`}>
+                            #{idx + 1}
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <div className="relative shrink-0">
+                              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-zinc-800 border-2 border-white/10 group-hover/scorer:border-red-500/50 transition-colors relative">
+                                {scorer.pl_foto ? (
+                                  <Image 
+                                    src={sanitizeImageUrl(scorer.pl_foto)} 
+                                    alt={scorer.name}
+                                    fill
+                                    unoptimized
+                                    className="object-cover object-top"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                                    <UserRound size={24} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h5 className="text-sm font-black text-white truncate group-hover/scorer:text-red-50 transition-colors uppercase italic">{scorer.name}</h5>
+                              <div className="flex items-center mt-1">
+                                <Target size={12} className="text-red-500 mr-1.5 shrink-0" />
+                                <span className="text-lg font-black text-white tracking-tighter">{scorer.goals}</span>
+                                <span className="text-[9px] font-bold text-zinc-500 uppercase ml-1.5 tracking-widest">Goles</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

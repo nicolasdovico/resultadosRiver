@@ -211,6 +211,29 @@ class PartidoController extends Controller
                 ];
             };
 
+            // Goleadores del año calendario (Top 3)
+            $currentYear = date('Y');
+            $topScorersYearRaw = DB::table('goles')
+                ->join('estadisticas', 'goles.gol_fecha', '=', 'estadisticas.fecha')
+                ->where('goles.gol_parariver', 1)
+                ->where('goles.gol_penal', '!=', 6)
+                ->whereRaw("EXTRACT(YEAR FROM CAST(estadisticas.fecha AS DATE)) = ?", [$currentYear])
+                ->select('goles.gol_juga', DB::raw('count(*) as total'))
+                ->groupBy('goles.gol_juga')
+                ->orderBy('total', 'desc')
+                ->limit(3)
+                ->get();
+
+            $topScorersYear = $topScorersYearRaw->map(function ($item) {
+                $player = \App\Models\Jugador::find($item->gol_juga);
+                return [
+                    'pl_id' => $player->pl_id,
+                    'name' => $player->pl_apno,
+                    'goals' => (int) $item->total,
+                    'pl_foto' => $player->pl_foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($player->pl_foto) : null
+                ];
+            });
+
             return [
                 'summary' => [
                     'pj' => $total,
@@ -246,7 +269,8 @@ class PartidoController extends Controller
                     'top_results' => $topResults,
                     'latest_matches' => $latestMatches,
                     'latest_comeback_home' => $formatComeback($comebackHome),
-                    'latest_comeback_away' => $formatComeback($comebackAway)
+                    'latest_comeback_away' => $formatComeback($comebackAway),
+                    'top_scorers_year' => $topScorersYear
                 ]
             ];
         });

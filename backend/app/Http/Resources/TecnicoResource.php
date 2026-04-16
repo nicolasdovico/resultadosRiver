@@ -26,6 +26,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'stats', type: 'object'),
         new OA\Property(property: 'goles_por_periodo', type: 'array', items: new OA\Items(type: 'object')),
         new OA\Property(property: 'goles_por_tipo', type: 'array', items: new OA\Items(type: 'object')),
+        new OA\Property(property: 'top_scorers', type: 'array', items: new OA\Items(type: 'object')),
         new OA\Property(property: 'partidos', type: 'array', items: new OA\Items(ref: '#/components/schemas/PartidoResource')),
         new OA\Property(property: 'partidos_meta', type: 'object')
     ]
@@ -47,6 +48,7 @@ class TecnicoResource extends JsonResource
         $isRestricted = false;
         $periodStats = [];
         $golesPorTipo = [];
+        $topScorers = [];
 
         $partidosQuery = $this->getPartidosQuery()
             ->with(['rival', 'torneo_rel', 'fase_rel'])
@@ -127,6 +129,27 @@ class TecnicoResource extends JsonResource
                         )
                         ->groupBy('tipo_gol.tipo_gol_descripcion')
                         ->get();
+
+                    // Top 3 Goleadores del Ciclo
+                    $topScorersRaw = DB::table('goles')
+                        ->whereIn('gol_fecha', $partidosIds)
+                        ->where('gol_parariver', 1)
+                        ->where('gol_penal', '!=', 6)
+                        ->select('gol_juga', DB::raw('count(*) as total'))
+                        ->groupBy('gol_juga')
+                        ->orderBy('total', 'desc')
+                        ->limit(3)
+                        ->get();
+
+                    $topScorers = $topScorersRaw->map(function ($item) {
+                        $player = \App\Models\Jugador::find($item->gol_juga);
+                        return [
+                            'pl_id' => $player?->pl_id,
+                            'name' => $player?->pl_apno ?? 'Desconocido',
+                            'goals' => (int) $item->total,
+                            'pl_foto' => ($player && $player->pl_foto) ? Storage::disk('public')->url($player->pl_foto) : null
+                        ];
+                    });
                 }
             }
             
@@ -148,6 +171,7 @@ class TecnicoResource extends JsonResource
             'is_premium_restricted' => $isRestricted,
             'goles_por_periodo' => $periodStats,
             'goles_por_tipo' => $golesPorTipo,
+            'top_scorers' => $topScorers,
             'partidos' => $this->when($isDetail, $partidos ?? []),
             'partidos_meta' => $this->when($partidosMeta !== null, $partidosMeta),
         ];

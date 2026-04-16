@@ -80,6 +80,12 @@ interface Curiosity {
     rival_escudo: string | null;
     goles_count: number;
   } | null;
+  top_scorers_year: {
+    pl_id: number;
+    name: string;
+    goals: number;
+    pl_foto: string | null;
+  }[] | null;
   top_results: {
     resultado: string;
     count: number;
@@ -489,6 +495,63 @@ export default function StatsDashboard() {
                           className="w-12 h-12"
                         />
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Top Scorers of the Year */}
+                {curiosities.top_scorers_year && curiosities.top_scorers_year.length > 0 && (
+                  <div className="md:col-span-2 bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-colors group mb-4">
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] bg-red-500/10 px-3 py-1 rounded-full w-fit mb-2">Artilleros {new Date().getFullYear()}</span>
+                        <h4 className="text-2xl font-black tracking-tight">Goleadores del Año</h4>
+                      </div>
+                      <div className="flex items-center text-zinc-500">
+                        <Calendar size={16} className="mr-2" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Temporada Actual</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                      {curiosities.top_scorers_year.map((scorer, idx) => (
+                        <div key={scorer.pl_id} className="relative bg-zinc-900/50 rounded-2xl p-4 border border-white/5 hover:border-red-500/30 transition-all group/scorer overflow-hidden">
+                          {/* Position Badge */}
+                          <div className={`absolute top-0 right-0 w-8 h-8 flex items-center justify-center font-black text-xs rounded-bl-xl z-20 ${
+                            idx === 0 ? 'bg-yellow-500 text-zinc-900' :
+                            idx === 1 ? 'bg-zinc-300 text-zinc-900' :
+                            'bg-orange-700 text-white'
+                          }`}>
+                            #{idx + 1}
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <div className="relative shrink-0">
+                              <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-800 border-2 border-white/10 group-hover/scorer:border-red-500/50 transition-colors">
+                                {scorer.pl_foto ? (
+                                  <img 
+                                    src={scorer.pl_foto} 
+                                    alt={scorer.name}
+                                    className="w-full h-full object-cover object-top"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                                    <Users size={24} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h5 className="text-sm font-black text-white truncate group-hover/scorer:text-red-50 transition-colors uppercase italic">{scorer.name}</h5>
+                              <div className="flex items-center mt-1">
+                                <Target size={12} className="text-red-500 mr-1.5 shrink-0" />
+                                <span className="text-lg font-black text-white tracking-tighter">{scorer.goals}</span>
+                                <span className="text-[9px] font-bold text-zinc-500 uppercase ml-1.5 tracking-widest">Goles</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

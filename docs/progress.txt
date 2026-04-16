@@ -1,11 +1,41 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-16: Goleadores del Año en Landing (Sabías que...?) (Fase 6)
+- [x] **Backend**:
+  - [x] **API**: Implementación de `top_scorers_year` en `PartidoController@generalStats` para obtener el Top 3 de goleadores del año calendario actual.
+  - [x] **Lógica**: Filtrado dinámico por año de partido, exclusión de autogoles y procesamiento de URLs de fotos.
+- [x] **Frontend Web**:
+  - [x] **UI/UX**: Nueva subsección "Artilleros 2026" dentro de "SABIAS QUE...?" con mini-tarjetas dinámicas.
+  - [x] **Visualización**: Inclusión de foto, nombre, puesto (#1, #2, #3) y cantidad de goles con estética "Data Console".
+
+### 2026-04-16: Goleadores por Ciclo de DT (Analítica) (Fase 6)
+- [x] **Backend**:
+  - [x] **API**: Inclusión de `top_scorers` en `TecnicoResource` calculado dinámicamente según las fechas del ciclo.
+  - [x] **Lógica**: Agrupación de goles por jugador durante el periodo del técnico, con soporte para fotos absolutas.
+- [x] **Frontend Web**:
+  - [x] **UI/UX**: Integración de la sección "Artilleros del Ciclo" dentro de la Analítica de Resultados en el detalle del técnico.
+  - [x] **Visualización**: Sistema de podio jerárquico (#1, #2, #3) con mini-tarjetas oscuras y fotos de jugadores (Premium).
+
+### 2026-04-16: Ranking Top 20 y Optimización de Figuras (Fase 6)
+- [x] **Backend**:
+  - [x] **API**: Actualización del endpoint `top-scorers` para devolver los 20 máximos goleadores históricos dinámicamente.
+  - [x] **API**: Inclusión de `pl_foto` procesada con URL absoluta y recuento real de goles (excluyendo autogoles) para garantizar consistencia estadística.
+  - [x] **Rutas**: Reordenamiento de `api.php` para evitar colisiones entre rutas estáticas y dinámicas en `/jugadores`.
+- [x] **Frontend Web**:
+  - [x] **UI/UX**: Rediseño de la sección "Goleadores Inmortales" con estética de "Cromo Premium" (fondo oscuro, fotos enmarcadas y escalas sutiles).
+  - [x] **UI/UX**: Implementación del Top 20 jerárquico: Top 5 en tarjetas grandes y Puestos 6-20 en cuadrícula compacta de 8 columnas (2 filas).
+  - [x] **Navegación**: Reubicación estratégica del label "Directorio Alfabético" y mejora de la jerarquía visual en la exploración de figuras.
+  - [x] **Fix**: Resolución de error de sintaxis en imports de `lucide-react`.
+- [x] **Frontend Mobile**:
+  - [x] **Lógica**: Migración del carrusel de ídolos a datos dinámicos desde la API, eliminando valores hardcodeados.
+  - [x] **Navegación**: Habilitación de interactividad en las tarjetas del Top 5 para acceso directo al perfil.
+
 ### 2026-04-16: Racha Goleadora Máxima en Figuras (Fase 6)
 - [x] **Backend**:
   - [x] **Lógica**: Implementación de `calculateMaxScoringStreak` en `GoalAnalysisService` para identificar la secuencia más larga de partidos consecutivos anotando.
-  - [x] **API**: Inclusión de `scoring_streak` en `JugadorResource` con lógica de caché y restricción de detalles para usuarios no-Premium.
+  - [x] **API**: Inclusión de `scoring_streak` en `JugadorResource` con detalles de partidos, rivales, escudos y resultados (Exclusivo Premium).
 - [x] **Frontend Web**:
-  - [x] **Componente**: Creación de `PlayerScoringStreak.tsx` con estética "Data Console" y contador destacado.
+  - [x] **Componente**: Creación de `PlayerScoringStreak.tsx` con sistema de "Semáforo" idéntico a la landing page y tooltips interactivos.
   - [x] **Paywall**: Implementación de efecto `blur`, candado de seguridad y banner de conversión para la racha en usuarios Free.
 - [x] **Frontend Mobile**:
   - [x] **UI**: Integración de tarjeta de racha en el perfil del jugador con soporte para `BlurView` y restricción Premium.
