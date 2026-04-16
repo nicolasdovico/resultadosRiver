@@ -1,7 +1,6 @@
 import { StyleSheet, FlatList, View, Text, TouchableOpacity, ActivityIndicator, TextInput, Dimensions, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { useState, useEffect } from 'react';
-import { getJugadores } from '@/api/generated/endpoints/jugadores/jugadores';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -16,8 +15,16 @@ interface Jugador {
   goles_count?: number;
 }
 
+interface TopScorer {
+  pl_id: number;
+  name: string;
+  goals: number;
+  pos: number;
+}
+
 export default function JugadoresScreen() {
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
+  const [topScorers, setTopScorers] = useState<TopScorer[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [totalResults, setTotalResults] = useState(0);
@@ -28,12 +35,14 @@ export default function JugadoresScreen() {
 
   useEffect(() => {
     fetchJugadores();
+    if (!query) {
+      fetchTopScorers();
+    }
   }, [query, isLoggedIn]);
 
   const fetchJugadores = async () => {
     setLoading(true);
     try {
-      // Manual call to support 'q' param if orval didn't include it
       const response = await customInstance<{ data: Jugador[], meta?: any }>({
         url: '/v1/jugadores',
         method: 'GET',
@@ -50,37 +59,44 @@ export default function JugadoresScreen() {
     }
   };
 
-  const renderTopGoleadores = () => {
-    if (query) return null;
-    
-    const top5 = [
-      { name: 'Á. LABRUNA', goals: 317, pos: 1 },
-      { name: 'O. MAS', goals: 217, pos: 2 },
-      { name: 'B. FERREYRA', goals: 202, pos: 3 },
-      { name: 'J.M. MORENO', goals: 184, pos: 4 },
-      { name: 'N. ALONSO', goals: 158, pos: 5 },
-    ];
+  const fetchTopScorers = async () => {
+    try {
+      const response = await customInstance<{ data: TopScorer[] }>({
+        url: '/v1/jugadores/top-scorers',
+        method: 'GET'
+      });
+      setTopScorers(response.data || []);
+    } catch (error) {
+      console.error('Fetch Top Scorers Error:', error);
+    }
+  };
 
+  const renderTopGoleadores = () => {
+    if (query || topScorers.length === 0) return null;
+    
     return (
       <View style={styles.topSection}>
         <View style={styles.sectionHeader}>
           <MaterialCommunityIcons name="trophy" size={20} color="#dc2626" />
           <Text style={styles.sectionTitle}>Goleadores Inmortales</Text>
-        </View>
+        </div>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={top5}
+          data={topScorers}
           keyExtractor={(item) => item.pos.toString()}
           renderItem={({ item }) => (
-            <View style={styles.topCard}>
+            <TouchableOpacity 
+              style={styles.topCard}
+              onPress={() => router.push(`/jugadores/${item.pl_id}`)}
+            >
               <Text style={styles.topPos}>#{item.pos}</Text>
-              <Text style={styles.topName}>{item.name}</Text>
+              <Text style={styles.topName} numberOfLines={2}>{item.name}</Text>
               <View style={styles.topGoalsContainer}>
                 <Text style={styles.topGoals}>{item.goals}</Text>
                 <Text style={styles.topGoalsLabel}>Goles</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
           contentContainerStyle={styles.topList}
         />

@@ -1,6 +1,5 @@
-import { getJugadores } from "@/api/generated/endpoints/jugadores/jugadores";
 import Link from "next/link";
-import { Users, ChevronRight, Star, Trophy, Activity, Search, X, Info, Shield } from "lucide-react";
+import { Users, ChevronRight, Star, Trophy, Activity, Search, X, Info, Shield, Award } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { customInstance } from "@/api/custom-instance";
@@ -13,6 +12,14 @@ interface Jugador {
   pl_apno: string;
   pl_foto?: string | null;
   goles_count?: number;
+}
+
+interface TopScorer {
+  pl_id: number;
+  name: string;
+  goals: number;
+  pos: number;
+  pl_foto?: string | null;
 }
 
 export default async function JugadoresPage({
@@ -40,6 +47,24 @@ export default async function JugadoresPage({
 
   const fetchOptions = { headers: token ? { "Authorization": `Bearer ${token}` } : {} } as any;
 
+  // Top 20 Goleadores - Solo en la vista inicial
+  let allTopScorers: TopScorer[] = [];
+  if (!query && !letter) {
+    try {
+      const response = await customInstance<{ data: TopScorer[] }>({
+        url: "/v1/jugadores/top-scorers",
+        method: "GET",
+        ...fetchOptions
+      });
+      allTopScorers = response.data || [];
+    } catch (error) {
+      console.error("Error fetching top scorers:", error);
+    }
+  }
+
+  const top5 = allTopScorers.slice(0, 5);
+  const next15 = allTopScorers.slice(5, 20);
+
   // Solo buscamos jugadores si hay una query o una letra seleccionada
   let visibleJugadores: Jugador[] = [];
   let totalResults = 0;
@@ -58,11 +83,8 @@ export default async function JugadoresPage({
       ...fetchOptions
     });
     
-    // @ts-expect-error - meta is not fully typed
     visibleJugadores = response.data || [];
-    // @ts-expect-error
     totalResults = response.meta?.total || visibleJugadores.length;
-    // @ts-expect-error
     lastPage = response.meta?.last_page || 1;
   }
 
@@ -111,48 +133,127 @@ export default async function JugadoresPage({
             
             <div className="flex items-center bg-zinc-900 text-white px-8 py-4 rounded-[32px] font-black text-sm uppercase tracking-widest shadow-xl border-4 border-white">
               <Activity className="mr-3 text-red-500" size={18} />
-              {query || letter ? `${totalResults} encontrados` : "Directorio Alfabético"}
+              {query || letter ? `${totalResults} encontrados` : "Archivo Histórico"}
             </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 max-w-6xl">
-        {/* Top 5 Goleadores - Solo en la vista inicial */}
-        {!query && !letter && (
-          <section className="mb-20">
-            <div className="flex items-center justify-between mb-10">
-              <h2 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase italic flex items-center">
-                <Trophy className="mr-4 text-red-600" size={28} />
-                Goleadores Inmortales
-              </h2>
+        {/* Top Goleadores - Solo en la vista inicial */}
+        {!query && !letter && allTopScorers.length > 0 && (
+          <section className="mb-24">
+            <div className="flex items-center justify-between mb-12">
+              <div className="flex flex-col">
+                <h2 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase italic flex items-center">
+                  <Trophy className="mr-4 text-red-600" size={28} />
+                  Goleadores Inmortales
+                </h2>
+                <p className="text-zinc-400 text-[10px] font-black uppercase tracking-widest mt-1 ml-12">Ranking Histórico de Máximos Artilleros</p>
+              </div>
               <div className="h-px flex-1 bg-zinc-200 mx-8 hidden md:block" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              {[
-                { name: "ÁNGEL LABRUNA", goals: 317, pos: 1 },
-                { name: "OSCAR MAS", goals: 217, pos: 2 },
-                { name: "BERNABÉ FERREYRA", goals: 202, pos: 3 },
-                { name: "JOSÉ MANUEL MORENO", goals: 184, pos: 4 },
-                { name: "NORBERTO ALONSO", goals: 158, pos: 5 },
-              ].map((top) => (
-                <div key={top.pos} className="bg-white p-8 rounded-[40px] border border-zinc-100 shadow-sm relative overflow-hidden group hover:border-red-600 transition-all duration-500 hover:-translate-y-2">
-                  <div className="absolute -right-4 -bottom-4 text-8xl font-black text-zinc-50 group-hover:text-red-50/50 transition-colors pointer-events-none italic">
-                    #{top.pos}
+            {/* Row 1: The TOP 5 (Large Cards) */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+              {top5.map((top) => (
+                <Link 
+                  key={top.pos} 
+                  href={`/jugadores/${top.pl_id}`}
+                  className="bg-zinc-900 p-6 rounded-[48px] border-4 border-white shadow-2xl relative overflow-hidden group hover:scale-105 hover:bg-zinc-800 transition-all duration-500"
+                >
+                  <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity">
+                    <span className="text-6xl font-black text-white italic">#{top.pos}</span>
                   </div>
-                  <div className="relative z-10">
-                    <div className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center font-black text-xs mb-4">
-                      {top.pos}º
+
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-full aspect-[3/4] bg-zinc-800 rounded-[32px] overflow-hidden mb-6 border-2 border-zinc-700 relative shadow-inner group-hover:border-red-600 transition-colors">
+                      {top.pl_foto ? (
+                        <Image 
+                          src={top.pl_foto} 
+                          alt={top.name} 
+                          fill 
+                          unoptimized
+                          className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-zinc-800">
+                          <span className="text-5xl font-black text-zinc-700 uppercase italic">
+                            {top.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/60 via-transparent to-transparent" />
                     </div>
-                    <h3 className="font-black text-zinc-900 text-lg mb-2 leading-none uppercase tracking-tight">{top.name}</h3>
-                    <div className="flex items-end space-x-1">
-                      <span className="text-3xl font-black text-red-600">{top.goals}</span>
-                      <span className="text-[10px] text-zinc-400 font-black uppercase tracking-widest mb-1.5">Goles</span>
+
+                    <h3 className="font-black text-white text-sm mb-2 leading-none uppercase tracking-tight text-center px-1 group-hover:text-red-500 transition-colors h-8 flex items-center">
+                      {top.name}
+                    </h3>
+                    
+                    <div className="flex items-center space-x-1.5 bg-zinc-800/50 px-4 py-2 rounded-full border border-white/5">
+                      <span className="text-2xl font-black text-red-600 italic tracking-tighter tabular-nums">
+                        {top.goals}
+                      </span>
+                      <span className="text-[8px] text-zinc-400 font-black uppercase tracking-widest">Goles</span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
+            </div>
+
+            {/* Row 2: The Next 15 (Compact cards in 2 lines) */}
+            <div className="bg-white/50 backdrop-blur-sm rounded-[40px] p-6 md:p-10 border border-zinc-100 shadow-sm">
+              <div className="flex items-center space-x-3 mb-8">
+                <Award className="text-zinc-400" size={18} />
+                <h3 className="text-md font-black text-zinc-900 uppercase tracking-tighter italic">Élite de Goleadores (Puestos 6-20)</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                {next15.map((top) => (
+                  <Link 
+                    key={top.pos} 
+                    href={`/jugadores/${top.pl_id}`}
+                    className="bg-white p-3.5 rounded-[28px] border border-zinc-100 shadow-sm relative overflow-hidden group hover:border-red-600 transition-all duration-300 hover:-translate-y-1"
+                  >
+                    {/* Position Background */}
+                    <div className="absolute -right-1 -bottom-1 text-5xl font-black text-zinc-50 group-hover:text-red-50 transition-colors pointer-events-none italic">
+                      #{top.pos}
+                    </div>
+
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-10 h-14 bg-zinc-100 rounded-xl overflow-hidden relative border border-zinc-50 group-hover:border-red-100 transition-colors">
+                           {top.pl_foto ? (
+                             <Image 
+                              src={top.pl_foto} 
+                              alt={top.name} 
+                              fill 
+                              unoptimized
+                              className="object-cover object-top grayscale group-hover:grayscale-0 transition-all"
+                            />
+                           ) : (
+                             <div className="w-full h-full flex items-center justify-center">
+                               <span className="text-[10px] font-black text-zinc-300">{top.name.charAt(0)}</span>
+                             </div>
+                           )}
+                        </div>
+                        <div className="bg-zinc-50 text-zinc-400 w-7 h-7 rounded-full flex items-center justify-center group-hover:bg-red-50 group-hover:text-red-600 transition-all border border-zinc-100">
+                           <span className="text-[9px] font-black">{top.pos}º</span>
+                        </div>
+                      </div>
+
+                      <h4 className="font-black text-zinc-900 text-[9px] leading-tight uppercase truncate mb-1.5 group-hover:text-red-600 transition-colors">
+                        {top.name}
+                      </h4>
+                      
+                      <div className="flex items-baseline space-x-1">
+                        <span className="text-lg font-black text-zinc-900 tabular-nums">{top.goals}</span>
+                        <span className="text-[7px] font-black text-zinc-400 uppercase tracking-widest">Goles</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
           </section>
         )}
@@ -198,20 +299,29 @@ export default async function JugadoresPage({
             </div>
           )}
 
-          {/* Vista 1: Cuadrícula Alfabética - Tamaño Reducido */}
+          {/* Vista 1: Cuadrícula Alfabética */}
           {!query && !letter ? (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-3">
-              {alphabet.map((l) => (
-                <Link
-                  key={l}
-                  href={`/jugadores?letra=${l}`}
-                  className="aspect-square bg-white rounded-2xl border border-zinc-100 flex items-center justify-center group hover:bg-red-600 hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-red-900/20"
-                >
-                  <span className="text-xl font-black text-zinc-900 group-hover:text-white transition-colors italic tabular-nums">
-                    {l}
-                  </span>
-                </Link>
-              ))}
+            <div className="space-y-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-zinc-900 text-white rounded-xl flex items-center justify-center">
+                  <Activity size={18} />
+                </div>
+                <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tighter italic">Directorio Alfabético</h3>
+              </div>
+
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-3">
+                {alphabet.map((l) => (
+                  <Link
+                    key={l}
+                    href={`/jugadores?letra=${l}`}
+                    className="aspect-square bg-white rounded-2xl border border-zinc-100 flex items-center justify-center group hover:bg-red-600 hover:border-red-600 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-red-900/20"
+                  >
+                    <span className="text-xl font-black text-zinc-900 group-hover:text-white transition-colors italic tabular-nums">
+                      {l}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </div>
           ) : (
             /* Vista 2: Resultados del Directorio / Búsqueda */

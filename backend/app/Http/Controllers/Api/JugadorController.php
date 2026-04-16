@@ -53,6 +53,37 @@ class JugadorController extends Controller
     }
 
     #[OA\Get(
+        path: "/v1/jugadores/top-scorers",
+        summary: "Get top 20 scorers",
+        operationId: "getTopScorers",
+        security: [["sanctum" => []]],
+        tags: ["Jugadores"],
+        responses: [
+            new OA\Response(response: 200, description: "Successful operation")
+        ]
+    )]
+    public function topScorers()
+    {
+        $top = Jugador::query()
+            ->withCount(["goles as goals" => function ($q) {
+                $q->where("gol_parariver", 1)->where("gol_penal", "!=", 6);
+            }])
+            ->orderBy("goals", "desc")
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            "data" => $top->map(fn($j, $index) => [
+                "pl_id" => $j->pl_id,
+                "name" => $j->pl_apno,
+                "goals" => (int) $j->goals,
+                "pos" => $index + 1,
+                "pl_foto" => $j->pl_foto ? \Illuminate\Support\Facades\Storage::disk("public")->url($j->pl_foto) : null
+            ])
+        ]);
+    }
+
+    #[OA\Get(
         path: "/v1/jugadores/{id}",
         summary: "Get jugador by ID",
         operationId: "getJugadorById",
