@@ -186,24 +186,26 @@ export default async function JugadorDetailPage({
               
               {/* Data Console Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Zap size={14} className="text-red-500" />
+                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50 flex flex-col justify-between">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Trophy size={14} className="text-red-500" />
                     <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Producción de Goles</span>
                   </div>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-4xl font-black text-white tabular-nums">{jugador.goles_count}</span>
-                    <span className="text-[10px] font-black text-zinc-500 uppercase">Totales</span>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-4xl font-black text-white tabular-nums leading-none mb-1">{jugador.goles_river_count}</span>
+                      <span className="text-[8px] font-black text-red-500 uppercase tracking-tighter">Para River</span>
+                    </div>
+                    <div className="flex flex-col border-l border-white/10 pl-4">
+                      <span className="text-4xl font-black text-zinc-400 tabular-nums leading-none mb-1">{jugador.goles_rival_count}</span>
+                      <span className="text-[8px] font-black text-zinc-500 uppercase tracking-tighter">En Contra</span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-4 mt-2 pt-2 border-t border-white/5">
-                    <div className="flex items-center space-x-1">
-                      <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
-                      <span className="text-[10px] font-black text-white tabular-nums">{jugador.goles_river_count} <span className="text-zinc-500 text-[8px] uppercase ml-0.5">CARP</span></span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full" />
-                      <span className="text-[10px] font-black text-white tabular-nums">{jugador.goles_rival_count} <span className="text-zinc-500 text-[8px] uppercase ml-0.5">Rival</span></span>
-                    </div>
+
+                  <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+                    <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Total Histórico</span>
+                    <span className="text-sm font-black text-zinc-300">{jugador.goles_count}</span>
                   </div>
                 </div>
 

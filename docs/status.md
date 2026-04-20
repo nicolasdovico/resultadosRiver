@@ -76,6 +76,8 @@
     - [x] **Frontend Web:**
         - [x] Implementación de **Directorio Alfabético** (A-Z) con tarjetas compactas para exploración masiva.
         - [x] Rediseño de fichas de jugadores con estética "Data Console" y tableros de rendimiento.
+        - [x] **Transparencia Estadística:** Rediseño del Hero de jugador y tarjetas de búsqueda para discriminar goles "Para River" de goles "En Contra" (vs CARP).
+        - [x] **Goles 100% Millonarios:** Implementación de badge de honor para jugadores que solo anotaron defendiendo la banda roja.
         - [x] **Hall de Hitos:** Visualización destacada de Dobletes y Hat-tricks con restricción Premium.
         - [x] **Racha Máxima:** Nueva visualización destacada de partidos consecutivos anotando con sistema de semáforo y tooltips (Premium).
         - [x] **Ranking Top 20:** Rediseño jerárquico del podio:

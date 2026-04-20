@@ -12,6 +12,8 @@ interface Jugador {
   pl_apno: string;
   pl_foto?: string | null;
   goles_count?: number;
+  goles_river_count?: number;
+  goles_rival_count?: number;
 }
 
 interface TopScorer {
@@ -358,21 +360,34 @@ export default async function JugadoresPage({
                                 jugador.pl_apno ? jugador.pl_apno.charAt(0) : "?"
                               )}
                             </div>
+                            
+                            <div className="flex flex-col items-end">
+                              <span className="text-3xl font-black text-red-600 tabular-nums leading-none mb-1">
+                                {jugador.goles_river_count || 0}
+                              </span>
+                              <span className="text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em]">Goles CARP</span>
+                            </div>
                           </div>
+                          
                           <div className="mt-auto">
-                            <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-lg uppercase leading-tight mb-4">
+                            <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-lg uppercase leading-tight mb-6 min-h-[3rem] flex items-center italic">
                               {jugador.pl_apno}
                             </h3>
                             
-                            <div className="flex items-center justify-between pt-4 border-t border-zinc-50">
-                              <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Historial</span>
-                                <div className="flex items-center space-x-1.5">
-                                  <span className="font-black text-zinc-900">{jugador.goles_count || 0}</span>
-                                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">Goles</span>
+                            <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+                              {jugador.goles_rival_count && jugador.goles_rival_count > 0 ? (
+                                <div className="flex items-center px-3 py-1 bg-zinc-100 rounded-full border border-zinc-200">
+                                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mr-1.5">vs CARP:</span>
+                                  <span className="text-[10px] font-black text-zinc-600 tabular-nums">{jugador.goles_rival_count}</span>
                                 </div>
-                              </div>
-                              <div className="w-8 h-8 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-red-50 group-hover:text-red-600 transition-all">
+                              ) : (
+                                <div className="flex items-center px-3 py-1 bg-red-50 rounded-full border border-red-100 shadow-sm shadow-red-900/5">
+                                  <Star size={10} className="text-red-500 fill-red-500 mr-1.5" />
+                                  <span className="text-[9px] font-black text-red-600 uppercase tracking-widest">Goles 100% Millonarios</span>
+                                </div>
+                              )}
+                              
+                              <div className="w-8 h-8 bg-zinc-900 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:bg-red-600 transition-all">
                                 <ChevronRight size={16} />
                               </div>
                             </div>
