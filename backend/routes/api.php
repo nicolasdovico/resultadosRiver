@@ -45,15 +45,16 @@ Route::prefix('v1')->group(function () {
     Route::get('estadios', [EstadioController::class, 'index']);
     Route::get('estadios/{id}', [EstadioController::class, 'show']);
     
-    Route::get('jugadores', [JugadorController::class, 'index']);
     Route::get('jugadores/top-scorers', [JugadorController::class, 'topScorers']);
+    Route::get('jugadores', [JugadorController::class, 'index']);
     Route::get('jugadores/{id}', [JugadorController::class, 'show']);
     
+    Route::get('rivales/classics', [RivalController::class, 'classics']);
     Route::get('rivales', [RivalController::class, 'index']);
     Route::get('rivales/{id}', [RivalController::class, 'show']);
     
-    Route::get('torneos', [TorneoController::class, 'index']);
     Route::get('torneos/niveles', [TorneoController::class, 'niveles']);
+    Route::get('torneos', [TorneoController::class, 'index']);
     Route::get('torneos/{id}', [TorneoController::class, 'show']);
     
     Route::get('tecnicos', [TecnicoController::class, 'index']);

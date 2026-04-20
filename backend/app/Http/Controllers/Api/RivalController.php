@@ -19,6 +19,7 @@ class RivalController extends Controller
         tags: ['Rivales'],
         parameters: [
             new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'letter', in: 'query', schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
@@ -48,6 +49,10 @@ class RivalController extends Controller
             $query->where('ri_desc', 'ILIKE', "%{$request->q}%");
         }
 
+        if ($request->has('letter')) {
+            $query->where('ri_desc', 'ILIKE', "{$request->letter}%");
+        }
+
         $limit = $request->query('limit', 50);
         if ($limit == -1) {
             return RivalResource::collection($query->orderBy('ri_desc')->get());
@@ -73,6 +78,32 @@ class RivalController extends Controller
     {
         $record = Rival::create($request->all());
         return new RivalResource($record);
+    }
+
+    #[OA\Get(
+        path: '/v1/rivales/classics',
+        summary: 'Get stats for classic rivals (Big 5)',
+        operationId: 'getClassicStats',
+        security: [['sanctum' => []]],
+        tags: ['Rivales'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/RivalResource')
+                )
+            )
+        ]
+    )]
+    public function classics()
+    {
+        // IDs: 10 (Independiente), 15 (Boca), 16 (San Lorenzo), 20 (Racing)
+        $classicIds = [10, 15, 16, 20];
+        $rivales = Rival::whereIn('ri_id', $classicIds)->get();
+        
+        return RivalResource::collection($rivales);
     }
 
     #[OA\Get(

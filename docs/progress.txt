@@ -1,5 +1,18 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-20: Modernización y Analítica en Sección de Rivales (Fase 6)
+- [x] **Backend**:
+  - [x] **Modelo**: Implementación de `stats`, `goles_por_periodo` y `goles_por_tipo` en `Rival.php` para analítica detallada frente a cada adversario.
+  - [x] **API**: Soporte para filtrado por letra inicial (`letter`) en `RivalController`.
+  - [x] **API**: Inclusión de lógica de restricción Premium en `RivalResource` (máximo 10 partidos para usuarios Free).
+- [x] **Frontend Web**:
+  - [x] **Navegación**: Implementación de **Directorio Alfabético** (A-Z) para exploración rápida de adversarios.
+  - [x] **UI/UX**: Rediseño de tarjetas de rivales con estética "Data Console" e integración de escudos dinámicos.
+  - [x] **Ficha de Detalle**: Nuevo diseño inmersivo "River vs Rival" con escudos ampliados y dashboard de estadísticas reales (PJ, PG, PE, PP, GF, GC, DG, Efectividad).
+  - [x] **Analítica**: Integración de componentes `GoalsAnalysis` y `GoalMethodAnalysis` para visualización Premium de distribución de goles.
+  - [x] **Paywall**: Implementación de bloqueo con efecto `blur` y banners persuasivos para el historial completo y analítica avanzada.
+  - [x] **Navegación**: Integración de componente `GoBack` para mejorar el flujo de usuario.
+
 ### 2026-04-20: Top 3 Goleadores en Detalle de Torneos (Fase 6)
 - [x] **Backend**:
   - [x] **Modelo**: Implementación de `getTopScorersAttribute` en `Torneo.php` para calcular los 3 máximos artilleros de River en la competencia.

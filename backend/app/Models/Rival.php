@@ -70,6 +70,133 @@ class Rival extends Model
         return $url;
     }
 
+    /**
+     * Get aggregate statistics for the rival.
+     */
+    public function getStatsAttribute(): array
+    {
+        $partidos = $this->partidos;
+        
+        $pj = $partidos->count();
+        $pg = 0;
+        $pe = 0;
+        $pp = 0;
+        $gf = 0;
+        $gc = 0;
+        $vallasInvictas = 0;
+
+        foreach ($partidos as $partido) {
+            $golesRiver = $partido->go_ri;
+            $golesRival = $partido->go_ad;
+
+            $gf += $golesRiver;
+            $gc += $golesRival;
+
+            if ($golesRival === 0) {
+                $vallasInvictas++;
+            }
+
+            if ($golesRiver > $golesRival) {
+                $pg++;
+            } elseif ($golesRiver < $golesRival) {
+                $pp++;
+            } else {
+                $pe++;
+            }
+        }
+
+        $puntos = ($pg * 3) + $pe;
+        $efectividad = $pj > 0 ? round(($puntos / ($pj * 3)) * 100, 2) : 0;
+
+        return [
+            'pj' => $pj,
+            'pg' => $pg,
+            'pe' => $pe,
+            'pp' => $pp,
+            'gf' => $gf,
+            'gc' => $gc,
+            'dg' => $gf - $gc,
+            'puntos' => $puntos,
+            'vallas_invictas' => $vallasInvictas,
+            'efectividad' => $efectividad,
+        ];
+    }
+
+    /**
+     * Get goals by period (10 min intervals) for this rival.
+     */
+    public function getGolesPorPeriodoAttribute(): array
+    {
+        $periodStats = [];
+        $intervals = [
+            ['label' => "0' - 10'", 'min' => 0, 'max' => 10],
+            ['label' => "11' - 20'", 'min' => 11, 'max' => 20],
+            ['label' => "21' - 30'", 'min' => 21, 'max' => 30],
+            ['label' => "31' - 40'", 'min' => 31, 'max' => 40],
+            ['label' => "41' +", 'min' => 41, 'max' => 150], 
+        ];
+
+        $activePeriods = Periodo::whereIn('id_periodo', function($q) {
+            $q->select('periodo')
+              ->from('goles')
+              ->join('estadisticas', 'goles.gol_fecha', '=', 'estadisticas.fecha')
+              ->where('estadisticas.adversario', $this->ri_id);
+        })->orderBy('id_periodo')->get();
+
+        foreach ($activePeriods as $period) {
+            $intervalsData = [];
+            foreach ($intervals as $interval) {
+                // Goles River contra este rival
+                $countRiver = \App\Models\Gol::join('estadisticas', 'goles.gol_fecha', '=', 'estadisticas.fecha')
+                    ->where('estadisticas.adversario', $this->ri_id)
+                    ->where("periodo", $period->id_periodo)
+                    ->where("gol_parariver", 1)
+                    ->whereBetween("minutos", [$interval['min'], $interval['max']])
+                    ->count();
+                
+                // Goles de este rival contra River
+                $countRival = \App\Models\Gol::join('estadisticas', 'goles.gol_fecha', '=', 'estadisticas.fecha')
+                    ->where('estadisticas.adversario', $this->ri_id)
+                    ->where("periodo", $period->id_periodo)
+                    ->where("gol_parariver", 2)
+                    ->whereBetween("minutos", [$interval['min'], $interval['max']])
+                    ->count();
+                
+                $intervalsData[] = [
+                    'label' => $interval['label'],
+                    'count' => $countRiver,
+                    'count_rival' => $countRival
+                ];
+            }
+
+            $periodStats[] = [
+                'period_name' => trim($period->periodo_desc),
+                'intervals' => $intervalsData
+            ];
+        }
+
+        return $periodStats;
+    }
+
+    /**
+     * Get goals by type for this rival.
+     */
+    public function getGolesPorTipoAttribute(): array
+    {
+        return \DB::table('goles')
+            ->join('estadisticas', 'goles.gol_fecha', '=', 'estadisticas.fecha')
+            ->join('tipo_gol', 'goles.gol_penal', '=', 'tipo_gol.tipo_gol')
+            ->where('estadisticas.adversario', $this->ri_id)
+            ->select(
+                'tipo_gol.tipo_gol_descripcion as label', 
+                \DB::raw('SUM(CASE WHEN gol_parariver = 1 THEN 1 ELSE 0 END) as value'),
+                \DB::raw('SUM(CASE WHEN gol_parariver = 2 THEN 1 ELSE 0 END) as value_rival')
+            )
+            ->groupBy('tipo_gol.tipo_gol_descripcion')
+            ->get()
+            ->toArray();
+    }
+
     public function partidos(): HasMany
     {
         return $this->hasMany(Partido::class, 'adversario', 'ri_id');

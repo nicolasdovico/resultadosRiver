@@ -114,6 +114,16 @@
         - [x] **Optimización:** Ajuste de paginación del historial a 10 partidos por página para mejorar la UX.
     - [x] **Sección de Técnicos (Fix):** Resolución de error `Cannot read properties of undefined (reading 'charAt')` mediante la actualización de `TecnicoResource` y adición de safety checks en el frontend.
     - [x] **Sección de Técnicos (Stats Fix):** Corrección de valores hardcodeados en la ficha de detalle y rediseño del "Resumen de Ciclo" para mostrar estadísticas reales (PG, PE, PP, Puntos, GF, GC) y efectividad dinámica.
+- [x] **Sección de Rivales:**
+    - [x] **Backend:**
+        - [x] Implementación de lógica de cálculo de estadísticas (PJ, PG, PE, PP, GF, GC, DG, Efectividad) en el modelo `Rival`.
+        - [x] Implementación de analítica de goles por periodo y por tipo específicos para cada rival.
+        - [x] Soporte para filtrado alfabético y lógica de restricción Premium en el recurso de API.
+    - [x] **Frontend Web:**
+        - [x] Implementación de **Directorio Alfabético** (A-Z) para navegación masiva.
+        - [x] Rediseño de fichas de detalle con Hero inmersivo, dashboard de estadísticas y escudos dinámicos.
+        - [x] Integración de componentes de análisis de goles (Goles por Tiempo y Forma de los Goles) con restricción Premium.
+        - [x] Implementación de Paywall reforzado con efectos de blur e incentivos de conversión.
 - [x] **Sección de Torneos:**
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.
