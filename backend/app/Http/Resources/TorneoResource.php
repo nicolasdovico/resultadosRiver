@@ -46,6 +46,7 @@ class TorneoResource extends JsonResource
             'tor_desc' => $this->tor_desc,
             'tor_nivel' => $this->tor_nivel,
             'tor_anio' => $this->anio,
+            'top_scorers' => $this->top_scorers,
         ];
 
         // Basic stats for everyone

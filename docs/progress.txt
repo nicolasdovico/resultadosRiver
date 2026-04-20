@@ -1,5 +1,15 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-20: Top 3 Goleadores en Detalle de Torneos (Fase 6)
+- [x] **Backend**:
+  - [x] **Modelo**: Implementación de `getTopScorersAttribute` en `Torneo.php` para calcular los 3 máximos artilleros de River en la competencia.
+  - [x] **API**: Inclusión de `top_scorers` en `TorneoResource` con foto, nombre y conteo de goles individual.
+  - [x] **Fix**: Corrección de error 500 mediante el ajuste del nombre de tabla de `partidos` a `estadisticas` en el join de goleadores.
+- [x] **Frontend Web**:
+  - [x] **UI/UX**: Integración de la sección "Artilleros Millonarios" en la cabecera (Hero) del detalle del torneo.
+  - [x] **Visualización**: Sistema de avatares circulares ampliados (w-20) con badges de goles y efectos de hover para nombres.
+  - [x] **Refactor**: Actualización de interfaces para soportar la nueva metadata de goleadores y navegación a perfiles.
+
 ### 2026-04-16: Goleadores del Año en Landing (Sabías que...?) (Fase 6)
 - [x] **Backend**:
   - [x] **API**: Implementación de `top_scorers_year` en `PartidoController@generalStats` para obtener el Top 3 de goleadores del año calendario actual.

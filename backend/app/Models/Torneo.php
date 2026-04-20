@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Traits\UpperCaseStrings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Torneo extends Model
 {
@@ -79,5 +81,33 @@ class Torneo extends Model
             'vallas_invictas' => $vallasInvictas,
             'efectividad' => $efectividad,
         ];
+    }
+
+    /**
+     * Get the top 3 scorers for River Plate in this tournament.
+     */
+    public function getTopScorersAttribute(): array
+    {
+        return DB::table('goles')
+            ->join('estadisticas', 'goles.gol_fecha', '=', 'estadisticas.fecha')
+            ->join('players', 'goles.gol_juga', '=', 'players.pl_id')
+            ->where('estadisticas.torneo', $this->tor_id)
+            ->where('goles.gol_parariver', 1)
+            ->where('goles.gol_penal', '!=', 6) // Excluir autogoles
+            ->select('players.pl_id', 'players.pl_apno', 'players.pl_foto', DB::raw('count(*) as goals_count'))
+            ->groupBy('players.pl_id', 'players.pl_apno', 'players.pl_foto')
+            ->orderBy('goals_count', 'desc')
+            ->orderBy('players.pl_apno', 'asc')
+            ->limit(3)
+            ->get()
+            ->map(function ($scorer) {
+                return [
+                    'pl_id' => $scorer->pl_id,
+                    'pl_apno' => $scorer->pl_apno,
+                    'pl_foto' => $scorer->pl_foto ? Storage::disk('public')->url($scorer->pl_foto) : null,
+                    'goals_count' => (int) $scorer->goals_count,
+                ];
+            })
+            ->toArray();
     }
 }

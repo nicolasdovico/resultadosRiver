@@ -124,6 +124,7 @@
         - [x] Rediseño completo de la ficha de detalle del torneo (`/torneos/[id]`) con:
             - [x] Listado detallado de partidos con escudos y resultados visuales.
             - [x] **Paginación:** Implementación de paginación en el cliente (10 partidos por página) para mejorar la navegabilidad en torneos largos.
+            - [x] **Top 3 Goleadores:** Integración de la sección "Artilleros Millonarios" en el Hero del torneo con fotos ampliadas, badges de goles y navegación a perfiles.
             - [x] Visualización de racha (Form Guide) interactiva para usuarios Premium.
             - [x] Gráficos de efectividad y desglose de estadísticas (Puntos, DG, Vallas Invictas).
             - [x] Integración de componentes de análisis de goles (`GoalsAnalysis`, `GoalMethodAnalysis`).

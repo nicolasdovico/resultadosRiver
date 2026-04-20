@@ -1,5 +1,5 @@
 import { formatLocalDate } from "@/utils/date";
-import { ChevronLeft, Star, Trophy, Calendar, ChevronRight, BarChart3, TrendingUp } from "lucide-react";
+import { ChevronLeft, Star, Trophy, Calendar, ChevronRight, BarChart3, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
@@ -45,12 +45,20 @@ interface TorneoStats {
   efectividad: number | null;
 }
 
+interface TopScorer {
+  pl_id: number;
+  pl_apno: string;
+  pl_foto: string | null;
+  goals_count: number;
+}
+
 interface Torneo {
   tor_id: number;
   tor_desc: string;
   tor_nivel: string;
   partidos: Partido[];
   stats?: TorneoStats;
+  top_scorers?: TopScorer[];
 }
 
 export default async function TorneoDetailPage({
@@ -121,23 +129,80 @@ export default async function TorneoDetailPage({
             {torneo.tor_desc}
           </h1>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl">
-            <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-              <span className="block text-2xl font-black text-zinc-900">{partidos.length}</span>
-              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Partidos</span>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl w-full">
+              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
+                <span className="block text-2xl font-black text-zinc-900">{partidos.length}</span>
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Partidos</span>
+              </div>
+              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
+                <span className="block text-2xl font-black text-green-600">{victorias}</span>
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Victorias</span>
+              </div>
+              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
+                <span className="block text-2xl font-black text-zinc-400">{empates}</span>
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Empates</span>
+              </div>
+              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
+                <span className="block text-2xl font-black text-red-600">{derrotas}</span>
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Derrotas</span>
+              </div>
             </div>
-            <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-              <span className="block text-2xl font-black text-green-600">{victorias}</span>
-              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Victorias</span>
-            </div>
-            <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-              <span className="block text-2xl font-black text-zinc-400">{empates}</span>
-              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Empates</span>
-            </div>
-            <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-              <span className="block text-2xl font-black text-red-600">{derrotas}</span>
-              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Derrotas</span>
-            </div>
+
+            {/* Top Scorers */}
+            {torneo.top_scorers && torneo.top_scorers.length > 0 && (
+              <div className="flex flex-col items-center md:items-start shrink-0">
+                <h3 className="text-[11px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4 flex items-center">
+                  <Trophy size={14} className="mr-2 text-yellow-500" /> Artilleros Millonarios
+                </h3>
+                <div className="flex items-center -space-x-5 hover:space-x-2 transition-all duration-500">
+                  {torneo.top_scorers.map((scorer, idx) => (
+                    <Link 
+                      key={scorer.pl_id} 
+                      href={`/jugadores/${scorer.pl_id}`}
+                      className="group relative"
+                      title={scorer.pl_apno}
+                    >
+                      <div 
+                        className={`w-20 h-20 rounded-full overflow-hidden border-4 border-white bg-zinc-100 shadow-xl group-hover:scale-110 group-hover:z-30 transition-all duration-300 relative ${
+                          idx === 0 ? 'z-20' : idx === 1 ? 'z-10' : 'z-0'
+                        }`}
+                      >
+                        {scorer.pl_foto ? (
+                          <img 
+                            src={scorer.pl_foto} 
+                            alt={scorer.pl_apno}
+                            className="w-full h-full object-cover object-top"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-zinc-200 text-zinc-400">
+                            <Users size={28} />
+                          </div>
+                        )}
+                        
+                        {/* Overlay with name on hover - Improved visibility */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 px-1">
+                          <span className="text-[9px] font-black text-white uppercase tracking-tighter text-center leading-none">
+                            {scorer.pl_apno.split(',')[0]}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Goal Badge */}
+                      <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-full border-2 border-white shadow-lg z-40 transform group-hover:scale-110 transition-transform">
+                        {scorer.goals_count} <span className="text-[7px] ml-0.5">GOLES</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-col items-center md:items-start">
+                  <p className="text-[9px] font-black text-zinc-900 uppercase tracking-[0.3em]">
+                    Podio de Goleadores
+                  </p>
+                  <div className="h-0.5 w-12 bg-red-600 mt-1"></div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
