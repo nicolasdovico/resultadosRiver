@@ -118,13 +118,19 @@
     - [x] **Backend:**
         - [x] Implementación de lógica de cálculo de estadísticas (PJ, PG, PE, PP, GF, GC, DG, Efectividad) en el modelo `Rival`.
         - [x] Implementación de analítica de goles por periodo y por tipo específicos para cada rival.
+        - [x] **Rachas Históricas:** Lógica para calcular secuencias máximas de invencibilidad y sequía con metadatos de duración y vigencia.
+        - [x] **Hitos Recientes:** Lógica para obtener la última victoria y última derrota con detalles de torneo, condición y antigüedad.
         - [x] Soporte para filtrado alfabético y lógica de restricción Premium en el recurso de API.
     - [x] **Frontend Web:**
         - [x] Implementación de **Directorio Alfabético** (A-Z) para navegación masiva.
-        - [x] **Rediseño Visual:** Nueva estética "Data Console" oscura para la sección Hero y tarjetas de estadísticas, eliminando el exceso de blanco y mejorando el impacto visual.
+        - [x] **Rediseño Visual:** Nueva estética "Data Console" oscura para la sección Hero y tarjetas de estadísticas, con optimización de altura (25% más compacto).
+        - [x] **Hitos Recientes:** Integración de tarjetas para la "Última Victoria" y "Última Derrota" con tooltips inmersivos (fecha, resultado, torneo, condición y días transcurridos).
+        - [x] **Consola de Rendimiento:** Nueva subsección lateral que integra el **Semáforo de Forma** (últimos 20 partidos cronológicos) y el análisis de **Rachas Históricas**.
+        - [x] **Artilleros Millonarios:** Integración del Top 3 de goleadores históricos ante el rival con efectos de hover y navegación.
         - [x] Ficha de detalle inmersiva "River vs Rival" con escudos ampliados y dashboard de estadísticas reales.
         - [x] Integración de componentes de análisis de goles (Goles por Tiempo y Forma de los Goles) con restricción Premium.
-        - [x] Implementación de Paywall reforzado con efectos de blur e incentivos de conversión.
+        - [x] **Paywall Reforzado:** Implementación de bloqueo con efecto `blur` y banners de conversión para rachas, semáforo y analítica avanzada.
+
 - [x] **Sección de Torneos:**
     - [x] **Backend:** 
         - [x] Implementación de filtros de búsqueda (`q`) y año (`año`) en `TorneoController`.

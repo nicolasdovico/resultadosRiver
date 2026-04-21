@@ -305,6 +305,55 @@ class Rival extends Model
         ];
     }
 
+    /**
+     * Get the last won match against this rival.
+     */
+    public function getLastWonMatchAttribute(): ?array
+    {
+        $partido = $this->partidos()
+            ->whereRaw('go_ri > go_ad')
+            ->orderBy('fecha', 'desc')
+            ->first();
+
+        return $this->formatMatchHito($partido);
+    }
+
+    /**
+     * Get the last lost match against this rival.
+     */
+    public function getLastLostMatchAttribute(): ?array
+    {
+        $partido = $this->partidos()
+            ->whereRaw('go_ri < go_ad')
+            ->orderBy('fecha', 'desc')
+            ->first();
+
+        return $this->formatMatchHito($partido);
+    }
+
+    /**
+     * Format match data for hito visualization.
+     */
+    private function formatMatchHito($partido): ?array
+    {
+        if (!$partido) return null;
+
+        $fecha = \Carbon\Carbon::parse($partido->fecha);
+        
+        // Ensure relations are loaded to avoid property access on null or non-objects
+        // Using the relation methods directly can be tricky in getters, so we use the relation properties
+        $torneo = $partido->torneo_rel;
+        $condicion = $partido->condicion_rel;
+        
+        return [
+            'fecha' => $partido->fecha,
+            'torneo' => $torneo ? trim($torneo->tor_desc) : 'Desconocido',
+            'condicion' => $condicion ? trim($condicion->descripcion) : 'Desconocido',
+            'resultado' => "{$partido->go_ri} - {$partido->go_ad}",
+            'dias_transcurridos' => $fecha->diffInDays(now()),
+        ];
+    }
+
     public function partidos(): HasMany
     {
         return $this->hasMany(Partido::class, 'adversario', 'ri_id');

@@ -101,7 +101,9 @@ class RivalController extends Controller
     {
         // IDs: 10 (Independiente), 15 (Boca), 16 (San Lorenzo), 20 (Racing)
         $classicIds = [10, 15, 16, 20];
-        $rivales = Rival::whereIn('ri_id', $classicIds)->get();
+        
+        // Eager load partidos to avoid N+1 when calculating stats for the grid
+        $rivales = Rival::with('partidos')->whereIn('ri_id', $classicIds)->get();
         
         return RivalResource::collection($rivales);
     }
@@ -124,9 +126,15 @@ class RivalController extends Controller
      */
     public function show(string $id)
     {
-        $rival = Rival::with(['partidos' => function($query) {
-            $query->orderBy('fecha', 'desc');
-        }, 'partidos.torneo_rel'])->findOrFail($id);
+        $rival = Rival::with([
+            'partidos' => function($query) {
+                $query->orderBy('fecha', 'desc');
+            }, 
+            'partidos.torneo_rel',
+            'partidos.condicion_rel',
+            'partidos.fase_rel'
+        ])->findOrFail($id);
+        
         return new RivalResource($rival);
     }
 

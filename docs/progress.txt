@@ -1,16 +1,36 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-21: Fix de Error 500 y Optimización en Rivales (Fase 6)
+- [x] **Backend**:
+  - [x] **Modelo**: Corrección de acceso a propiedades en `formatMatchHito` (`Rival.php`) utilizando los nombres correctos de las relaciones (`torneo_rel`, `condicion_rel`) y campos (`descripcion`).
+  - [x] **API**: Optimización de `RivalResource` para ocultar estadísticas pesadas (`stats`, `streaks`, `hitos`) en listados masivos, previniendo el error 500 por acceso a propiedades inexistentes y eliminando el problema de N+1 consultas.
+  - [x] **Controlador**: Implementación de carga ansiosa (*eager loading*) en `classics` y `show` para mejorar el rendimiento de la consola de estadísticas.
+- [x] **Frontend Web**:
+  - [x] **Validación**: Resolución del error de servidor al navegar por el directorio alfabético.
+
+### 2026-04-21: Hitos Recientes (Última Victoria/Derrota) en Sección de Rivales (Fase 6)
+... (rest of history)
+
+  - [x] **Modelo**: Implementación de `getStreaksAttribute` en `Rival.php` para calcular rachas máximas de invencibilidad y sequía.
+  - [x] **Lógica**: Cálculo de fechas de inicio/fin, duración en días y detección de vigencia actual de cada racha.
+  - [x] **API**: Inclusión del objeto `streaks` en `RivalResource` para exposición de analítica avanzada.
+  - [x] **Fix**: Corrección de error 500 provocado por nombre de columna incorrecto (`gol_jugador` -> `gol_juga`) en la consulta de goleadores.
+- [x] **Frontend Web**:
+  - [x] **UI/UX**: Renombramiento de la sección lateral a **"Consola de Rendimiento"** para reflejar el análisis integral.
+  - [x] **UI/UX**: Implementación de la subsección **"Rachas Históricas"** con tarjetas de estética "Data Console" (Invictos y Sequías).
+  - [x] **UI/UX**: Visualización de metadatos de racha: periodo, duración total y antigüedad (o badge de **VIGENTE** con pulso).
+  - [x] **Semaphore**: Mejora del semáforo de resultados con lógica cronológica estricta (más reciente a la derecha).
+  - [x] **UX**: Integración de **Tooltips Premium** en el semáforo con fecha, escudo, resultado exacto y torneo.
+  - [x] **Paywall**: Bloqueo con efecto `blur` y banners de conversión para las secciones de Rachas y Semáforo en usuarios Free.
+  - [x] **Fix**: Resolución de `ReferenceError: Users is not defined` mediante la importación correcta de iconos.
+
 ### 2026-04-21: Rediseño Visual "Data Console" en Rivales y Torneos (Fase 6)
 - [x] **Frontend Web (Rivales)**:
   - [x] **UI/UX**: Rediseño integral de la sección Hero con estética "Data Console" oscura (`bg-zinc-900/950`).
+  - [x] **UI/UX**: Optimización de altura (reducción del 25%) para un diseño más compacto y estilizado.
+  - [x] **UI/UX**: Integración de la sección **"Artilleros Millonarios"** (Top 3 goleadores ante el rival) en la cabecera.
   - [x] **UI/UX**: Implementación de tarjetas de estadísticas de alto contraste con fondos semitransparentes y acentos cromáticos.
-  - [x] **UI/UX**: Mejora de efectos visuales (glows, blurs) y sombras para resaltar el escudo de River y del adversario.
-  - [x] **UI/UX**: Rediseño de las tarjetas de Efectividad y Vallas Invictas con tipografía ampliada y mayor jerarquía visual.
-- [x] **Frontend Web (Torneos)**:
-  - [x] **UI/UX**: Migración de la cabecera del torneo a la estética "Data Console" oscura, eliminando el exceso de blanco.
-  - [x] **UI/UX**: Optimización de la cuadrícula de estadísticas (PJ, PG, PE, PP) con colores temáticos y bordes sutiles.
-  - [x] **UI/UX**: Mejora de la sección de artilleros con avatares más grandes, efectos de hover premium y anillos de estatus (ring borders).
-  - [x] **UI/UX**: Rediseño del sidebar de Análisis de Éxito para integrarse perfectamente con el nuevo esquema oscuro del Hero.
+... (rest of history)
 
 ### 2026-04-20: Modernización y Analítica en Sección de Rivales (Fase 6)
 - [x] **Backend**:

@@ -41,6 +41,14 @@ interface Streak {
   days_since_end: number;
 }
 
+interface HitoMatch {
+  fecha: string;
+  torneo: string;
+  condicion: string;
+  resultado: string;
+  dias_transcurridos: number;
+}
+
 interface Rival {
   ri_id: number;
   ri_desc: string;
@@ -69,6 +77,8 @@ interface Rival {
     invincibility: Streak | null;
     drought: Streak | null;
   };
+  last_won_match: HitoMatch | null;
+  last_lost_match: HitoMatch | null;
   partidos: Partido[];
 }
 
@@ -254,32 +264,102 @@ export default async function RivalDetailPage({
               ))}
             </div>
 
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="bg-zinc-950 rounded-[40px] p-8 flex items-center justify-between text-white group overflow-hidden relative border border-white/5 shadow-2xl">
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+               <div className="bg-zinc-950 rounded-[40px] p-8 flex items-center justify-between text-white group overflow-hidden relative border border-white/5 shadow-2xl lg:col-span-1">
                   <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <Percent className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-red-600/20 transition-colors" size={160} />
                   <div className="relative z-10">
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block">Efectividad Histórica</span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-6xl font-black italic tracking-tighter">{stats.efectividad}%</span>
-                      {stats.efectividad >= 50 ? (
-                         <span className="text-emerald-500 text-xs font-black uppercase tracking-widest">Dominio</span>
-                      ) : (
-                         <span className="text-red-500 text-xs font-black uppercase tracking-widest">Desafío</span>
-                      )}
+                      <span className="text-4xl font-black italic tracking-tighter">{stats.efectividad}%</span>
                     </div>
                   </div>
-                  <div className="w-20 h-20 bg-red-600 rounded-3xl flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.3)] group-hover:scale-110 transition-transform relative z-10">
-                    <TrendingUp size={32} />
+                  <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.3)] group-hover:scale-110 transition-transform relative z-10">
+                    <TrendingUp size={24} />
                   </div>
                </div>
-               <div className="bg-zinc-800/30 backdrop-blur-md rounded-[40px] p-8 flex items-center justify-between border border-white/5 group shadow-xl">
+
+               {/* Última Victoria */}
+               <div className="bg-zinc-800/30 backdrop-blur-md rounded-[40px] p-8 flex items-center justify-between border border-white/5 group shadow-xl lg:col-span-1 relative">
+                  <div className="relative z-10">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block">Última Victoria</span>
+                    {rival.last_won_match ? (
+                      <div className="flex flex-col group/hito">
+                        <span className="text-3xl font-black text-emerald-500 italic tracking-tighter cursor-help">
+                          {new Date(rival.last_won_match.fecha + 'T12:00:00').getFullYear()}
+                        </span>
+                        
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 bg-zinc-950 p-5 rounded-[32px] shadow-2xl opacity-0 invisible group-hover/hito:opacity-100 group-hover/hito:visible transition-all z-50 border border-zinc-800 pointer-events-none">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{formatStreakDate(rival.last_won_match.fecha)}</span>
+                                <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">{rival.last_won_match.resultado}</span>
+                            </div>
+                            <div className="flex items-center space-x-3 mb-3">
+                                <RiverOfficialShield className="w-6 h-6" />
+                                <span className="text-[10px] font-black text-white uppercase italic">Victoria Millonaria</span>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter line-clamp-1">🏆 {rival.last_won_match.torneo}</p>
+                                <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">📍 {rival.last_won_match.condicion}</p>
+                                <p className="text-[9px] font-black text-emerald-500 uppercase mt-2 pt-2 border-t border-white/5">Hace {getTimeSince(rival.last_won_match.dias_transcurridos)}</p>
+                            </div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-zinc-950 rotate-45 -mt-1.5 border-r border-b border-zinc-800" />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-black text-zinc-600 italic">NUNCA</span>
+                    )}
+                  </div>
+                  <div className="w-14 h-14 bg-emerald-950/40 text-emerald-500 rounded-2xl flex items-center justify-center border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-emerald-950 transition-all shadow-xl group-hover:scale-110 transition-transform">
+                    <Zap size={24} />
+                  </div>
+               </div>
+
+               {/* Última Derrota */}
+               <div className="bg-zinc-800/30 backdrop-blur-md rounded-[40px] p-8 flex items-center justify-between border border-white/5 group shadow-xl lg:col-span-1 relative">
+                  <div className="relative z-10">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block">Última Derrota</span>
+                    {rival.last_lost_match ? (
+                      <div className="flex flex-col group/hito">
+                        <span className="text-3xl font-black text-red-500 italic tracking-tighter cursor-help">
+                          {new Date(rival.last_lost_match.fecha + 'T12:00:00').getFullYear()}
+                        </span>
+
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 bg-zinc-950 p-5 rounded-[32px] shadow-2xl opacity-0 invisible group-hover/hito:opacity-100 group-hover/hito:visible transition-all z-50 border border-zinc-800 pointer-events-none">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{formatStreakDate(rival.last_lost_match.fecha)}</span>
+                                <span className="text-[10px] font-black text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">{rival.last_lost_match.resultado}</span>
+                            </div>
+                            <div className="flex items-center space-x-3 mb-3">
+                                <ClubShield src={rival.escudo_url || undefined} className="w-6 h-6" />
+                                <span className="text-[10px] font-black text-white uppercase italic">Caída ante {rival.ri_desc}</span>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter line-clamp-1">🏆 {rival.last_lost_match.torneo}</p>
+                                <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">📍 {rival.last_lost_match.condicion}</p>
+                                <p className="text-[9px] font-black text-red-500 uppercase mt-2 pt-2 border-t border-white/5">Hace {getTimeSince(rival.last_lost_match.dias_transcurridos)}</p>
+                            </div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-zinc-950 rotate-45 -mt-1.5 border-r border-b border-zinc-800" />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-black text-zinc-600 italic">NUNCA</span>
+                    )}
+                  </div>
+                  <div className="w-14 h-14 bg-red-950/40 text-red-500 rounded-2xl flex items-center justify-center border border-red-500/20 group-hover:bg-red-500 group-hover:text-red-950 transition-all shadow-xl group-hover:scale-110 transition-transform">
+                    <ShieldAlert size={24} />
+                  </div>
+               </div>
+
+               <div className="bg-zinc-800/30 backdrop-blur-md rounded-[40px] p-8 flex items-center justify-between border border-white/5 group shadow-xl lg:col-span-1">
                   <div className="relative z-10">
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block text-zinc-500">Vallas Invictas</span>
-                    <span className="text-6xl font-black text-white italic tracking-tighter">{stats.vallas_invictas}</span>
+                    <span className="text-4xl font-black text-white italic tracking-tighter">{stats.vallas_invictas}</span>
                   </div>
-                  <div className="w-20 h-20 bg-zinc-900 text-zinc-400 rounded-3xl flex items-center justify-center border border-zinc-700 group-hover:bg-white group-hover:text-zinc-900 group-hover:border-white transition-all shadow-xl group-hover:scale-110 transition-transform">
-                    <Shield size={32} />
+                  <div className="w-14 h-14 bg-zinc-900 text-zinc-400 rounded-2xl flex items-center justify-center border border-zinc-700 group-hover:bg-white group-hover:text-zinc-900 group-hover:border-white transition-all shadow-xl group-hover:scale-110 transition-transform">
+                    <Shield size={24} />
                   </div>
                </div>
             </div>
