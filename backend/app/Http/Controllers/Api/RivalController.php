@@ -124,7 +124,9 @@ class RivalController extends Controller
      */
     public function show(string $id)
     {
-        $rival = Rival::with(['partidos.torneo_rel'])->findOrFail($id);
+        $rival = Rival::with(['partidos' => function($query) {
+            $query->orderBy('fecha', 'desc');
+        }, 'partidos.torneo_rel'])->findOrFail($id);
         return new RivalResource($rival);
     }
 

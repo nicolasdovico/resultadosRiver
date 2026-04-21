@@ -1,4 +1,4 @@
-import { ShieldAlert, Target, TrendingUp, Calendar, Zap, Info, Star, Lock, Award, Shield, Percent, Activity, Users } from "lucide-react";
+import { ShieldAlert, Target, TrendingUp, Calendar, Zap, Info, Star, Lock, Award, Shield, Percent, Activity, Users, Clock, History, Timer } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { customInstance } from "@/api/custom-instance";
@@ -9,6 +9,7 @@ import GoalsAnalysis from "@/components/GoalsAnalysis";
 import GoalMethodAnalysis from "@/components/GoalMethodAnalysis";
 import RiverOfficialShield from "@/components/RiverOfficialShield";
 import RivalMatches from "@/components/RivalMatches";
+import ClubShield from "@/components/ClubShield";
 
 interface Partido {
   fecha: string;
@@ -16,6 +17,10 @@ interface Partido {
   goles_river: number;
   goles_rival: number;
   resultado: string;
+  rival?: {
+    ri_desc: string;
+    escudo_url?: string;
+  };
   torneo?: {
     tor_desc: string;
   };
@@ -25,6 +30,15 @@ interface Partido {
   condicion?: {
     co_desc: string;
   };
+}
+
+interface Streak {
+  count: number;
+  start_date: string;
+  end_date: string;
+  duration_days: number;
+  is_vigente: boolean;
+  days_since_end: number;
 }
 
 interface Rival {
@@ -51,6 +65,10 @@ interface Rival {
     pl_foto: string | null;
     goals_count: number;
   }>;
+  streaks: {
+    invincibility: Streak | null;
+    drought: Streak | null;
+  };
   partidos: Partido[];
 }
 
@@ -94,6 +112,25 @@ export default async function RivalDetailPage({
 
   const stats = rival.stats;
   const partidos = rival.partidos || [];
+  
+  // Logic for the last 20 matches semaphore
+  // API sends them in descending order (newest first)
+  const last20Matches = [...partidos].slice(0, 20).reverse(); // [oldest ... newest]
+
+  const formatStreakDate = (date: string) => {
+    return new Date(date + 'T12:00:00').toLocaleDateString('es-AR', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+    });
+  };
+
+  const getTimeSince = (days: number) => {
+    if (days < 30) return `${Math.floor(days)} DÍAS`;
+    if (days < 365) return `${Math.floor(days / 30)} MESES`;
+    const years = Math.floor(days / 365);
+    return `${years} ${years === 1 ? 'AÑO' : 'AÑOS'}`;
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50/50 pb-24">
@@ -287,46 +324,214 @@ export default async function RivalDetailPage({
             </div>
           </div>
 
-          {/* Right Column: Key Balance */}
+          {/* Right Column: Console Section */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-3 mb-8">
                <div className="w-10 h-10 bg-zinc-900 text-white rounded-xl flex items-center justify-center shadow-lg shadow-zinc-200">
-                  <Target size={20} />
+                  <Activity size={20} />
                </div>
                <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase italic">
-                  Balance de <span className="text-red-600">Goles</span>
+                  Consola de <span className="text-red-600">Rendimiento</span>
                </h2>
             </div>
 
             <div className="bg-zinc-900 rounded-[48px] p-8 text-white relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="flex items-center space-x-3 mb-10 relative z-10">
-                 <Target className="text-red-500" size={20} />
-                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Producción de Goles</span>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               
-              <div className="space-y-8 relative z-10">
-                <div>
-                  <div className="flex justify-between text-[10px] font-black uppercase mb-3">
-                    <span className="text-zinc-400 group-hover:text-red-500 transition-colors italic">A Favor (CARP)</span>
-                    <span className="text-white text-lg tabular-nums italic">{stats.gf}</span>
-                  </div>
-                  <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5">
-                     <div className="h-full bg-red-600 rounded-full shadow-lg shadow-red-900/40" style={{ width: `${stats.pj > 0 ? (stats.gf / (stats.gf + stats.gc)) * 100 : 0}%` }} />
-                  </div>
+              {/* Goal Balance */}
+              <div className="mb-12 relative z-10">
+                <div className="flex items-center space-x-3 mb-8">
+                   <Target className="text-red-500" size={20} />
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Producción de Goles</span>
                 </div>
-                <div>
-                  <div className="flex justify-between text-[10px] font-black uppercase mb-3">
-                    <span className="text-zinc-400 group-hover:text-white transition-colors italic">En Contra</span>
-                    <span className="text-white text-lg tabular-nums italic">{stats.gc}</span>
+                
+                <div className="space-y-8">
+                  <div>
+                    <div className="flex justify-between text-[10px] font-black uppercase mb-3">
+                      <span className="text-zinc-400 group-hover:text-red-500 transition-colors italic">A Favor (CARP)</span>
+                      <span className="text-white text-lg tabular-nums italic">{stats.gf}</span>
+                    </div>
+                    <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5">
+                       <div className="h-full bg-red-600 rounded-full shadow-lg shadow-red-900/40" style={{ width: `${stats.gf + stats.gc > 0 ? (stats.gf / (stats.gf + stats.gc)) * 100 : 0}%` }} />
+                    </div>
                   </div>
-                  <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5">
-                     <div className="h-full bg-zinc-600 rounded-full" style={{ width: `${stats.pj > 0 ? (stats.gc / (stats.gf + stats.gc)) * 100 : 0}%` }} />
+                  <div>
+                    <div className="flex justify-between text-[10px] font-black uppercase mb-3">
+                      <span className="text-zinc-400 group-hover:text-white transition-colors italic">En Contra</span>
+                      <span className="text-white text-lg tabular-nums italic">{stats.gc}</span>
+                    </div>
+                    <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden p-0.5">
+                       <div className="h-full bg-zinc-600 rounded-full" style={{ width: `${stats.gf + stats.gc > 0 ? (stats.gc / (stats.gf + stats.gc)) * 100 : 0}%` }} />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-12 p-6 bg-white/5 rounded-3xl border border-white/5 group-hover:border-red-600/20 transition-all">
+              {/* Semaphore / Form Guide Section */}
+              <div className="mb-12 pt-8 border-t border-white/5 relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp size={14} className="text-red-500" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Racha Reciente</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-zinc-600 uppercase">Últimos 20</span>
+                </div>
+
+                <div className="relative">
+                  <div className={`flex flex-wrap gap-2 ${!isPremium ? 'blur-sm grayscale opacity-40 pointer-events-none' : ''}`}>
+                    {last20Matches.map((p, idx) => (
+                        <div key={idx} className="relative group/match">
+                          <div 
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shadow-xl transition-all duration-300 hover:-translate-y-1 hover:scale-110 cursor-help ${
+                              p.resultado === 'G' ? 'bg-emerald-500 text-emerald-950 shadow-emerald-900/20' : 
+                              p.resultado === 'P' ? 'bg-red-500 text-white shadow-red-900/20' : 
+                              'bg-zinc-500 text-zinc-950 shadow-zinc-900/20'
+                            }`}
+                          >
+                            {p.resultado}
+                          </div>
+
+                          {/* Advanced Tooltip matching StatsDashboard style */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 bg-zinc-800 p-4 rounded-2xl shadow-2xl opacity-0 invisible group-hover/match:opacity-100 group-hover/match:visible transition-all z-50 border border-zinc-700 pointer-events-none">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[8px] font-black text-zinc-500 uppercase">
+                                {new Date(p.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </span>
+                              <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${
+                                p.resultado === 'G' ? 'bg-green-500/20 text-green-400' :
+                                p.resultado === 'P' ? 'bg-red-500/20 text-red-400' :
+                                'bg-zinc-500/20 text-zinc-400'
+                              }`}>
+                                {p.goles_river} - {p.goles_rival}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <ClubShield src={rival.escudo_url || undefined} className="w-6 h-6 shrink-0" />
+                              <span className="text-xs font-black text-white truncate uppercase italic">{rival.ri_desc}</span>
+                            </div>
+                            <p className="mt-2 text-[7px] font-bold text-zinc-500 uppercase tracking-tighter truncate">{p.torneo?.tor_desc}</p>
+                            {/* Arrow */}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-800 rotate-45 -mt-1 border-r border-b border-zinc-700" />
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+
+                  {!isPremium && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                      <Lock size={16} className="text-red-500 mb-2" />
+                      <p className="text-[9px] font-black uppercase tracking-tighter text-white mb-3">Contenido Premium</p>
+                      <Link href="/premium" className="bg-red-600 text-white px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors">
+                        Desbloquear
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                <p className="mt-6 text-[9px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
+                  Secuencia cronológica (Izquierda: antiguo • <span className="text-red-500">Derecha: reciente</span>)
+                </p>
+              </div>
+
+              {/* Streaks Section */}
+              <div className="pt-8 border-t border-white/5 relative z-10">
+                <div className="flex items-center space-x-2 mb-6">
+                  <History size={14} className="text-red-500" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Rachas Históricas</span>
+                </div>
+
+                <div className="relative">
+                  <div className={`space-y-4 ${!isPremium ? 'blur-md grayscale opacity-40 pointer-events-none' : ''}`}>
+                    {/* Invincibility Streak */}
+                    {rival.streaks.invincibility && (
+                        <div className="bg-white/5 p-5 rounded-[24px] border border-emerald-500/10 hover:bg-white/10 transition-colors group/card relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-2 text-emerald-500/10 pointer-events-none">
+                                <Shield size={40} />
+                            </div>
+                            <div className="flex justify-between items-start mb-3 relative z-10">
+                                <div>
+                                    <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1 italic">Invencibilidad Máxima</p>
+                                    <h4 className="text-3xl font-black text-white italic tracking-tighter">{rival.streaks.invincibility.count} <span className="text-xs uppercase ml-1">Partidos</span></h4>
+                                </div>
+                                {rival.streaks.invincibility.is_vigente && (
+                                    <span className="flex h-2 w-2 relative">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,1)]"></span>
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-1 relative z-10">
+                                <div className="flex items-center space-x-2 text-zinc-500">
+                                    <Calendar size={10} />
+                                    <span className="text-[9px] font-bold uppercase tracking-tight">{formatStreakDate(rival.streaks.invincibility.start_date)} — {formatStreakDate(rival.streaks.invincibility.end_date)}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-zinc-400">
+                                    <Timer size={10} />
+                                    <span className="text-[9px] font-black uppercase">{rival.streaks.invincibility.duration_days} DÍAS DE DOMINIO</span>
+                                </div>
+                            </div>
+                            {!rival.streaks.invincibility.is_vigente && (
+                                <div className="mt-4 pt-3 border-t border-white/5 flex items-center space-x-2 text-zinc-500">
+                                    <Clock size={10} />
+                                    <span className="text-[8px] font-black uppercase">Terminó hace {getTimeSince(rival.streaks.invincibility.days_since_end)}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Drought Streak */}
+                    {rival.streaks.drought && (
+                        <div className="bg-white/5 p-5 rounded-[24px] border border-red-500/10 hover:bg-white/10 transition-colors group/card relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-2 text-red-500/10 pointer-events-none">
+                                <ShieldAlert size={40} />
+                            </div>
+                            <div className="flex justify-between items-start mb-3 relative z-10">
+                                <div>
+                                    <p className="text-[8px] font-black text-red-500 uppercase tracking-widest mb-1 italic">Sequía Máxima</p>
+                                    <h4 className="text-3xl font-black text-white italic tracking-tighter">{rival.streaks.drought.count} <span className="text-xs uppercase ml-1">Partidos</span></h4>
+                                </div>
+                                {rival.streaks.drought.is_vigente && (
+                                    <span className="flex h-2 w-2 relative">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)]"></span>
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-1 relative z-10">
+                                <div className="flex items-center space-x-2 text-zinc-500">
+                                    <Calendar size={10} />
+                                    <span className="text-[9px] font-bold uppercase tracking-tight">{formatStreakDate(rival.streaks.drought.start_date)} — {formatStreakDate(rival.streaks.drought.end_date)}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-zinc-400">
+                                    <Timer size={10} />
+                                    <span className="text-[9px] font-black uppercase">{rival.streaks.drought.duration_days} DÍAS SIN GANAR</span>
+                                </div>
+                            </div>
+                            {!rival.streaks.drought.is_vigente && (
+                                <div className="mt-4 pt-3 border-t border-white/5 flex items-center space-x-2 text-zinc-500">
+                                    <Clock size={10} />
+                                    <span className="text-[8px] font-black uppercase">Terminó hace {getTimeSince(rival.streaks.drought.days_since_end)}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                  </div>
+
+                  {!isPremium && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-zinc-900/60 backdrop-blur-sm rounded-[32px] border border-white/5 mt-2">
+                      <Star size={24} className="text-yellow-500 fill-yellow-500 mb-3" />
+                      <p className="text-[10px] font-black uppercase tracking-tighter text-white mb-2 italic">Análisis de Rachas Históricas</p>
+                      <p className="text-zinc-500 text-[8px] font-medium mb-4 max-w-[140px] uppercase">Descubrí las secuencias de dominio y sequía más largas contra {rival.ri_desc}</p>
+                      <Link href="/premium" className="bg-white text-zinc-900 px-5 py-2 rounded-full text-[8px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-colors shadow-lg">
+                        Hacerme Premium
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Goal Difference Summary */}
+              <div className="mt-12 p-6 bg-white/5 rounded-3xl border border-white/5 group-hover:border-red-600/20 transition-all relative z-10">
                 <div className="flex items-center space-x-3 mb-3">
                    <Award className="text-yellow-500" size={16} />
                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Balance Diferencia</span>

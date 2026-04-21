@@ -228,6 +228,83 @@ class Rival extends Model
             ->toArray();
     }
 
+    /**
+     * Get winning and losing streaks for this rival.
+     */
+    public function getStreaksAttribute(): array
+    {
+        $partidos = $this->partidos()->orderBy('fecha', 'asc')->get();
+        
+        if ($partidos->isEmpty()) {
+            return [
+                'invincibility' => null,
+                'drought' => null
+            ];
+        }
+
+        $maxInvincibility = ['count' => 0, 'start' => null, 'end' => null];
+        $maxDrought = ['count' => 0, 'start' => null, 'end' => null];
+        
+        $currentInv = ['count' => 0, 'start' => null, 'end' => null];
+        $currentDro = ['count' => 0, 'start' => null, 'end' => null];
+
+        foreach ($partidos as $partido) {
+            $res = $partido->resultado;
+
+            // Invincibility (G or E)
+            if ($res === 'G' || $res === 'E') {
+                if ($currentInv['count'] === 0) $currentInv['start'] = $partido->fecha;
+                $currentInv['count']++;
+                $currentInv['end'] = $partido->fecha;
+            } else {
+                if ($currentInv['count'] > $maxInvincibility['count']) {
+                    $maxInvincibility = $currentInv;
+                }
+                $currentInv = ['count' => 0, 'start' => null, 'end' => null];
+            }
+
+            // Drought (P or E)
+            if ($res === 'P' || $res === 'E') {
+                if ($currentDro['count'] === 0) $currentDro['start'] = $partido->fecha;
+                $currentDro['count']++;
+                $currentDro['end'] = $partido->fecha;
+            } else {
+                if ($currentDro['count'] > $maxDrought['count']) {
+                    $maxDrought = $currentDro;
+                }
+                $currentDro = ['count' => 0, 'start' => null, 'end' => null];
+            }
+        }
+
+        // Check last ones
+        if ($currentInv['count'] > $maxInvincibility['count']) $maxInvincibility = $currentInv;
+        if ($currentDro['count'] > $maxDrought['count']) $maxDrought = $currentDro;
+
+        $lastMatchDate = $partidos->last()->fecha;
+
+        $processStreak = function($streak) use ($lastMatchDate) {
+            if ($streak['count'] === 0) return null;
+            
+            $start = \Carbon\Carbon::parse($streak['start']);
+            $end = \Carbon\Carbon::parse($streak['end']);
+            $isVigente = ($streak['end'] === $lastMatchDate);
+            
+            return [
+                'count' => $streak['count'],
+                'start_date' => $streak['start'],
+                'end_date' => $streak['end'],
+                'duration_days' => $start->diffInDays($end),
+                'is_vigente' => $isVigente,
+                'days_since_end' => $isVigente ? 0 : \Carbon\Carbon::parse($streak['end'])->diffInDays(now())
+            ];
+        };
+
+        return [
+            'invincibility' => $processStreak($maxInvincibility),
+            'drought' => $processStreak($maxDrought)
+        ];
+    }
+
     public function partidos(): HasMany
     {
         return $this->hasMany(Partido::class, 'adversario', 'ri_id');

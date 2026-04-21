@@ -18,6 +18,10 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'river_shield', type: 'string', nullable: true),
         new OA\Property(property: 'stats', type: 'object'),
         new OA\Property(property: 'top_scorers', type: 'array', items: new OA\Items(type: 'object')),
+        new OA\Property(property: 'streaks', type: 'object', properties: [
+            new OA\Property(property: 'invincibility', type: 'object', nullable: true),
+            new OA\Property(property: 'drought', type: 'object', nullable: true),
+        ]),
         new OA\Property(property: 'goles_por_periodo', type: 'array', items: new OA\Items(type: 'object')),
         new OA\Property(property: 'goles_por_tipo', type: 'array', items: new OA\Items(type: 'object')),
         new OA\Property(property: 'partidos', type: 'array', items: new OA\Items(ref: '#/components/schemas/PartidoResource')),
@@ -59,6 +63,7 @@ class RivalResource extends JsonResource
             'river_shield' => Setting::getUrl('river_shield'),
             'stats' => $this->stats,
             'top_scorers' => $this->top_scorers,
+            'streaks' => $this->streaks,
             'goles_por_periodo' => $this->when($isPremium, $this->goles_por_periodo),
             'goles_por_tipo' => $this->when($isPremium, $this->goles_por_tipo),
             'partidos' => PartidoResource::collection($partidosCollection),
