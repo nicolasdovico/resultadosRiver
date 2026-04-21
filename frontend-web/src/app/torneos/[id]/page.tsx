@@ -1,5 +1,5 @@
 import { formatLocalDate } from "@/utils/date";
-import { ChevronLeft, Star, Trophy, Calendar, ChevronRight, BarChart3, TrendingUp, Users } from "lucide-react";
+import { ChevronLeft, Star, Trophy, Calendar, ChevronRight, BarChart3, TrendingUp, Users, Target, Shield } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
@@ -91,7 +91,7 @@ export default async function TorneoDetailPage({
   if (!torneo) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
-        <h1 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">Torneo no encontrado</h1>
+        <h1 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter italic">Torneo no encontrado</h1>
         <Link href="/torneos" className="text-red-600 font-bold hover:underline mt-4 inline-block uppercase text-xs tracking-widest">Volver a torneos</Link>
       </div>
     );
@@ -105,216 +105,226 @@ export default async function TorneoDetailPage({
   const partidosAsc = [...partidos].sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      {/* Navigation */}
-      <Link href="/torneos" className="flex items-center text-zinc-400 hover:text-red-600 font-black text-xs uppercase tracking-widest mb-8 transition-colors group">
-        <ChevronLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" />
-        Volver a torneos
-      </Link>
+    <div className="min-h-screen bg-zinc-50/50 pb-24">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
+        {/* Navigation */}
+        <Link href="/torneos" className="flex items-center text-zinc-400 hover:text-red-600 font-black text-xs uppercase tracking-[0.2em] mb-8 transition-colors group italic">
+          <ChevronLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" />
+          Archivo de Torneos
+        </Link>
 
-      {/* Hero Section */}
-      <section className="bg-white rounded-[40px] border border-zinc-100 p-8 md:p-12 shadow-sm mb-12 relative overflow-hidden text-center md:text-left">
-        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-          <Star size={240} />
-        </div>
-        
-        <div className="relative z-10">
-          <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-6">
-            <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-100">
-              Nivel {torneo.tor_nivel}
-            </span>
+        {/* Hero Section - Data Console Aesthetic */}
+        <section className="bg-zinc-900 rounded-[48px] border border-zinc-800 p-8 md:p-16 shadow-2xl shadow-zinc-950/50 mb-12 relative overflow-hidden text-center md:text-left">
+          <div className="absolute top-0 right-0 p-24 opacity-[0.03] pointer-events-none rotate-12 text-white">
+            <Trophy size={400} />
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-black text-zinc-900 uppercase tracking-tighter leading-tight mb-8">
-            {torneo.tor_desc}
-          </h1>
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl w-full">
-              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-                <span className="block text-2xl font-black text-zinc-900">{partidos.length}</span>
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Partidos</span>
-              </div>
-              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-                <span className="block text-2xl font-black text-green-600">{victorias}</span>
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Victorias</span>
-              </div>
-              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-                <span className="block text-2xl font-black text-zinc-400">{empates}</span>
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Empates</span>
-              </div>
-              <div className="bg-zinc-50 p-4 rounded-3xl text-center">
-                <span className="block text-2xl font-black text-red-600">{derrotas}</span>
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Derrotas</span>
-              </div>
+          <div className="relative z-10">
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-8">
+              <span className="bg-red-600/10 text-red-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-red-500/20 shadow-lg shadow-red-900/10">
+                Nivel {torneo.tor_nivel}
+              </span>
+              <span className="bg-zinc-800 text-zinc-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-zinc-700">
+                Registro Histórico
+              </span>
             </div>
+            
+            <h1 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tighter leading-[0.85] mb-12 italic">
+              {torneo.tor_desc}
+            </h1>
+            
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-12">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl w-full">
+                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-white/5 text-center group hover:bg-zinc-800 transition-all">
+                  <span className="block text-4xl font-black text-white tabular-nums tracking-tighter mb-1">{partidos.length}</span>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Partidos</span>
+                </div>
+                <div className="bg-emerald-950/20 p-6 rounded-[32px] border border-emerald-500/10 text-center group hover:bg-emerald-900/20 transition-all">
+                  <span className="block text-4xl font-black text-emerald-500 tabular-nums tracking-tighter mb-1">{victorias}</span>
+                  <span className="text-[9px] font-black text-emerald-600/50 uppercase tracking-widest">Victorias</span>
+                </div>
+                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-white/5 text-center group hover:bg-zinc-800 transition-all">
+                  <span className="block text-4xl font-black text-zinc-400 tabular-nums tracking-tighter mb-1">{empates}</span>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Empates</span>
+                </div>
+                <div className="bg-red-950/20 p-6 rounded-[32px] border border-red-500/10 text-center group hover:bg-red-900/20 transition-all">
+                  <span className="block text-4xl font-black text-red-500 tabular-nums tracking-tighter mb-1">{derrotas}</span>
+                  <span className="text-[9px] font-black text-red-600/50 uppercase tracking-widest">Derrotas</span>
+                </div>
+              </div>
 
-            {/* Top Scorers */}
-            {torneo.top_scorers && torneo.top_scorers.length > 0 && (
-              <div className="flex flex-col items-center md:items-start shrink-0">
-                <h3 className="text-[11px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4 flex items-center">
-                  <Trophy size={14} className="mr-2 text-yellow-500" /> Artilleros Millonarios
-                </h3>
-                <div className="flex items-center -space-x-5 hover:space-x-2 transition-all duration-500">
-                  {torneo.top_scorers.map((scorer, idx) => (
-                    <Link 
-                      key={scorer.pl_id} 
-                      href={`/jugadores/${scorer.pl_id}`}
-                      className="group relative"
-                      title={scorer.pl_apno}
-                    >
-                      <div 
-                        className={`w-20 h-20 rounded-full overflow-hidden border-4 border-white bg-zinc-100 shadow-xl group-hover:scale-110 group-hover:z-30 transition-all duration-300 relative ${
-                          idx === 0 ? 'z-20' : idx === 1 ? 'z-10' : 'z-0'
-                        }`}
+              {/* Top Scorers */}
+              {torneo.top_scorers && torneo.top_scorers.length > 0 && (
+                <div className="flex flex-col items-center md:items-start shrink-0">
+                  <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-6 flex items-center italic">
+                    <Star size={14} className="mr-2 text-yellow-500 fill-yellow-500" /> Artilleros Millonarios
+                  </h3>
+                  <div className="flex items-center -space-x-6 hover:space-x-3 transition-all duration-700">
+                    {torneo.top_scorers.map((scorer, idx) => (
+                      <Link 
+                        key={scorer.pl_id} 
+                        href={`/jugadores/${scorer.pl_id}`}
+                        className="group relative"
+                        title={scorer.pl_apno}
                       >
-                        {scorer.pl_foto ? (
-                          <img 
-                            src={scorer.pl_foto} 
-                            alt={scorer.pl_apno}
-                            className="w-full h-full object-cover object-top"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-zinc-200 text-zinc-400">
-                            <Users size={28} />
+                        <div 
+                          className={`w-24 h-24 rounded-full overflow-hidden border-4 border-zinc-900 bg-zinc-800 shadow-2xl group-hover:scale-110 group-hover:z-30 transition-all duration-500 relative ring-4 ring-transparent group-hover:ring-red-600/50 ${
+                            idx === 0 ? 'z-20' : idx === 1 ? 'z-10' : 'z-0'
+                          }`}
+                        >
+                          {scorer.pl_foto ? (
+                            <img 
+                              src={scorer.pl_foto} 
+                              alt={scorer.pl_apno}
+                              className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-zinc-700 text-zinc-500">
+                              <Users size={32} />
+                            </div>
+                          )}
+                          
+                          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4 px-1">
+                            <span className="text-[10px] font-black text-white uppercase tracking-tighter text-center leading-none italic">
+                              {scorer.pl_apno.split(',')[0]}
+                            </span>
                           </div>
-                        )}
-                        
-                        {/* Overlay with name on hover - Improved visibility */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 px-1">
-                          <span className="text-[9px] font-black text-white uppercase tracking-tighter text-center leading-none">
-                            {scorer.pl_apno.split(',')[0]}
-                          </span>
                         </div>
-                      </div>
-                      
-                      {/* Goal Badge */}
-                      <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-full border-2 border-white shadow-lg z-40 transform group-hover:scale-110 transition-transform">
-                        {scorer.goals_count} <span className="text-[7px] ml-0.5">GOLES</span>
-                      </div>
-                    </Link>
-                  ))}
+                        
+                        <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full border-2 border-zinc-900 shadow-xl z-40 transform group-hover:scale-110 transition-transform">
+                          {scorer.goals_count} <span className="text-[7px] ml-0.5 opacity-70">GOLS</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="mt-6 flex flex-col items-center md:items-start">
+                    <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic">
+                      Goleadores CARP
+                    </p>
+                    <div className="h-1 w-16 bg-red-600 mt-2 rounded-full"></div>
+                  </div>
                 </div>
-                <div className="mt-4 flex flex-col items-center md:items-start">
-                  <p className="text-[9px] font-black text-zinc-900 uppercase tracking-[0.3em]">
-                    Podio de Goleadores
-                  </p>
-                  <div className="h-0.5 w-12 bg-red-600 mt-1"></div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Left Column: Matches List */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase italic flex items-center">
+                <Trophy className="mr-3 text-red-600" size={24} />
+                Resultados en este Torneo
+              </h2>
+              <div className="h-px flex-1 bg-zinc-200 ml-8" />
+            </div>
+
+            <AccessControl tier={currentTier} requiredTier="registered">
+              <TorneoMatches partidos={partidos} />
+            </AccessControl>
+          </div>
+
+          {/* Right Column: Premium Stats */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center space-x-3 mb-8">
+               <div className="w-10 h-10 bg-zinc-900 text-white rounded-xl flex items-center justify-center shadow-lg shadow-zinc-200">
+                  <BarChart3 size={20} />
+               </div>
+               <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase italic">
+                  Análisis de <span className="text-red-600">Éxito</span>
+               </h2>
+            </div>
+
+            <AccessControl tier={currentTier} requiredTier="premium">
+              <div className="bg-zinc-900 rounded-[48px] p-8 text-white relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <h3 className="font-black text-[10px] uppercase tracking-[0.3em] mb-8 text-zinc-500 italic text-center relative z-10">Eficacia CARP</h3>
+                
+                <div className="relative w-48 h-48 mx-auto mb-10 group-hover:scale-105 transition-transform duration-500 relative z-10">
+                   <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="96" cy="96" r="85" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-white/5" />
+                      <circle cx="96" cy="96" r="85" stroke="currentColor" strokeWidth="12" fill="transparent" strokeDasharray="534" strokeDashoffset={534 - (534 * ((torneo.stats?.efectividad || 0) / 100))} className="text-red-600 transition-all duration-1000 ease-out" />
+                   </svg>
+                   <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-5xl font-black italic tracking-tighter tabular-nums">{torneo.stats?.efectividad || 0}%</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mt-1">Efectividad</span>
+                   </div>
+                </div>
+                
+                {/* Form Guide (Racha) */}
+                <div className="mb-12 relative z-10">
+                  <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4 flex items-center justify-center italic">
+                    <TrendingUp size={12} className="mr-2 text-red-500" /> Racha del Torneo
+                  </h4>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {partidosAsc.map((p, idx) => {
+                      const extraInfo = [
+                        p.fase?.fa_desc,
+                        p.fecha_nro ? `Fecha ${p.fecha_nro}` : null
+                      ].filter(Boolean).join(' - ');
+
+                      return (
+                        <div 
+                          key={idx} 
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shadow-xl cursor-help transition-all hover:scale-125 hover:z-20 ${
+                            p.resultado === 'G' ? 'bg-emerald-500 text-emerald-950' : 
+                            p.resultado === 'P' ? 'bg-red-500 text-red-950' : 
+                            'bg-zinc-500 text-zinc-950'
+                          }`}
+                          title={`${p.resultado}: ${p.goles_river}-${p.goles_rival} vs ${p.rival?.ri_desc}${extraInfo ? ` (${extraInfo})` : ''}`}
+                        >
+                          {p.resultado}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 relative z-10">
+                   <div className="bg-white/5 p-6 rounded-3xl border border-white/5 text-center col-span-2 group/card hover:bg-white/10 transition-colors">
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1 italic">Puntos Acumulados</p>
+                      <span className="text-5xl font-black text-yellow-500 tabular-nums italic">{torneo.stats?.puntos || 0}</span>
+                   </div>
+                   <div className="bg-white/5 p-4 rounded-3xl border border-white/5 text-center hover:bg-white/10 transition-colors">
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Goles CARP</p>
+                      <span className="text-2xl font-black text-white tabular-nums">{torneo.stats?.gf || 0}</span>
+                   </div>
+                   <div className="bg-white/5 p-4 rounded-3xl border border-white/5 text-center hover:bg-white/10 transition-colors">
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">En Contra</p>
+                      <span className="text-2xl font-black text-zinc-400 tabular-nums">{torneo.stats?.gc || 0}</span>
+                   </div>
+                   <div className="bg-white/5 p-4 rounded-3xl border border-white/5 text-center hover:bg-white/10 transition-colors">
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Diferencia</p>
+                      <span className={`text-2xl font-black tabular-nums ${(torneo.stats?.dg || 0) > 0 ? 'text-emerald-500' : (torneo.stats?.dg || 0) < 0 ? 'text-red-500' : 'text-zinc-400'}`}>
+                        {(torneo.stats?.dg || 0) > 0 ? '+' : ''}{torneo.stats?.dg || 0}
+                      </span>
+                   </div>
+                   <div className="bg-white/5 p-4 rounded-3xl border border-white/5 text-center hover:bg-white/10 transition-colors">
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Vallas Inv.</p>
+                      <span className="text-2xl font-black text-white tabular-nums">{torneo.stats?.vallas_invictas || 0}</span>
+                   </div>
                 </div>
               </div>
-            )}
+            </AccessControl>
           </div>
         </div>
-      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Left Column: Matches List */}
-        <div className="lg:col-span-2">
-          <h2 className="text-2xl font-black text-zinc-900 mb-8 tracking-tight uppercase flex items-center">
-            <Trophy className="mr-3 text-red-600" size={20} />
-            Resultados en este Torneo
-          </h2>
+        {/* Premium Analysis Section */}
+        <section className="mt-20">
+          <div className="flex flex-col mb-10 text-center md:text-left">
+            <h2 className="text-3xl font-black text-zinc-900 mb-2 tracking-tight uppercase italic">Dinámica de Goles del Torneo</h2>
+            <p className="text-zinc-500 font-medium">Distribución de goles, efectividad por periodos y formas de conversión a lo largo de toda la competencia.</p>
+          </div>
 
-          <AccessControl tier={currentTier} requiredTier="registered">
-            <TorneoMatches partidos={partidos} />
-          </AccessControl>
-        </div>
-
-        {/* Right Column: Premium Stats */}
-        <div className="lg:col-span-1">
-          <h2 className="text-2xl font-black text-zinc-900 mb-8 tracking-tight uppercase flex items-center italic">
-            <BarChart3 className="mr-3 text-red-600" size={20} />
-            Análisis de Éxito
-          </h2>
-
-          <AccessControl tier={currentTier} requiredTier="premium">
-            <div className="bg-zinc-900 rounded-[40px] p-8 text-white">
-              <h3 className="font-black text-sm uppercase tracking-widest mb-6 text-red-500 italic text-center">Eficacia Total</h3>
-              
-              <div className="relative w-40 h-40 mx-auto mb-10">
-                 {/* Visual simulation of a radial progress */}
-                 <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
-                    <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="440" strokeDashoffset={440 - (440 * ((torneo.stats?.efectividad || 0) / 100))} className="text-red-600" />
-                 </svg>
-                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-black">{torneo.stats?.efectividad || 0}%</span>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Pts/Rate</span>
-                 </div>
-              </div>
-              
-              {/* Form Guide (Racha) */}
-              <div className="mb-10">
-                <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3 flex items-center justify-center">
-                  <TrendingUp size={12} className="mr-1 text-red-500" /> Racha del Torneo
-                </h4>
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {partidosAsc.map((p, idx) => {
-                    const extraInfo = [
-                      p.fase?.fa_desc,
-                      p.fecha_nro ? `Fecha ${p.fecha_nro}` : null
-                    ].filter(Boolean).join(' - ');
-
-                    return (
-                      <div 
-                        key={idx} 
-                        className={`w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-black shadow-sm cursor-help transition-transform hover:scale-110 ${
-                          p.resultado === 'G' ? 'bg-green-500 text-green-950' : 
-                          p.resultado === 'P' ? 'bg-red-500 text-red-950' : 
-                          'bg-zinc-500 text-zinc-950'
-                        }`}
-                        title={`${p.resultado}: ${p.goles_river}-${p.goles_rival} vs ${p.rival?.ri_desc}${extraInfo ? ` (${extraInfo})` : ''}`}
-                      >
-                        {p.resultado}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5 text-center col-span-2">
-                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Puntos Obtenidos</p>
-                    <span className="text-3xl font-black text-yellow-500">{torneo.stats?.puntos || 0}</span>
-                 </div>
-                 <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
-                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Goles a Favor</p>
-                    <span className="text-xl font-black text-white">{torneo.stats?.gf || 0}</span>
-                 </div>
-                 <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
-                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Goles en Contra</p>
-                    <span className="text-xl font-black text-zinc-400">{torneo.stats?.gc || 0}</span>
-                 </div>
-                 <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
-                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Dif. de Gol</p>
-                    <span className={`text-xl font-black ${(torneo.stats?.dg || 0) > 0 ? 'text-green-500' : (torneo.stats?.dg || 0) < 0 ? 'text-red-500' : 'text-zinc-400'}`}>
-                      {(torneo.stats?.dg || 0) > 0 ? '+' : ''}{torneo.stats?.dg || 0}
-                    </span>
-                 </div>
-                 <div className="bg-white/5 p-3 rounded-2xl border border-white/5 text-center">
-                    <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">Vallas Invictas</p>
-                    <span className="text-xl font-black text-white">{torneo.stats?.vallas_invictas || 0}</span>
-                 </div>
-              </div>
+          <AccessControl tier={currentTier} requiredTier="premium" className="rounded-[48px] overflow-hidden shadow-2xl border border-zinc-100">
+            <div className="flex flex-col">
+              <GoalsAnalysis filters={{ torneo: id }} />
+              <GoalMethodAnalysis filters={{ torneo: id }} />
             </div>
           </AccessControl>
-        </div>
+        </section>
       </div>
-
-      {/* Premium Analysis Section */}
-      <section className="mt-20">
-        <div className="flex flex-col mb-10 text-center md:text-left">
-          <h2 className="text-3xl font-black text-zinc-900 mb-2 tracking-tight uppercase">Dinámica de Goles del Torneo</h2>
-          <p className="text-zinc-500 font-medium">Distribución de goles, efectividad por periodos y formas de conversión a lo largo de toda la competencia.</p>
-        </div>
-
-        <AccessControl tier={currentTier} requiredTier="premium" className="rounded-[40px] overflow-hidden shadow-xl border border-zinc-100">
-          <div className="flex flex-col">
-            <GoalsAnalysis filters={{ torneo: id }} />
-            <GoalMethodAnalysis filters={{ torneo: id }} />
-          </div>
-        </AccessControl>
-      </section>
     </div>
   );
 }

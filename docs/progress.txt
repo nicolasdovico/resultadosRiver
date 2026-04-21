@@ -1,5 +1,17 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-21: Rediseño Visual "Data Console" en Rivales y Torneos (Fase 6)
+- [x] **Frontend Web (Rivales)**:
+  - [x] **UI/UX**: Rediseño integral de la sección Hero con estética "Data Console" oscura (`bg-zinc-900/950`).
+  - [x] **UI/UX**: Implementación de tarjetas de estadísticas de alto contraste con fondos semitransparentes y acentos cromáticos.
+  - [x] **UI/UX**: Mejora de efectos visuales (glows, blurs) y sombras para resaltar el escudo de River y del adversario.
+  - [x] **UI/UX**: Rediseño de las tarjetas de Efectividad y Vallas Invictas con tipografía ampliada y mayor jerarquía visual.
+- [x] **Frontend Web (Torneos)**:
+  - [x] **UI/UX**: Migración de la cabecera del torneo a la estética "Data Console" oscura, eliminando el exceso de blanco.
+  - [x] **UI/UX**: Optimización de la cuadrícula de estadísticas (PJ, PG, PE, PP) con colores temáticos y bordes sutiles.
+  - [x] **UI/UX**: Mejora de la sección de artilleros con avatares más grandes, efectos de hover premium y anillos de estatus (ring borders).
+  - [x] **UI/UX**: Rediseño del sidebar de Análisis de Éxito para integrarse perfectamente con el nuevo esquema oscuro del Hero.
+
 ### 2026-04-20: Modernización y Analítica en Sección de Rivales (Fase 6)
 - [x] **Backend**:
   - [x] **Modelo**: Implementación de `stats`, `goles_por_periodo` y `goles_por_tipo` en `Rival.php` para analítica detallada frente a cada adversario.

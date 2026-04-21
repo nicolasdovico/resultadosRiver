@@ -197,6 +197,37 @@ class Rival extends Model
             ->toArray();
     }
 
+    /**
+     * Get the top 3 scorers against this rival.
+     */
+    public function getTopScorersAttribute(): array
+    {
+        return \App\Models\Gol::join('estadisticas', 'goles.gol_fecha', '=', 'estadisticas.fecha')
+            ->join('players', 'goles.gol_juga', '=', 'players.pl_id')
+            ->where('estadisticas.adversario', $this->ri_id)
+            ->where('goles.gol_parariver', 1)
+            ->where('goles.gol_penal', '!=', 6) // Exclude autogoals
+            ->select(
+                'players.pl_id',
+                'players.pl_apno',
+                'players.pl_foto',
+                \DB::raw('count(*) as goals_count')
+            )
+            ->groupBy('players.pl_id', 'players.pl_apno', 'players.pl_foto')
+            ->orderByDesc('goals_count')
+            ->limit(3)
+            ->get()
+            ->map(function ($scorer) {
+                return [
+                    'pl_id' => $scorer->pl_id,
+                    'pl_apno' => trim($scorer->pl_apno),
+                    'pl_foto' => $scorer->pl_foto ? (str_starts_with($scorer->pl_foto, 'http') ? $scorer->pl_foto : config('app.url') . Storage::url($scorer->pl_foto)) : null,
+                    'goals_count' => $scorer->goals_count
+                ];
+            })
+            ->toArray();
+    }
+
     public function partidos(): HasMany
     {
         return $this->hasMany(Partido::class, 'adversario', 'ri_id');

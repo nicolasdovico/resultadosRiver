@@ -1,4 +1,4 @@
-import { ShieldAlert, Target, TrendingUp, Calendar, Zap, Info, Star, Lock, Award, Shield, Percent, Activity } from "lucide-react";
+import { ShieldAlert, Target, TrendingUp, Calendar, Zap, Info, Star, Lock, Award, Shield, Percent, Activity, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { customInstance } from "@/api/custom-instance";
@@ -45,6 +45,12 @@ interface Rival {
     vallas_invictas: number;
     efectividad: number;
   };
+  top_scorers?: Array<{
+    pl_id: number;
+    pl_apno: string;
+    pl_foto: string | null;
+    goals_count: number;
+  }>;
   partidos: Partido[];
 }
 
@@ -95,93 +101,148 @@ export default async function RivalDetailPage({
         <GoBack href="/rivales" label="Archivo de Rivales" />
 
         {/* Hero Head-to-Head */}
-        <section className="bg-white rounded-[48px] border border-zinc-100 p-8 md:p-16 shadow-xl shadow-zinc-200/50 mb-12 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-24 opacity-[0.03] pointer-events-none rotate-12">
+        <section className="bg-zinc-900 rounded-[48px] border border-zinc-800 p-8 md:p-10 shadow-2xl shadow-zinc-950/50 mb-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-24 opacity-[0.03] pointer-events-none rotate-12 text-white">
             <ShieldAlert size={400} />
           </div>
           
           <div className="relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-12 mb-16">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-12 mb-10">
                <div className="flex flex-col items-center flex-1 order-1">
-                  <div className="w-32 h-32 md:w-48 md:h-48 relative mb-8 group">
-                    <div className="absolute inset-0 bg-red-600 rounded-full blur-2xl opacity-10 group-hover:opacity-20 transition-opacity" />
+                  <div className="w-24 h-24 md:w-32 md:h-32 relative mb-6 group">
+                    <div className="absolute inset-0 bg-red-600 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity" />
                     <div className="relative z-10 w-full h-full flex items-center justify-center">
-                      <RiverOfficialShield className="w-full h-full drop-shadow-2xl" />
+                      <RiverOfficialShield className="w-full h-full drop-shadow-[0_0_30px_rgba(220,38,38,0.3)]" />
                     </div>
                   </div>
-                  <span className="bg-red-50 text-red-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-red-100 mb-4">Anfitrión</span>
-                  <h1 className="text-4xl md:text-5xl font-black text-zinc-900 uppercase tracking-tighter leading-tight italic text-center">
-                    River <span className="text-red-600">Plate</span>
+                  <span className="bg-red-600/10 text-red-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-red-500/20 mb-3">Anfitrión</span>
+                  <h1 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter leading-tight italic text-center">
+                    River <span className="text-red-600 underline decoration-red-600/30 underline-offset-8">Plate</span>
                   </h1>
                </div>
                
                <div className="flex flex-col items-center gap-4 order-2">
-                  <div className="w-20 h-20 bg-zinc-900 text-white rounded-3xl flex items-center justify-center font-black text-3xl shadow-2xl border-4 border-white rotate-3">VS</div>
-                  <div className="h-24 w-px bg-gradient-to-b from-zinc-200 to-transparent hidden md:block" />
+                  <div className="w-16 h-16 bg-white text-zinc-900 rounded-2xl flex items-center justify-center font-black text-2xl shadow-[0_0_50px_rgba(255,255,255,0.1)] border-4 border-zinc-900 rotate-3 transition-transform hover:rotate-0 duration-500">VS</div>
+                  <div className="h-16 w-px bg-gradient-to-b from-zinc-700 to-transparent hidden md:block" />
                </div>
 
                <div className="flex flex-col items-center flex-1 order-3">
-                  <div className="w-32 h-32 md:w-48 md:h-48 relative mb-8 group">
-                    <div className="absolute inset-0 bg-zinc-900 rounded-full blur-2xl opacity-5 group-hover:opacity-10 transition-opacity" />
-                    <div className="relative z-10 w-full h-full flex items-center justify-center p-4 bg-zinc-50 rounded-full border border-zinc-100 group-hover:border-zinc-200 transition-colors">
+                  <div className="w-24 h-24 md:w-32 md:h-32 relative mb-6 group">
+                    <div className="absolute inset-0 bg-white rounded-full blur-3xl opacity-5 group-hover:opacity-10 transition-opacity" />
+                    <div className="relative z-10 w-full h-full flex items-center justify-center p-4 bg-zinc-800/50 backdrop-blur-xl rounded-full border border-zinc-700 group-hover:border-zinc-500 transition-all duration-500 shadow-2xl">
                       {rival.escudo_url ? (
                         <Image 
                           src={rival.escudo_url} 
                           alt={rival.ri_desc} 
-                          width={140} 
-                          height={140} 
-                          className="object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500"
+                          width={100} 
+                          height={100} 
+                          className="object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] group-hover:scale-110 transition-transform duration-500"
                           unoptimized
                         />
                       ) : (
-                        <Shield size={80} className="text-zinc-200" />
+                        <Shield size={60} className="text-zinc-700" />
                       )}
                     </div>
                   </div>
-                  <span className="bg-zinc-100 text-zinc-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">Adversario</span>
-                  <h1 className="text-4xl md:text-5xl font-black text-zinc-900 uppercase tracking-tighter leading-tight italic text-center">
+                  <span className="bg-zinc-800 text-zinc-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-zinc-700 mb-3">Adversario</span>
+                  <h1 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter leading-tight italic text-center">
                     {rival.ri_desc}
                   </h1>
                </div>
+
+               {/* Top Scorers against this Rival */}
+               {rival.top_scorers && rival.top_scorers.length > 0 && (
+                  <div className="flex flex-col items-center md:items-end flex-1 order-4">
+                    <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4 flex items-center italic">
+                      <Star size={14} className="mr-2 text-yellow-500 fill-yellow-500" /> Artilleros Millonarios
+                    </h3>
+                    <div className="flex items-center -space-x-4 hover:space-x-2 transition-all duration-700">
+                      {rival.top_scorers.map((scorer, idx) => (
+                        <Link 
+                          key={scorer.pl_id} 
+                          href={`/jugadores/${scorer.pl_id}`}
+                          className="group relative"
+                          title={scorer.pl_apno}
+                        >
+                          <div 
+                            className={`w-16 h-16 rounded-full overflow-hidden border-2 border-zinc-900 bg-zinc-800 shadow-2xl group-hover:scale-110 group-hover:z-30 transition-all duration-500 relative ring-2 ring-transparent group-hover:ring-red-600/50 ${
+                              idx === 0 ? 'z-20' : idx === 1 ? 'z-10' : 'z-0'
+                            }`}
+                          >
+                            {scorer.pl_foto ? (
+                              <img 
+                                src={scorer.pl_foto} 
+                                alt={scorer.pl_apno}
+                                className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-zinc-700 text-zinc-500">
+                                <Users size={24} />
+                              </div>
+                            )}
+                            
+                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2 px-1">
+                              <span className="text-[8px] font-black text-white uppercase tracking-tighter text-center leading-none italic">
+                                {scorer.pl_apno.split(',')[0]}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded-full border border-zinc-900 shadow-xl z-40 transform group-hover:scale-110 transition-transform">
+                            {scorer.goals_count} <span className="text-[6px] opacity-70 italic">GOLES</span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+               )}
             </div>
             
             {/* Stats Dashboard */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
               {[
-                { label: 'PJ', value: stats.pj, icon: Activity, color: 'zinc' },
-                { label: 'PG', value: stats.pg, icon: Zap, color: 'emerald' },
-                { label: 'PE', value: stats.pe, icon: Shield, color: 'blue' },
-                { label: 'PP', value: stats.pp, icon: ShieldAlert, color: 'red' },
-                { label: 'GF', value: stats.gf, icon: Target, color: 'zinc' },
-                { label: 'GC', value: stats.gc, icon: ShieldAlert, color: 'zinc' },
-                { label: 'DG', value: stats.dg, icon: TrendingUp, color: 'zinc', prefix: stats.dg > 0 ? '+' : '' },
+                { label: 'PJ', value: stats.pj, icon: Activity, color: 'zinc', bg: 'bg-zinc-800/50' },
+                { label: 'PG', value: stats.pg, icon: Zap, color: 'emerald', bg: 'bg-emerald-950/20' },
+                { label: 'PE', value: stats.pe, icon: Shield, color: 'blue', bg: 'bg-blue-950/20' },
+                { label: 'PP', value: stats.pp, icon: ShieldAlert, color: 'red', bg: 'bg-red-950/20' },
+                { label: 'GF', value: stats.gf, icon: Target, color: 'zinc', bg: 'bg-zinc-800/50' },
+                { label: 'GC', value: stats.gc, icon: ShieldAlert, color: 'zinc', bg: 'bg-zinc-800/50' },
+                { label: 'DG', value: stats.dg, icon: TrendingUp, color: 'zinc', bg: 'bg-zinc-800/50', prefix: stats.dg > 0 ? '+' : '' },
               ].map((item) => (
-                <div key={item.label} className="bg-zinc-50 p-6 rounded-[32px] text-center border border-zinc-100 hover:bg-white hover:shadow-lg transition-all group">
-                  <item.icon size={16} className={`mx-auto mb-3 text-${item.color}-500 opacity-50 group-hover:opacity-100 transition-opacity`} />
-                  <span className={`block text-3xl font-black text-zinc-900 mb-1 tabular-nums`}>{item.prefix}{item.value}</span>
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{item.label}</span>
+                <div key={item.label} className={`${item.bg} p-6 rounded-[32px] text-center border border-white/5 hover:border-white/10 hover:bg-zinc-800 transition-all group shadow-xl`}>
+                  <item.icon size={14} className={`mx-auto mb-3 text-${item.color}-500 opacity-40 group-hover:opacity-100 transition-opacity`} />
+                  <span className={`block text-3xl font-black text-white mb-1 tabular-nums tracking-tighter`}>{item.prefix}{item.value}</span>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">{item.label}</span>
                 </div>
               ))}
             </div>
 
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="bg-zinc-900 rounded-[32px] p-6 flex items-center justify-between text-white group overflow-hidden relative">
-                  <Percent className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-red-600/20 transition-colors" size={120} />
+               <div className="bg-zinc-950 rounded-[40px] p-8 flex items-center justify-between text-white group overflow-hidden relative border border-white/5 shadow-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Percent className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-red-600/20 transition-colors" size={160} />
                   <div className="relative z-10">
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1 block">Efectividad Histórica</span>
-                    <span className="text-4xl font-black italic">{stats.efectividad}%</span>
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block">Efectividad Histórica</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-6xl font-black italic tracking-tighter">{stats.efectividad}%</span>
+                      {stats.efectividad >= 50 ? (
+                         <span className="text-emerald-500 text-xs font-black uppercase tracking-widest">Dominio</span>
+                      ) : (
+                         <span className="text-red-500 text-xs font-black uppercase tracking-widest">Desafío</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/20 group-hover:scale-110 transition-transform relative z-10">
-                    <TrendingUp size={28} />
+                  <div className="w-20 h-20 bg-red-600 rounded-3xl flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.3)] group-hover:scale-110 transition-transform relative z-10">
+                    <TrendingUp size={32} />
                   </div>
                </div>
-               <div className="bg-white rounded-[32px] p-6 flex items-center justify-between border border-zinc-100 group shadow-sm">
+               <div className="bg-zinc-800/30 backdrop-blur-md rounded-[40px] p-8 flex items-center justify-between border border-white/5 group shadow-xl">
                   <div className="relative z-10">
-                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1 block">Vallas Invictas</span>
-                    <span className="text-4xl font-black text-zinc-900 italic">{stats.vallas_invictas}</span>
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2 block text-zinc-500">Vallas Invictas</span>
+                    <span className="text-6xl font-black text-white italic tracking-tighter">{stats.vallas_invictas}</span>
                   </div>
-                  <div className="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-2xl flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white transition-all">
-                    <Shield size={28} />
+                  <div className="w-20 h-20 bg-zinc-900 text-zinc-400 rounded-3xl flex items-center justify-center border border-zinc-700 group-hover:bg-white group-hover:text-zinc-900 group-hover:border-white transition-all shadow-xl group-hover:scale-110 transition-transform">
+                    <Shield size={32} />
                   </div>
                </div>
             </div>

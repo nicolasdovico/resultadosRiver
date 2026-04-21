@@ -121,7 +121,8 @@
         - [x] Soporte para filtrado alfabético y lógica de restricción Premium en el recurso de API.
     - [x] **Frontend Web:**
         - [x] Implementación de **Directorio Alfabético** (A-Z) para navegación masiva.
-        - [x] Rediseño de fichas de detalle con Hero inmersivo, dashboard de estadísticas y escudos dinámicos.
+        - [x] **Rediseño Visual:** Nueva estética "Data Console" oscura para la sección Hero y tarjetas de estadísticas, eliminando el exceso de blanco y mejorando el impacto visual.
+        - [x] Ficha de detalle inmersiva "River vs Rival" con escudos ampliados y dashboard de estadísticas reales.
         - [x] Integración de componentes de análisis de goles (Goles por Tiempo y Forma de los Goles) con restricción Premium.
         - [x] Implementación de Paywall reforzado con efectos de blur e incentivos de conversión.
 - [x] **Sección de Torneos:**
@@ -134,9 +135,10 @@
         - [x] Implementación de listado de torneos con paginación y búsqueda.
         - [x] Lógica de restricción dinámica para usuarios Free (límite de 10 resultados).
         - [x] Rediseño completo de la ficha de detalle del torneo (`/torneos/[id]`) con:
+            - [x] **Estética Data Console:** Rediseño integral de la sección Hero con fondo oscuro (`zinc-900`) y tarjetas de estadísticas de alto contraste.
             - [x] Listado detallado de partidos con escudos y resultados visuales.
             - [x] **Paginación:** Implementación de paginación en el cliente (10 partidos por página) para mejorar la navegabilidad en torneos largos.
-            - [x] **Top 3 Goleadores:** Integración de la sección "Artilleros Millonarios" en el Hero del torneo con fotos ampliadas, badges de goles y navegación a perfiles.
+            - [x] **Top 3 Goleadores:** Integración de la sección "Artilleros Millonarios" en el Hero con fotos ampliadas, badges de goles y navegación a perfiles.
             - [x] Visualización de racha (Form Guide) interactiva para usuarios Premium.
             - [x] Gráficos de efectividad y desglose de estadísticas (Puntos, DG, Vallas Invictas).
             - [x] Integración de componentes de análisis de goles (`GoalsAnalysis`, `GoalMethodAnalysis`).
