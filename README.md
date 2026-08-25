@@ -61,7 +61,10 @@ El backend está configurado para ser accesible desde el host a través de los s
 Consulta la carpeta `/docs` para más detalles sobre la metodología de trabajo, PRD y el loop de tareas.
 
 ## URL acceso a backend
-'http://localhost:8000/admin'
+`http://localhost:8000/admin`
+
+## URL de acceso al frontend web
+`http://localhost:3000`
 
 ## Crear usuario Admin
 `docker exec -it river-backend php artisan make:filament-user`

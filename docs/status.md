@@ -153,13 +153,30 @@
         - [x] Rediseño de la pantalla de estadísticas (`stats.tsx`) con tarjetas interactivas y año del torneo.
         - [x] Implementación de gráficos de torta (PieChart) para el desglose de resultados (Premium).
         - [x] Banners de conversión y bloqueo de estadísticas avanzadas para usuarios Free.
+- [x] **Sección de Estadios:**
+    - [x] **Backend:**
+        - [x] Implementación de endpoint `top` (`GET /v1/estadios/top`) para obtener las 5 sedes con más partidos disputados (con el Monumental en primer lugar).
+        - [x] Lógica de cálculo de estadísticas (PJ, PG, PE, PP, GF, GC, DG, Efectividad, Vallas Invictas) en el modelo `Estadio`.
+        - [x] Implementación de **Artilleros en esta Sede** (`top_scorers`), **Rachas Históricas** (`streaks`: invictos y sequías), **Última Victoria** y **Última Derrota** (`last_won_match`, `last_lost_match`) e hitos con días transcurridos.
+        - [x] Implementación de analítica de goles por periodo y por tipo específicos para cada estadio.
+        - [x] Soporte para filtrado alfabético (`letter`) y por búsqueda (`q`) con compatibilidad PostgreSQL y SQLite.
+        - [x] Segmentación de datos en `EstadioResource` con lógica de restricción Premium.
+    - [x] **Frontend Web:**
+        - [x] **Top 5 Sedes Principales:** Sección destacada en la cabecera mostrando las 5 sedes donde más se jugó con estética "Data Console" y desglose de PJ, G/E/P y efectividad.
+        - [x] **Directorio Alfabético (A-Z):** Cuadrícula A-Z interactiva y buscador integrado para filtrado por letra inicial.
+        - [x] **Ficha de Detalle de Estadio:** Cabecera inmersiva con dashboard de estadísticas completas, "Artilleros en esta Sede" (Top 3 goleadores históricos con fotos dinámicas y badges de goles), tarjetas de última victoria/derrota con tooltips interactivos y vallas invictas.
+        - [x] **Consola de Rendimiento:** Producción de goles (CARP vs rival), **Semáforo de Forma** (grilla de 3 filas con 20 partidos cronológicos idéntica a Rivales, con tooltips avanzados y sin recorte de bordes) y **Rachas Históricas** (invictos y sequías máximas con duración y vigencia).
+        - [x] **Historial de Partidos:** Componente `EstadioMatches` con paginación dinámica (15 por página) y badges visuales de torneo, condición y resultado.
+        - [x] **Paywall Reforzado:** Efecto blur y banners de conversión para rachas, semáforo, analítica avanzada e historial completo en usuarios Free.
 - [x] **Mejoras de Navegación y Componentes:**
-    - [x] Creación del componente reutilizable `GoBack` para mejorar el flujo de navegación en el frontend web.
+    - [x] Creación del componente reutilizable `GoBack` con soporte de `href` y `label` para navegación flexible.
+    - [x] Soporte para filtrado por sede (`estadio`) en componentes de visualización `GoalsAnalysis` y `GoalMethodAnalysis`.
+    - [x] Integración de autenticación real vía cookies de sesión y control de tiers (Free vs Premium) en las páginas de Árbitros (`/arbitros` y `/arbitros/[id]`).
     - [x] Unificación de escudos oficiales y de clubes en las vistas de detalle.
 - [x] **Bug Fixes:**
     - [x] Corrección de error 500 (Internal Server Error) en la página de técnicos del frontend web provocado por la colisión de nombres entre métodos de consulta y relaciones mágicas de Laravel.
     - [x] Corrección de error `Award is not defined` en el detalle de técnicos (`/tecnicos/[id]`) por falta de importación de componentes de `lucide-react`.
-    - [x] Corrección de error `Cannot read properties of undefined (reading 'map')` en el detalle de técnicos mediante la normalización de la respuesta en `TecnicoResource` y adición de safety checks en el frontend.
+    - [x] Corrección de error 500 (Maximum execution time of 30 seconds exceeded) y optimización de rendimiento extrema en el detalle de estadios (`/estadios/[id]`): se eliminó la cascada de consultas N+1 en recursos de partidos anidados (`PartidoResource`, `RivalResource`, `TorneoResource`), se implementó agregación SQL directa en `Estadio.php` (`getStatsAttribute`, `getGolesPorPeriodoAttribute`) y cache estático en `Setting::get`. Los tiempos de respuesta para sedes masivas pasaron de >2.5s a ~300ms.
 
 - [ ] Sistema de notificaciones push para recordatorios históricos.
 - [ ] Refactorización de visualizaciones de estadísticas dinámicas.

@@ -1,5 +1,38 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-22: Implementación Integral de la Sección de Estadios (Fase 6)
+- [x] **Backend**:
+  - [x] **Modelo**: Implementación de `stats`, `top_scorers`, `streaks`, `last_won_match`, `last_lost_match`, `goles_por_periodo` y `goles_por_tipo` en `Estadio.php`.
+  - [x] **API**: Nuevo endpoint `GET /v1/estadios/top` para obtener las 5 sedes con más partidos oficiales (Monumental #1, José Amalfitani, Tomás A. Ducó, La Bombonera, Independiente).
+  - [x] **API**: Soporte para filtrado por letra (`letter`) y búsqueda (`q`) con compatibilidad PostgreSQL y SQLite en `EstadioController`.
+  - [x] **API**: Inclusión de lógica de restricción Premium en `EstadioResource` (últimos 10 partidos para Free) y OpenAPI docs actualizadas.
+  - [x] **Analytics**: Soporte para filtro `estadio` en `goalsByPeriod` y `goalsByType` (`PartidoController`).
+  - [x] **Testing**: Suite de tests unitarios y de integración completa en `tests/Feature/EstadioApiTest.php` (11 tests pasando).
+- [x] **Frontend Web**:
+  - [x] **Página Principal (`/estadios`)**:
+    - [x] **Top 5 Sedes Principales:** Sección destacada en la cabecera mostrando las 5 sedes donde más se jugó, resaltando "El Templo" (Monumental) con estética "Data Console" y desglose de PJ, G/E/P y efectividad.
+    - [x] **Directorio Alfabético (A-Z):** Cuadrícula A-Z interactiva, buscador integrado y paginación con control de acceso Free/Premium.
+  - [x] **Ficha de Detalle (`/estadios/[id]`)**:
+    - [x] **Hero Head:** Estética Data Console con estadísticas clave (PJ, PG, PE, PP, GF, GC, DG, Efectividad, Vallas Invictas).
+    - [x] **Artilleros en esta Sede:** Top 3 de goleadores históricos con avatares dinámicos, fotos y conteo de goles.
+    - [x] **Hitos Recientes:** Tarjetas de "Última Victoria" y "Última Derrota" con tooltips inmersivos (fecha, rival, escudo, torneo y antigüedad).
+    - [x] **Consola de Rendimiento:** Producción de goles, **Semáforo de Forma** (grilla de 3 filas como en Rivales, `flex-wrap gap-2`, con tooltips inteligentes alineados para evitar recorte de bordes) y **Rachas Históricas** (invictos y sequías máximas con vigencia).
+    - [x] **Historial de Partidos:** Componente `EstadioMatches` con paginación (15 partidos/pág) y badges informativos.
+    - [x] **Dinámica de Goles:** Integración de `GoalsAnalysis` y `GoalMethodAnalysis` con paywall para usuarios Free.
+  - [x] **Optimización de Rendimiento Extrema (10x-50x más rápido)**:
+    - [x] Corrección de problema N+1 en `TorneoResource` y `RivalResource`: propiedades pesadas (`stats`, `top_scorers`, `streaks`, `hitos`) ahora usan *closures* y sólo se evalúan cuando la relación `partidos` está cargada para la vista de detalle.
+    - [x] Optimización de `PartidoResource`: reemplazo de instancias anidadas completas por representaciones ligeras de las relaciones cargadas (`rival`, `torneo`, `condicion`, `fase`, `estadio`, `arbitro`), reduciendo las consultas SQL de 445 a 0 durante la serialización del listado.
+    - [x] Agregación SQL directa en `Estadio.php`: `getStatsAttribute()` y `getGolesPorPeriodoAttribute()` ahora se calculan mediante consultas agregadas directas (`SUM(CASE WHEN...)`) en la base de datos (de 1.660ms a 30ms).
+    - [x] Cache en memoria estática en `Setting::get` para evitar consultas redundantes a la tabla `settings`.
+    - [x] Tiempo de carga de estadios masivos (Monumental con 1.819 partidos) reducido de >2.5s a ~300ms.
+  - [x] **Componentes & Core**:
+    - [x] Mejora del componente `GoBack` para aceptar `href` y `label` opcionales.
+    - [x] Flexibilidad en `AccessControl` para soporte de hijos opcionales.
+    - [x] Soporte para filtro por `estadio` en componentes de analítica de goles (`GoalsAnalysis` y `GoalMethodAnalysis`).
+    - [x] Integración de autenticación basada en cookies (`auth_token`, `user_role`) y control de tiers en las páginas de Árbitros (`/arbitros` y `/arbitros/[id]`).
+    - [x] Solución de problemas de tipado TypeScript y deprecaciones en compilación de producción de Next.js.
+    - [x] Actualización de `README.md` con URLs de acceso al frontend web (`http://localhost:3000`) y backend (`http://localhost:8000/admin`).
+
 ### 2026-04-21: Fix de Error 500 y Optimización en Rivales (Fase 6)
 - [x] **Backend**:
   - [x] **Modelo**: Corrección de acceso a propiedades en `formatMatchHito` (`Rival.php`) utilizando los nombres correctos de las relaciones (`torneo_rel`, `condicion_rel`) y campos (`descripcion`).
