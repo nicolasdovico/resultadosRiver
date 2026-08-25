@@ -34,6 +34,7 @@ interface GoalsAnalysisProps {
     torneo?: string | number;
     adversario?: string | number;
     estadio?: string | number;
+    arbitro?: string | number;
     fecha_desde?: string;
     fecha_hasta?: string;
   };
@@ -52,6 +53,7 @@ export default function GoalsAnalysis({ filters }: GoalsAnalysisProps) {
         if (filters.torneo) queryParams.append('torneo', filters.torneo.toString());
         if (filters.adversario) queryParams.append('adversario', filters.adversario.toString());
         if (filters.estadio) queryParams.append('estadio', filters.estadio.toString());
+        if (filters.arbitro) queryParams.append('arbitro', filters.arbitro.toString());
         if (filters.fecha_desde) queryParams.append('fecha_desde', filters.fecha_desde);
         if (filters.fecha_hasta) queryParams.append('fecha_hasta', filters.fecha_hasta);
 
