@@ -22,8 +22,9 @@ interface GoalMethodData {
 interface GoalMethodAnalysisProps {
   filters: {
     q?: string;
-    torneo?: string;
-    adversario?: string;
+    torneo?: string | number;
+    adversario?: string | number;
+    estadio?: string | number;
     fecha_desde?: string;
     fecha_hasta?: string;
   };
@@ -41,8 +42,9 @@ export default function GoalMethodAnalysis({ filters }: GoalMethodAnalysisProps)
       try {
         const queryParams = new URLSearchParams();
         if (filters.q) queryParams.append('q', filters.q);
-        if (filters.torneo) queryParams.append('torneo', filters.torneo);
-        if (filters.adversario) queryParams.append('adversario', filters.adversario);
+        if (filters.torneo) queryParams.append('torneo', filters.torneo.toString());
+        if (filters.adversario) queryParams.append('adversario', filters.adversario.toString());
+        if (filters.estadio) queryParams.append('estadio', filters.estadio.toString());
         if (filters.fecha_desde) queryParams.append('fecha_desde', filters.fecha_desde);
         if (filters.fecha_hasta) queryParams.append('fecha_hasta', filters.fecha_hasta);
 
