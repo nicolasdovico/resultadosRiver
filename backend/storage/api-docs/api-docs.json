@@ -488,6 +488,13 @@
                         }
                     },
                     {
+                        "name": "letter",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "schema": {
@@ -531,6 +538,35 @@
                 "responses": {
                     "201": {
                         "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/estadios/top": {
+            "get": {
+                "tags": [
+                    "Estadios"
+                ],
+                "summary": "Get top 5 stadiums where River played the most matches",
+                "operationId": "getTopEstadios",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/EstadioResource"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -768,6 +804,15 @@
                         }
                     },
                     {
+                        "name": "letter",
+                        "in": "query",
+                        "description": "Filter by initial letter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "description": "Records per page",
@@ -806,6 +851,25 @@
                 ]
             }
         },
+        "/v1/jugadores/top-scorers": {
+            "get": {
+                "tags": [
+                    "Jugadores"
+                ],
+                "summary": "Get top 20 scorers",
+                "operationId": "getTopScorers",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/v1/jugadores/{id}": {
             "get": {
                 "tags": [
@@ -818,6 +882,14 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
@@ -1287,6 +1359,13 @@
                         }
                     },
                     {
+                        "name": "letter",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "schema": {
@@ -1330,6 +1409,35 @@
                 "responses": {
                     "201": {
                         "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/rivales/classics": {
+            "get": {
+                "tags": [
+                    "Rivales"
+                ],
+                "summary": "Get stats for classic rivals (Big 5)",
+                "operationId": "getClassicStats",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RivalResource"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1969,6 +2077,61 @@
                     },
                     "es_desc": {
                         "type": "string"
+                    },
+                    "river_shield": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "stats": {
+                        "type": "object"
+                    },
+                    "top_scorers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "streaks": {
+                        "properties": {
+                            "invincibility": {
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "drought": {
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "last_won_match": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "last_lost_match": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "goles_por_periodo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "goles_por_tipo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "partidos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartidoResource"
+                        }
+                    },
+                    "is_premium_restricted": {
+                        "type": "boolean"
                     }
                 },
                 "type": "object"
@@ -1985,6 +2148,10 @@
                 "properties": {
                     "gol_id": {
                         "type": "integer"
+                    },
+                    "gol_fecha": {
+                        "type": "string",
+                        "format": "date"
                     },
                     "minutos": {
                         "type": "integer"
@@ -2006,6 +2173,24 @@
                     "gol_parariver": {
                         "description": "1: River, 2: Rival",
                         "type": "integer"
+                    },
+                    "es_gol_victoria": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "partido": {
+                        "properties": {
+                            "go_ri": {
+                                "type": "integer"
+                            },
+                            "go_ad": {
+                                "type": "integer"
+                            },
+                            "rival": {
+                                "$ref": "#/components/schemas/RivalResource"
+                            }
+                        },
+                        "type": "object"
                     },
                     "jugador": {
                         "properties": {
@@ -2030,18 +2215,114 @@
                         "type": "string"
                     },
                     "pl_foto": {
-                        "description": "URL de la foto del jugador (Solo Premium)",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "river_shield": {
                         "type": "string",
                         "nullable": true
                     },
                     "goles_count": {
                         "type": "integer"
                     },
+                    "goles_river_count": {
+                        "type": "integer"
+                    },
+                    "goles_rival_count": {
+                        "type": "integer"
+                    },
+                    "goles_victoria_count": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "dias_desde_ultimo_gol": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "partidos_desde_ultimo_gol": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "goles_por_periodo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "goles_por_tipo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "dobletes_count": {
+                        "type": "integer"
+                    },
+                    "hat_tricks_count": {
+                        "type": "integer"
+                    },
+                    "dobletes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "hat_tricks": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
                     "goles": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/GolResource"
                         }
+                    },
+                    "goles_meta": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer"
+                            },
+                            "last_page": {
+                                "type": "integer"
+                            },
+                            "total": {
+                                "type": "integer"
+                            },
+                            "river_goals_offset": {
+                                "type": "integer"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "is_premium_restricted": {
+                        "type": "boolean"
+                    },
+                    "scoring_streak": {
+                        "properties": {
+                            "max_matches": {
+                                "type": "integer"
+                            },
+                            "start_date": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "end_date": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "total_goals": {
+                                "type": "integer"
+                            },
+                            "matches": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "type": "object"
                     }
                 },
                 "type": "object"
@@ -2115,18 +2396,121 @@
                     "escudo_url": {
                         "type": "string",
                         "nullable": true
+                    },
+                    "river_shield": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "stats": {
+                        "type": "object"
+                    },
+                    "top_scorers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "streaks": {
+                        "properties": {
+                            "invincibility": {
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "drought": {
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "goles_por_periodo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "goles_por_tipo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "partidos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartidoResource"
+                        }
+                    },
+                    "is_premium_restricted": {
+                        "type": "boolean"
                     }
                 },
                 "type": "object"
             },
             "TecnicoResource": {
                 "properties": {
+                    "id_tecnicos": {
+                        "type": "integer"
+                    },
+                    "tec_ape_nom": {
+                        "type": "string"
+                    },
                     "te_desc": {
                         "type": "string"
+                    },
+                    "tec_foto": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "desde": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "hasta": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
                     },
                     "cargo": {
                         "type": "string",
                         "nullable": true
+                    },
+                    "partidos_count": {
+                        "type": "integer"
+                    },
+                    "is_premium_restricted": {
+                        "type": "boolean"
+                    },
+                    "stats": {
+                        "type": "object"
+                    },
+                    "goles_por_periodo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "goles_por_tipo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "top_scorers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "partidos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartidoResource"
+                        }
+                    },
+                    "partidos_meta": {
+                        "type": "object"
                     }
                 },
                 "type": "object"

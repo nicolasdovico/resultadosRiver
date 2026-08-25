@@ -42,6 +42,7 @@ Route::prefix('v1')->group(function () {
     Route::get('arbitros', [ArbitroController::class, 'index']);
     Route::get('arbitros/{id}', [ArbitroController::class, 'show']);
     
+    Route::get('estadios/top', [EstadioController::class, 'top']);
     Route::get('estadios', [EstadioController::class, 'index']);
     Route::get('estadios/{id}', [EstadioController::class, 'show']);
     

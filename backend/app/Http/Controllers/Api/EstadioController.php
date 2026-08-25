@@ -18,6 +18,7 @@ class EstadioController extends Controller
         tags: ['Estadios'],
         parameters: [
             new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'letter', in: 'query', schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
@@ -42,9 +43,14 @@ class EstadioController extends Controller
      */
     public function index(Request $request)
     {
+        $likeOperator = \DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
         $query = Estadio::query();
         if ($request->has('q')) {
-            $query->where('es_desc', 'ILIKE', "%{$request->q}%");
+            $query->where('es_desc', $likeOperator, "%{$request->q}%");
+        }
+
+        if ($request->has('letter')) {
+            $query->where('es_desc', $likeOperator, "{$request->letter}%");
         }
 
         $limit = $request->query('limit', 50);
@@ -53,6 +59,33 @@ class EstadioController extends Controller
         }
 
         return EstadioResource::collection($query->orderBy('es_desc')->paginate($limit));
+    }
+
+    #[OA\Get(
+        path: '/v1/estadios/top',
+        summary: 'Get top 5 stadiums where River played the most matches',
+        operationId: 'getTopEstadios',
+        security: [['sanctum' => []]],
+        tags: ['Estadios'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/EstadioResource')
+                )
+            )
+        ]
+    )]
+    public function top()
+    {
+        $topEstadios = Estadio::withCount('partidos')
+            ->orderByDesc('partidos_count')
+            ->limit(5)
+            ->get();
+        
+        return EstadioResource::collection($topEstadios);
     }
 
     #[OA\Post(
@@ -92,7 +125,22 @@ class EstadioController extends Controller
      */
     public function show(string $id)
     {
-        $estadio = Estadio::with(['partidos.rival', 'partidos.torneo_rel'])->findOrFail($id);
+        $user = auth('sanctum')->user();
+        $isPremium = $user && $user->isPremium();
+
+        $estadio = Estadio::with([
+            'partidos' => function($query) use ($isPremium) {
+                $query->orderBy('fecha', 'desc');
+                if (!$isPremium) {
+                    $query->limit(10);
+                }
+            },
+            'partidos.torneo_rel',
+            'partidos.condicion_rel',
+            'partidos.fase_rel',
+            'partidos.rival'
+        ])->findOrFail($id);
+
         return new EstadioResource($estadio);
     }
 
