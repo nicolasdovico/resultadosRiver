@@ -4,6 +4,8 @@ import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { customInstance } from "@/api/custom-instance";
 
+import { cookies } from "next/headers";
+
 interface Arbitro {
   ar_id: number;
   ar_apno: string;
@@ -14,15 +16,23 @@ export default async function ArbitrosPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const currentTier: 'guest' | 'registered' | 'premium' = 'registered';
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  const userRole = cookieStore.get("user_role")?.value;
+  const isLoggedIn = !!token;
+  const isPremium = userRole === "premium";
+  const currentTier: "guest" | "registered" | "premium" = isPremium ? "premium" : (isLoggedIn ? "registered" : "guest");
   
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q.toUpperCase() : '';
 
+  const fetchOptions = { headers: token ? { "Authorization": `Bearer ${token}` } : {} } as any;
+
   const response = await customInstance<{ data: Arbitro[] }>({
     url: '/v1/arbitros',
     method: 'GET',
-    params: { q: query }
+    params: { q: query },
+    ...fetchOptions
   });
   
   const visibleArbitros: Arbitro[] = response.data || [];

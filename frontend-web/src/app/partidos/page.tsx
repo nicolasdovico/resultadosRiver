@@ -103,13 +103,9 @@ export default async function PartidosPage({
     fetchOptions
   );
   
-  // @ts-expect-error - Resource data structure is not fully typed in SDK
-  let visiblePartidos: any[] = (response as { data?: any[] }).data || [];
-  // @ts-expect-error - Meta missing from response type
+  let visiblePartidos: any[] = (response as any).data || [];
   const totalResults = (response as any).meta?.total || visiblePartidos.length;
-  // @ts-expect-error - Meta missing from response type
   const lastPage = (response as any).meta?.last_page || 1;
-  // @ts-expect-error - summary in meta
   const summary = (response as any).meta?.summary || { pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0 };
 
   // Restriction logic for non-premium users

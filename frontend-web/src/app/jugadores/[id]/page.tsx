@@ -49,7 +49,7 @@ interface Jugador {
   goles_victoria_count?: number | null;
   dias_desde_ultimo_gol?: number | null;
   partidos_desde_ultimo_gol?: number | null;
-  goles_por_periodo?: Record<string, any>;
+  goles_por_periodo?: any;
   goles_por_tipo?: { label: string; value: number; value_rival?: number }[];
   dobletes_count: number;
   hat_tricks_count: number;
@@ -68,6 +68,7 @@ interface Jugador {
     start_date: string | null;
     end_date: string | null;
     total_goals: number;
+    matches: any[];
   } | null;
 }
 

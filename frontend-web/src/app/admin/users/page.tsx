@@ -14,8 +14,7 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     try {
       const response = await getUsers();
-      // @ts-expect-error - Resource structure
-      setUsers(response.data || []);
+      setUsers((response as any).data || []);
     } catch (error) {
       console.error(error);
     } finally {

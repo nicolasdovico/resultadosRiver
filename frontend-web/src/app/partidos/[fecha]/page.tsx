@@ -87,7 +87,6 @@ export default async function PartidoDetailPage({
       fecha, 
       { headers: token ? { 'Authorization': `Bearer ${token}` } : {} } as any
     );
-    // @ts-expect-error - SDK types are simplified
     partido = (response as any).data;
     
     if (!partido) {

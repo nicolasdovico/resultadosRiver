@@ -5,7 +5,7 @@ import { Lock, Star, ChevronRight } from 'lucide-react';
 interface AccessControlProps {
   tier: 'guest' | 'registered' | 'premium';
   requiredTier: 'registered' | 'premium';
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 

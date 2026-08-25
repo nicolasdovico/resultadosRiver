@@ -22,8 +22,7 @@ export default function CatalogManager({ title, fetchFn, createFn, deleteFn, nam
   const fetchItems = async () => {
     try {
       const response = await fetchFn();
-      // @ts-expect-error - Resource structure
-      setItems(response.data || []);
+      setItems((response as any).data || []);
     } catch (error) {
       console.error(error);
     } finally {

@@ -15,8 +15,8 @@ export const AXIOS_INSTANCE = axios.create({
 });
 
 export const customInstance = <T>(
-  urlOrConfig: string | AxiosRequestConfig,
-  options?: AxiosRequestConfig,
+  urlOrConfig: string | AxiosRequestConfig | any,
+  options?: AxiosRequestConfig | any,
 ): Promise<T> => {
   const source = axios.CancelToken.source();
   

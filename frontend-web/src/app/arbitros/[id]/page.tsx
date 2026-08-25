@@ -4,6 +4,8 @@ import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
 
+import { cookies } from "next/headers";
+
 interface Partido {
   fecha: string;
   go_ri: number;
@@ -30,14 +32,21 @@ export default async function ArbitroDetailPage({
 }) {
   const { id } = await params;
   
-  // Mock current user tier
-  const currentTier: 'guest' | 'registered' | 'premium' = 'registered';
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  const userRole = cookieStore.get("user_role")?.value;
+  const isLoggedIn = !!token;
+  const isPremium = userRole === "premium";
+  const currentTier: "guest" | "registered" | "premium" = isPremium ? "premium" : (isLoggedIn ? "registered" : "guest");
+  
+  const fetchOptions = { headers: token ? { "Authorization": `Bearer ${token}` } : {} } as any;
 
   let arbitro: Arbitro | null = null;
   try {
     const response = await customInstance<{ data: Arbitro }>({
       url: `/v1/arbitros/${id}`,
       method: 'GET',
+      ...fetchOptions
     });
     arbitro = response.data;
   } catch (error) {

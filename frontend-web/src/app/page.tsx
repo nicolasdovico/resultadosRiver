@@ -66,7 +66,6 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // @ts-expect-error - customInstance returns response body directly
         const res = await getPartidos({ limit: 6, hoy: true });
         
         // Ensure we are accessing the correct path in the response

@@ -14,8 +14,7 @@ export default function AdminSettings() {
   const fetchSettings = async () => {
     try {
       const response = await getSettings();
-      // @ts-expect-error - Resource structure
-      setSettings(response.data || []);
+      setSettings((response as any).data || []);
     } catch (error) {
       console.error(error);
     } finally {

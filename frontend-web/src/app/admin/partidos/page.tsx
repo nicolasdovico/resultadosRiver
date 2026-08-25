@@ -37,14 +37,10 @@ export default function AdminPartidos() {
         getEstadios(),
         getArbitros()
       ]);
-      // @ts-expect-error - Resource structure
-      setTorneos(t.data || []);
-      // @ts-expect-error - Resource structure
-      setRivales(r.data || []);
-      // @ts-expect-error - Resource structure
-      setEstadios(e.data || []);
-      // @ts-expect-error - Resource structure
-      setArbitros(a.data || []);
+      setTorneos((t as any).data || []);
+      setRivales((r as any).data || []);
+      setEstadios((e as any).data || []);
+      setArbitros((a as any).data || []);
     } catch (error) {
       console.error(error);
     }
@@ -52,8 +48,7 @@ export default function AdminPartidos() {
 
   const handleSubmit = async () => {
     try {
-      // @ts-expect-error - API structure
-      await createPartido(formData);
+      await createPartido(formData as any);
       alert('Partido cargado exitosamente');
       setFormData({
         fecha: '',
