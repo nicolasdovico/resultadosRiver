@@ -8,14 +8,19 @@ use Illuminate\Support\Facades\Storage;
 class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
+    protected static array $runtimeCache = [];
 
     /**
      * Get a setting value by key.
      */
     public static function get(string $key, $default = null)
     {
+        if (array_key_exists($key, static::$runtimeCache)) {
+            return static::$runtimeCache[$key];
+        }
         $setting = static::where('key', $key)->first();
-        return $setting ? $setting->value : $default;
+        static::$runtimeCache[$key] = $setting ? $setting->value : $default;
+        return static::$runtimeCache[$key];
     }
 
     /**

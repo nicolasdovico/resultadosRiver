@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
@@ -49,12 +50,49 @@ class PartidoResource extends JsonResource
                 if ($this->go_ri < $this->go_ad) return 'P';
                 return 'E';
             }),
-            'torneo' => new TorneoResource($this->whenLoaded('torneo_rel')),
-            'rival' => new RivalResource($this->whenLoaded('rival')),
-            'arbitro' => new ArbitroResource($this->whenLoaded('arbitro_rel')),
-            'estadio' => new EstadioResource($this->whenLoaded('estadio_rel')),
-            'condicion' => new CondicionResource($this->whenLoaded('condicion_rel')),
-            'fase' => new FaseResource($this->whenLoaded('fase_rel')),
+            'torneo' => $this->whenLoaded('torneo_rel', function() {
+                return [
+                    'tor_id' => $this->torneo_rel->tor_id,
+                    'tor_desc' => $this->torneo_rel->tor_desc,
+                    'tor_nivel' => $this->torneo_rel->tor_nivel,
+                    'tor_anio' => $this->torneo_rel->anio,
+                ];
+            }),
+            'rival' => $this->whenLoaded('rival', function() {
+                return [
+                    'ri_id' => $this->rival->ri_id,
+                    'ri_desc' => $this->rival->ri_desc,
+                    'escudo' => $this->rival->escudo_url,
+                    'escudo_url' => $this->rival->escudo_url,
+                    'river_shield' => Setting::getUrl('river_shield'),
+                    'is_premium_restricted' => false,
+                ];
+            }),
+            'arbitro' => $this->whenLoaded('arbitro_rel', function() {
+                return [
+                    'ar_id' => $this->arbitro_rel->ar_id,
+                    'ar_desc' => $this->arbitro_rel->ar_apno,
+                ];
+            }),
+            'estadio' => $this->whenLoaded('estadio_rel', function() {
+                return [
+                    'es_id' => $this->estadio_rel->es_id,
+                    'es_desc' => $this->estadio_rel->es_desc,
+                    'river_shield' => Setting::getUrl('river_shield'),
+                ];
+            }),
+            'condicion' => $this->whenLoaded('condicion_rel', function() {
+                return [
+                    'id_condicion' => $this->condicion_rel->id_condicion,
+                    'co_desc' => $this->condicion_rel->co_desc ?? $this->condicion_rel->descripcion,
+                ];
+            }),
+            'fase' => $this->whenLoaded('fase_rel', function() {
+                return [
+                    'id_fase' => $this->fase_rel->id_fase,
+                    'fa_desc' => $this->fase_rel->fa_desc,
+                ];
+            }),
             'tecnico' => [
                 'id_tecnicos' => $this->tecnico?->id_tecnicos,
                 'tec_ape_nom' => $this->tecnico?->tec_ape_nom,

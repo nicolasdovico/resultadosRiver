@@ -43,9 +43,10 @@ class RivalResource extends JsonResource
         $partidosCollection = $this->whenLoaded('partidos');
         $isRestricted = false;
         $hasPartidos = $this->relationLoaded('partidos');
+        $isDetail = $hasPartidos && !$request->is('*/rivales/top') && !$request->is('*/rivales/classics') && !$request->routeIs('*.top') && !$request->routeIs('*.classics');
 
         // Si es la vista de detalle (relación partidos cargada)
-        if ($hasPartidos) {
+        if ($isDetail) {
             if (!$isPremium) {
                 // Restringimos a los últimos 10 partidos para usuarios free
                 $totalPartidos = $partidosCollection->count();
@@ -62,14 +63,14 @@ class RivalResource extends JsonResource
             'escudo' => $this->escudo_url,
             'escudo_url' => $this->escudo_url,
             'river_shield' => Setting::getUrl('river_shield'),
-            'stats' => $this->when($hasPartidos, $this->stats),
-            'top_scorers' => $this->when($hasPartidos, $this->top_scorers),
-            'streaks' => $this->when($hasPartidos, $this->streaks),
-            'last_won_match' => $this->when($hasPartidos, $this->last_won_match),
-            'last_lost_match' => $this->when($hasPartidos, $this->last_lost_match),
-            'goles_por_periodo' => $this->when($isPremium && $hasPartidos, $this->goles_por_periodo),
-            'goles_por_tipo' => $this->when($isPremium && $hasPartidos, $this->goles_por_tipo),
-            'partidos' => PartidoResource::collection($partidosCollection),
+            'stats' => $this->when($hasPartidos, fn() => $this->stats),
+            'top_scorers' => $this->when($isDetail, fn() => $this->top_scorers),
+            'streaks' => $this->when($isDetail, fn() => $this->streaks),
+            'last_won_match' => $this->when($isDetail, fn() => $this->last_won_match),
+            'last_lost_match' => $this->when($isDetail, fn() => $this->last_lost_match),
+            'goles_por_periodo' => $this->when($isPremium && $isDetail, fn() => $this->goles_por_periodo),
+            'goles_por_tipo' => $this->when($isPremium && $isDetail, fn() => $this->goles_por_tipo),
+            'partidos' => $this->when($isDetail, PartidoResource::collection($partidosCollection)),
             'is_premium_restricted' => $isRestricted,
         ];
     }

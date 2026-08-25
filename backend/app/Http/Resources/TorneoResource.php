@@ -40,38 +40,38 @@ class TorneoResource extends JsonResource
     {
         $user = $request->user('sanctum');
         $isPremium = $user && $user->isPremium();
+        $hasPartidos = $this->relationLoaded('partidos');
         
         $data = [
             'tor_id' => $this->tor_id,
             'tor_desc' => $this->tor_desc,
             'tor_nivel' => $this->tor_nivel,
             'tor_anio' => $this->anio,
-            'top_scorers' => $this->top_scorers,
+            'top_scorers' => $this->when($hasPartidos, $this->top_scorers),
         ];
 
-        // Basic stats for everyone
-        $stats = $this->stats;
-        
-        if ($isPremium) {
-            $data['stats'] = $stats;
-        } else {
-            // Limited stats for free users
-            $data['stats'] = [
-                'pj' => $stats['pj'],
-                'pg' => $stats['pg'],
-                'pe' => $stats['pe'],
-                'pp' => $stats['pp'],
-                // Hide advanced stats for non-premium
-                'gf' => null,
-                'gc' => null,
-                'dg' => null,
-                'puntos' => null,
-                'vallas_invictas' => null,
-                'efectividad' => null,
-            ];
-        }
+        // Stats only when loaded for detail view
+        if ($hasPartidos) {
+            $stats = $this->stats;
+            if ($isPremium) {
+                $data['stats'] = $stats;
+            } else {
+                // Limited stats for free users
+                $data['stats'] = [
+                    'pj' => $stats['pj'],
+                    'pg' => $stats['pg'],
+                    'pe' => $stats['pe'],
+                    'pp' => $stats['pp'],
+                    // Hide advanced stats for non-premium
+                    'gf' => null,
+                    'gc' => null,
+                    'dg' => null,
+                    'puntos' => null,
+                    'vallas_invictas' => null,
+                    'efectividad' => null,
+                ];
+            }
 
-        if ($this->relationLoaded('partidos')) {
             $data['partidos'] = PartidoResource::collection($this->partidos);
         }
 
