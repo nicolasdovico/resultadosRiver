@@ -1,5 +1,25 @@
 # Log de Progreso de Resultados River
 
+### 2026-04-23: Implementación Integral de la Sección de Árbitros (Fase 6)
+- [x] **Backend**:
+  - [x] **Modelo**: Implementación de `stats` (agregación SQL directa), `top_scorers`, `streaks` (invictos y sequías máximas con vigencia), `last_won_match`, `last_lost_match`, `goles_por_periodo` y `goles_por_tipo` en `Arbitro.php`.
+  - [x] **API**: Nuevo endpoint `GET /v1/arbitros/top` para obtener los 5 jueces que más partidos dirigieron a River Plate.
+  - [x] **API**: Soporte para filtrado por letra (`letter`), búsqueda (`q`) y límite (`limit=-1` o paginado) en `ArbitroController`.
+  - [x] **API**: Inclusión de lógica de restricción Premium en `ArbitroResource` (últimos 10 partidos para Free) y esquemas OpenAPI actualizados.
+  - [x] **Analytics**: Soporte para filtro `arbitro` en `goalsByPeriod` y `goalsByType` (`PartidoController`).
+  - [x] **Testing**: Suite de tests unitarios y de integración completa en `tests/Feature/ArbitroApiTest.php` (3 tests pasando, 14 tests globales).
+- [x] **Frontend Web**:
+  - [x] **Página Principal (`/arbitros`)**:
+    - [x] **Top 5 Jueces Principales:** Sección destacada en la cabecera mostrando los 5 árbitros que más dirigieron a River con estética "Data Console", badge para el #1 y desglose de PJ, G/E/P y efectividad.
+    - [x] **Directorio Alfabético (A-Z):** Cuadrícula A-Z interactiva, buscador integrado y paginación con control de acceso Free/Premium.
+  - [x] **Ficha de Detalle (`/arbitros/[id]`)**:
+    - [x] **Hero Head:** Estética Data Console con estadísticas clave (PJ, PG, PE, PP, GF, GC, DG, Efectividad, Vallas Invictas).
+    - [x] **Artilleros bajo este Arbitraje:** Top 3 de goleadores con avatares dinámicos, fotos y conteo de goles.
+    - [x] **Hitos Recientes:** Tarjetas de "Última Victoria" y "Última Derrota" con tooltips inmersivos (fecha, rival, escudo, torneo y antigüedad).
+    - [x] **Consola de Rendimiento:** Producción de goles (CARP vs rival), **Semáforo de Forma** (grilla de 3 filas con 20 partidos cronológicos, tooltips inteligentes) y **Rachas Históricas** (invictos y sequías máximas con vigencia).
+    - [x] **Historial de Partidos:** Componente `ArbitroMatches` con paginación (15 partidos/pág) y badges informativos.
+    - [x] **Dinámica de Goles:** Integración de `GoalsAnalysis` y `GoalMethodAnalysis` con filtro `arbitro` y paywall para usuarios Free.
+
 ### 2026-04-22: Implementación Integral de la Sección de Estadios (Fase 6)
 - [x] **Backend**:
   - [x] **Modelo**: Implementación de `stats`, `top_scorers`, `streaks`, `last_won_match`, `last_lost_match`, `goles_por_periodo` y `goles_por_tipo` en `Estadio.php`.

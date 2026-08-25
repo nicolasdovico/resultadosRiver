@@ -167,10 +167,26 @@
         - [x] **Ficha de Detalle de Estadio:** Cabecera inmersiva con dashboard de estadísticas completas, "Artilleros en esta Sede" (Top 3 goleadores históricos con fotos dinámicas y badges de goles), tarjetas de última victoria/derrota con tooltips interactivos y vallas invictas.
         - [x] **Consola de Rendimiento:** Producción de goles (CARP vs rival), **Semáforo de Forma** (grilla de 3 filas con 20 partidos cronológicos idéntica a Rivales, con tooltips avanzados y sin recorte de bordes) y **Rachas Históricas** (invictos y sequías máximas con duración y vigencia).
         - [x] **Historial de Partidos:** Componente `EstadioMatches` con paginación dinámica (15 por página) y badges visuales de torneo, condición y resultado.
+- [x] **Sección de Árbitros:**
+    - [x] **Backend:**
+        - [x] Implementación de endpoint `top` (`GET /v1/arbitros/top`) para obtener los 5 jueces con más partidos dirigidos a River Plate.
+        - [x] Lógica de cálculo de estadísticas (PJ, PG, PE, PP, GF, GC, DG, Efectividad, Vallas Invictas) en el modelo `Arbitro`.
+        - [x] Implementación de **Artilleros bajo este Arbitraje** (`top_scorers`), **Rachas Históricas** (`streaks`: invictos y sequías), **Última Victoria** y **Última Derrota** (`last_won_match`, `last_lost_match`) e hitos con días transcurridos.
+        - [x] Implementación de analítica de goles por periodo y por tipo específicos para cada árbitro.
+        - [x] Soporte para filtrado alfabético (`letter`) y por búsqueda (`q`) con compatibilidad PostgreSQL y SQLite.
+        - [x] Segmentación de datos en `ArbitroResource` con lógica de restricción Premium.
+        - [x] Suite de tests unitarios y de integración en `tests/Feature/ArbitroApiTest.php` (3 tests pasando, 14 tests globales).
+    - [x] **Frontend Web:**
+        - [x] **Top 5 Jueces Principales:** Sección destacada en la cabecera mostrando los 5 árbitros que más dirigieron a River con estética "Data Console" y desglose de PJ, G/E/P y efectividad.
+        - [x] **Directorio Alfabético (A-Z):** Cuadrícula A-Z interactiva y buscador integrado para filtrado por letra inicial.
+        - [x] **Ficha de Detalle de Árbitro:** Cabecera inmersiva con dashboard de estadísticas completas, "Artilleros bajo este Arbitraje" (Top 3 goleadores históricos con fotos dinámicas y badges de goles), tarjetas de última victoria/derrota con tooltips interactivos y vallas invictas.
+        - [x] **Consola de Rendimiento:** Producción de goles (CARP vs rival), **Semáforo de Forma** (grilla de 3 filas con 20 partidos cronológicos con tooltips avanzados y sin recorte de bordes) y **Rachas Históricas** (invictos y sequías máximas con duración y vigencia).
+        - [x] **Historial de Partidos:** Componente `ArbitroMatches` con paginación dinámica (15 por página) y badges visuales de torneo, condición y resultado.
+        - [x] **Dinámica de Goles:** Integración de `GoalsAnalysis` y `GoalMethodAnalysis` con soporte para filtro `arbitro` y paywall para usuarios Free.
         - [x] **Paywall Reforzado:** Efecto blur y banners de conversión para rachas, semáforo, analítica avanzada e historial completo en usuarios Free.
 - [x] **Mejoras de Navegación y Componentes:**
     - [x] Creación del componente reutilizable `GoBack` con soporte de `href` y `label` para navegación flexible.
-    - [x] Soporte para filtrado por sede (`estadio`) en componentes de visualización `GoalsAnalysis` y `GoalMethodAnalysis`.
+    - [x] Soporte para filtrado por sede (`estadio`) y juez (`arbitro`) en componentes de visualización `GoalsAnalysis` y `GoalMethodAnalysis`.
     - [x] Integración de autenticación real vía cookies de sesión y control de tiers (Free vs Premium) en las páginas de Árbitros (`/arbitros` y `/arbitros/[id]`).
     - [x] Unificación de escudos oficiales y de clubes en las vistas de detalle.
 - [x] **Bug Fixes:**
