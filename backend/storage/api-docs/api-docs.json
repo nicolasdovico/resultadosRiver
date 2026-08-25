@@ -36,6 +36,13 @@
                         }
                     },
                     {
+                        "name": "letter",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "schema": {
@@ -79,6 +86,35 @@
                 "responses": {
                     "201": {
                         "description": "Created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/arbitros/top": {
+            "get": {
+                "tags": [
+                    "Arbitros"
+                ],
+                "summary": "Get top 5 referees who officiated the most matches for River",
+                "operationId": "getTopArbitros",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ArbitroResource"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -2056,8 +2092,66 @@
                     "ar_id": {
                         "type": "integer"
                     },
+                    "ar_apno": {
+                        "type": "string"
+                    },
                     "ar_desc": {
                         "type": "string"
+                    },
+                    "river_shield": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "stats": {
+                        "type": "object"
+                    },
+                    "top_scorers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "streaks": {
+                        "properties": {
+                            "invincibility": {
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "drought": {
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "last_won_match": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "last_lost_match": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "goles_por_periodo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "goles_por_tipo": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "partidos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PartidoResource"
+                        }
+                    },
+                    "is_premium_restricted": {
+                        "type": "boolean"
                     }
                 },
                 "type": "object"

@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
     Route::post('payments/webhook', [PaymentController::class, 'webhook']);
 
     // Public Read routes (available for all visitors)
+    Route::get('arbitros/top', [ArbitroController::class, 'top']);
     Route::get('arbitros', [ArbitroController::class, 'index']);
     Route::get('arbitros/{id}', [ArbitroController::class, 'show']);
     

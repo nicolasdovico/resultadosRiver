@@ -18,6 +18,7 @@ class ArbitroController extends Controller
         tags: ['Arbitros'],
         parameters: [
             new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'letter', in: 'query', schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
@@ -42,9 +43,14 @@ class ArbitroController extends Controller
      */
     public function index(Request $request)
     {
+        $likeOperator = \DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
         $query = Arbitro::query();
         if ($request->has('q')) {
-            $query->where('ar_apno', 'ILIKE', "%{$request->q}%");
+            $query->where('ar_apno', $likeOperator, "%{$request->q}%");
+        }
+
+        if ($request->has('letter')) {
+            $query->where('ar_apno', $likeOperator, "{$request->letter}%");
         }
 
         $limit = $request->query('limit', 50);
@@ -53,6 +59,33 @@ class ArbitroController extends Controller
         }
 
         return ArbitroResource::collection($query->orderBy('ar_apno')->paginate($limit));
+    }
+
+    #[OA\Get(
+        path: '/v1/arbitros/top',
+        summary: 'Get top 5 referees who officiated the most matches for River',
+        operationId: 'getTopArbitros',
+        security: [['sanctum' => []]],
+        tags: ['Arbitros'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful operation',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/ArbitroResource')
+                )
+            )
+        ]
+    )]
+    public function top()
+    {
+        $topArbitros = Arbitro::withCount('partidos')
+            ->orderByDesc('partidos_count')
+            ->limit(5)
+            ->get();
+        
+        return ArbitroResource::collection($topArbitros);
     }
 
     #[OA\Post(
@@ -92,7 +125,23 @@ class ArbitroController extends Controller
      */
     public function show(string $id)
     {
-        $arbitro = Arbitro::with(['partidos.rival', 'partidos.torneo_rel'])->findOrFail($id);
+        $user = auth('sanctum')->user();
+        $isPremium = $user && $user->isPremium();
+
+        $arbitro = Arbitro::with([
+            'partidos' => function($query) use ($isPremium) {
+                $query->orderBy('fecha', 'desc');
+                if (!$isPremium) {
+                    $query->limit(10);
+                }
+            },
+            'partidos.torneo_rel',
+            'partidos.condicion_rel',
+            'partidos.fase_rel',
+            'partidos.rival',
+            'partidos.estadio_rel'
+        ])->findOrFail($id);
+
         return new ArbitroResource($arbitro);
     }
 

@@ -324,6 +324,10 @@ class PartidoController extends Controller
             $query->where('estadio', $request->estadio);
         }
 
+        if ($request->has('arbitro')) {
+            $query->where('arbitro', $request->arbitro);
+        }
+
         if ($request->has('fecha_desde')) {
             $query->where('fecha', '>=', $request->fecha_desde);
         }
@@ -460,6 +464,10 @@ class PartidoController extends Controller
 
         if ($request->has('estadio')) {
             $query->where('estadio', $request->estadio);
+        }
+
+        if ($request->has('arbitro')) {
+            $query->where('arbitro', $request->arbitro);
         }
 
         if ($request->has('fecha_desde')) {
