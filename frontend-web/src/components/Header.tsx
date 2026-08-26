@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Trophy, Users, UserRound, ShieldAlert, MapPin, Star, LogOut, Crown } from 'lucide-react';
+import { Menu, X, Trophy, Users, UserRound, ShieldAlert, MapPin, Star, LogOut, Crown, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const ScaleIcon = ({ size, className }: { size?: number, className?: string }) => (
@@ -34,6 +34,7 @@ export default function Header() {
     { href: "/rivales", label: "Rivales", icon: ShieldAlert },
     { href: "/estadios", label: "Estadios", icon: MapPin },
     { href: "/arbitros", label: "Árbitros", icon: ScaleIcon },
+    { href: "/consultas", label: "Consultas", icon: SlidersHorizontal, isPremium: true },
   ];
 
   return (
@@ -53,8 +54,9 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6 text-sm font-black uppercase tracking-widest">
             {navLinks.map(link => (
-              <Link key={link.href} href={link.href} className="hover:text-red-200 transition-colors">
+              <Link key={link.href} href={link.href} className="hover:text-red-200 transition-colors flex items-center gap-1">
                 {link.label}
+                {link.isPremium && <Crown size={12} className="text-yellow-300 fill-yellow-300" />}
               </Link>
             ))}
           </nav>
@@ -93,7 +95,10 @@ export default function Header() {
                   className="flex items-center space-x-3 p-4 bg-red-700/50 rounded-2xl hover:bg-red-600 transition-colors"
                 >
                   <link.icon size={18} className="text-red-200" />
-                  <span className="font-bold text-sm">{link.label}</span>
+                  <span className="font-bold text-sm flex items-center gap-1">
+                    {link.label}
+                    {link.isPremium && <Crown size={12} className="text-yellow-300 fill-yellow-300" />}
+                  </span>
                 </Link>
               ))}
             </div>

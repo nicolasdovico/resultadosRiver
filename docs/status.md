@@ -38,12 +38,13 @@
     - [x] Sistema dinámico de escudos de clubes desde el panel administrativo.
     - [x] Detalles técnicos en obleas (Fase, Nro. Fecha, Condición).
     - [x] Rediseño de cabeceras y estados de carga (Skeletons).
-    - [x] Mejora en la visualización de la ficha técnica para usuarios Premium.
+    - [x] Mejora en la visualización de la ficha técnica para usuarios Premium: incorporación de Fase del Torneo en barra superior, hero badge y ficha técnica lateral en Web y en el modal de Mobile, con resolución estandarizada de `fa_desc` en `PartidoResource` y `Fase`.
     - [x] **Optimización de Página de Partidos:** 
         - [x] Reubicación de filtros avanzados a la parte superior para mejor accesibilidad.
         - [x] Reordenamiento lógico del layout (Filtros -> Estadísticas -> Racha -> Listado).
         - [x] Rediseño del tablero de estadísticas con estética "Data Console", iconos dinámicos y jerarquía visual mejorada.
     - [x] **Filtros Avanzados en Partidos:** Implementación de selectores para Rival, Estadio, Árbitro, Torneo, Nivel, Condición y rango de fechas con lógica de tiers y etiquetas superiores.
+    - [x] **Componente SearchableSelect Mejorado:** Algoritmo de ranking por relevancia (`startsWith` > `wordStartsWith` > `contains`), resaltado visual de términos, scrollbar estilizada visible y navegación por teclado.
     - [x] **Optimización de Layout:** Rediseño de la grilla de filtros y eliminación de buscadores redundantes.
     - [x] **Racha de Resultados:** Implementación de visualización cronológica (Form Guide) con restricción Premium (efecto blur).
     - [x] **Tablero de Resumen en Partidos:** Implementación de panel de estadísticas globales (PJ, PG, PE, PP, GF, GC, DG) basado en los filtros aplicados, con desglose detallado por condición (Local, Visitante, Neutral) y fondo resaltado (negro), con restricción Premium (efecto blur) en las páginas de Partidos (Web y Mobile).
@@ -183,7 +184,26 @@
         - [x] **Consola de Rendimiento:** Producción de goles (CARP vs rival), **Semáforo de Forma** (grilla de 3 filas con 20 partidos cronológicos con tooltips avanzados y sin recorte de bordes) y **Rachas Históricas** (invictos y sequías máximas con duración y vigencia).
         - [x] **Historial de Partidos:** Componente `ArbitroMatches` con paginación dinámica (15 por página) y badges visuales de torneo, condición y resultado.
         - [x] **Dinámica de Goles:** Integración de `GoalsAnalysis` y `GoalMethodAnalysis` con soporte para filtro `arbitro` y paywall para usuarios Free.
-        - [x] **Paywall Reforzado:** Efecto blur y banners de conversión para rachas, semáforo, analítica avanzada e historial completo en usuarios Free.
+- [x] **Consola de Consultas Personalizadas (Exclusiva Premium):**
+    - [x] **Backend:**
+        - [x] Nuevo endpoint `GET /v1/stats/custom-query` que calcula de forma combinada y en tiempo real estadísticas agregadas (`stats`), top goleadores (`top_scorers`), rachas históricas (`streaks`) e hitos (`last_won_match`, `last_lost_match` con tooltips) para cualquier combinación de filtros.
+        - [x] Refactorización de filtrado dinámico en `PartidoController` mediante helper `applyCustomFilters` unificado para `index`, `goalsByPeriod`, `goalsByType` y `customQueryStats`.
+        - [x] Soporte para filtros por DT (`tecnico`), resultado (`resultado`: G, E, P), fase (`fase`), condición, árbitro, estadio, rival, torneo, nivel y rango de fechas.
+        - [x] Generación de esquemas OpenAPI / Swagger actualizados.
+        - [x] Tests de integración completos en `tests/Feature/CustomQueryApiTest.php` (2 tests pasando, 16 tests globales).
+    - [x] **Frontend Web:**
+        - [x] **Navegación:** Nueva opción "Consultas" en `Header.tsx` con icono `SlidersHorizontal` y badge dorado de corona para usuarios Premium.
+        - [x] **Query Builder:** Componente `CustomQueryFilters` con selects editables/buscables (`SearchableSelect`) para Rival, Torneo, Nivel, Fase, Estadio, Árbitro, Técnico, Condición, Resultado, Rango de Fechas y Búsqueda por texto.
+        - [x] **Chips de Filtros Activos:** Etiquetas removibles interactivas con conteo y botón de reseteo.
+        - [x] **Resultados Data Console (`/consultas`):**
+            - [x] Hero Head con título dinámico de la consulta y contador de partidos coincidentes.
+            - [x] Dashboard de 7 métricas clave (PJ, PG, PE, PP, GF, GC, DG).
+            - [x] Tarjetas de rendimiento: % Efectividad, Última Victoria (tooltip interactivo), Última Derrota (tooltip interactivo) y Vallas Invictas.
+            - [x] Podio de "Artilleros en esta Consulta" (Top 3 goleadores con avatares dinámicos y fotos).
+            - [x] Consola Lateral: Producción de goles (CARP vs Rival), **Semáforo de Forma** (últimos 20 partidos cronológicos con tooltips) y **Rachas Históricas** (invictos y sequías máximas con badge de vigencia).
+            - [x] Historial de Partidos: Componente `CustomQueryMatches` con paginación completa para usuarios Premium (15 por página, abarcando todos los partidos de la consulta sin truncamiento) y limitación a los primeros 3 partidos para usuarios Free con banner de paywall.
+        - [x] **Modelo Freemium Unificado:** Opciones de filtrado 100% idénticas (12 criterios completos) para usuarios Free y Premium en `/partidos` y `/consultas`. El usuario Free puede configurar y consultar con todas las 12 dimensiones, visualizando las estadísticas clave y los primeros 3 partidos, con bloqueos de *blur* y banners de conversión en los módulos avanzados (semáforo, rachas, analítica de goles y paginación completa).
+        - [x] **Optimización de Carga Inicial & Estado en Espera:** Carga instantánea (<100ms) al entrar a `/consultas` sin filtros evitando el cómputo masivo de toda la historia por adelantado, con pantalla de bienvenida interactiva, accesos rápidos (presets) y ejecución de estadísticas bajo demanda al configurar cualquier filtro.
 - [x] **Mejoras de Navegación y Componentes:**
     - [x] Creación del componente reutilizable `GoBack` con soporte de `href` y `label` para navegación flexible.
     - [x] Soporte para filtrado por sede (`estadio`) y juez (`arbitro`) en componentes de visualización `GoalsAnalysis` y `GoalMethodAnalysis`.

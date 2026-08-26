@@ -1,4 +1,5 @@
 import { formatLocalDate } from "@/utils/date";
+import { customInstance } from "@/api/custom-instance";
 import { getPartidos } from "@/api/generated/endpoints/partidos/partidos";
 import { getRivales } from "@/api/generated/endpoints/rivales/rivales";
 import { getEstadios } from "@/api/generated/endpoints/estadios/estadios";
@@ -54,9 +55,13 @@ export default async function PartidosPage({
   const fechaDesde = typeof params.fecha_desde === 'string' ? params.fecha_desde : undefined;
   const fechaHasta = typeof params.fecha_hasta === 'string' ? params.fecha_hasta : undefined;
   
+  const faseId = typeof params.fase === 'string' ? parseInt(params.fase, 10) : undefined;
+  const tecnicoId = typeof params.tecnico === 'string' ? parseInt(params.tecnico, 10) : undefined;
+  const resultado = typeof params.resultado === 'string' ? params.resultado : undefined;
+  
   let currentPage = typeof params.page === 'string' ? parseInt(params.page, 10) : 1;
 
-  const hasAnyFilter = query || rivalId || estadioId || arbitroId || torneoId || torneoNivel || condicion || fechaDesde || fechaHasta;
+  const hasAnyFilter = query || rivalId || estadioId || arbitroId || torneoId || torneoNivel || faseId || tecnicoId || condicion || resultado || fechaDesde || fechaHasta;
 
   // Force page 1 for free users on the default list
   if (isLoggedIn && !isPremium && !hasAnyFilter) {
@@ -66,12 +71,14 @@ export default async function PartidosPage({
   const fetchOptions = { headers: token ? { 'Authorization': `Bearer ${token}` } : {} } as any;
 
   // Fetch filter options in parallel
-  const [rivalesRes, estadiosRes, arbitrosRes, torneosRes, nivelesRes] = await Promise.all([
+  const [rivalesRes, estadiosRes, arbitrosRes, torneosRes, nivelesRes, fasesRes, tecnicosRes] = await Promise.all([
     getRivales({ limit: -1 } as any, fetchOptions),
     getEstadios({ limit: -1 } as any, fetchOptions),
     getArbitros({ limit: -1 } as any, fetchOptions),
     getTorneos({ limit: -1 } as any, fetchOptions),
     getTorneoNiveles(fetchOptions),
+    customInstance<{ data: any[] }>({ url: '/v1/fases', method: 'GET', ...fetchOptions }).catch(() => ({ data: [] })),
+    customInstance<{ data: any[] }>({ url: '/v1/tecnicos', method: 'GET', params: { limit: 100 }, ...fetchOptions }).catch(() => ({ data: [] })),
   ]);
 
   // @ts-ignore - access to .data because Laravel wraps the response in data
@@ -79,25 +86,30 @@ export default async function PartidosPage({
   // @ts-ignore
   const estadiosOptions = (estadiosRes.data || []).map((e: any) => ({ id: e.es_id, label: e.es_desc }));
   // @ts-ignore
-  const arbitrosOptions = (arbitrosRes.data || []).map((a: any) => ({ id: a.ar_id, label: a.ar_desc }));
+  const arbitrosOptions = (arbitrosRes.data || []).map((a: any) => ({ id: a.ar_id, label: a.ar_apno || a.ar_desc }));
   // @ts-ignore
   const torneosOptions = (torneosRes.data || []).map((t: any) => ({ id: t.tor_id, label: t.tor_desc }));
-  const nivelesOptions = nivelesRes as any || [];
+  const nivelesOptions = (nivelesRes as any) || [];
+  const fasesOptions = ((fasesRes as any).data || []).map((f: any) => ({ id: f.id_fase, label: f.fa_desc }));
+  const tecnicosOptions = ((tecnicosRes as any).data || []).map((tc: any) => ({ id: tc.id_tecnicos, label: tc.tec_ape_nom || tc.te_desc }));
 
   // Pass search params directly to API
   const response = await getPartidos(
     { 
       q: query,
       adversario: rivalId,
-      estadio: isPremium ? estadioId : undefined,
-      arbitro: isPremium ? arbitroId : undefined,
+      estadio: estadioId,
+      arbitro: arbitroId,
       torneo: torneoId,
-      torneo_nivel: isPremium ? torneoNivel : undefined,
+      torneo_nivel: torneoNivel,
+      fase: faseId,
+      tecnico: tecnicoId,
       condicion: condicion,
+      resultado: resultado,
       fecha_desde: fechaDesde,
       fecha_hasta: fechaHasta,
       hoy: (hasAnyFilter || isLoggedIn) ? undefined : true,
-      limit: (isLoggedIn && !hasAnyFilter) ? 10 : undefined,
+      limit: (isLoggedIn && !hasAnyFilter) ? 3 : undefined,
       page: currentPage
     } as any, 
     fetchOptions
@@ -108,25 +120,16 @@ export default async function PartidosPage({
   const lastPage = (response as any).meta?.last_page || 1;
   const summary = (response as any).meta?.summary || { pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0 };
 
-  // Restriction logic for non-premium users
+  // Restriction logic for non-premium users (strictly 3 matches)
   let shownCount = visiblePartidos.length;
   let isRestricted = false;
 
   if (isLoggedIn && !isPremium) {
-    if (hasAnyFilter) {
-      let limit = 20;
-      if (totalResults <= 20) {
-        limit = Math.max(3, Math.floor(totalResults * 0.5));
-      }
-      
-      if (totalResults > limit) {
-        visiblePartidos = visiblePartidos.slice(0, limit);
-        shownCount = limit;
-        isRestricted = true;
-      }
-    } else {
+    const limit = 3;
+    if (visiblePartidos.length > limit) {
+      visiblePartidos = visiblePartidos.slice(0, limit);
+      shownCount = limit;
       isRestricted = true;
-      shownCount = visiblePartidos.length;
     }
   }
 
@@ -235,6 +238,8 @@ export default async function PartidosPage({
           arbitros={arbitrosOptions}
           torneos={torneosOptions}
           niveles={nivelesOptions}
+          fases={fasesOptions}
+          tecnicos={tecnicosOptions}
           isPremium={isPremium}
         />
       )}
@@ -348,7 +353,7 @@ export default async function PartidosPage({
       <section className="relative">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">
-            {isLoggedIn && !hasAnyFilter ? 'Últimos 10 Partidos' : 'Archivo Histórico'}
+            {isLoggedIn && !hasAnyFilter ? 'Últimos 3 Partidos' : 'Archivo Histórico'}
           </h2>
         </div>
 

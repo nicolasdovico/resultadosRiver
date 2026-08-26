@@ -50,10 +50,10 @@ class ArbitroResource extends JsonResource
         // If detail view (matches relation is loaded and not top list)
         if ($isDetail) {
             if (!$isPremium) {
-                // Restrict to last 10 matches for free users
+                // Restrict to last 3 matches for free users
                 $totalPartidos = $partidosCollection->count();
-                if ($totalPartidos > 10) {
-                    $partidosCollection = $partidosCollection->sortByDesc('fecha')->take(10);
+                if ($totalPartidos > 3) {
+                    $partidosCollection = $partidosCollection->sortByDesc('fecha')->take(3);
                     $isRestricted = true;
                 }
             }

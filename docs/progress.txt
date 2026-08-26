@@ -1,5 +1,50 @@
 # Log de Progreso de Resultados River
 
+### 2026-08-26: Mejora de Ranking Inteligente, Scroll y Búsqueda en SearchableSelect
+- [x] **Frontend Web**:
+  - [x] **Algoritmo de Búsqueda por Relevancia**: Reorganización de resultados priorizando coincidencias que inician con el término de búsqueda (`startsWith`), seguidas de palabras internas que inician con el término (`wordStartsWith`) y finalmente coincidencias intermedias (`contains`), permitiendo encontrar rivales compuestos como "INDEPENDIENTE SANTA FE" desde las primeras letras ("i", "indep").
+  - [x] **Resaltado Visual de Coincidencias**: Subrayado y resaltado dinámico del término coincidente dentro de las opciones.
+  - [x] **Scrollbar y Altura Optimizada**: Inclusión de estilos CSS para `.custom-scrollbar` en `globals.css`, aumento de altura del menú desplegable (`max-h-72` / ~8-10 opciones visibles) y soporte de desplazamiento suave.
+  - [x] **Contador de Resultados & Navegación por Teclado**: Indicador en tiempo real de coincidencias encontradas, botón de limpieza de búsqueda rápida y soporte para navegación con flechas (`ArrowDown`/`ArrowUp`) y `Enter`.
+
+### 2026-08-26: Incorporación de Fase del Torneo en Fichas de Partidos y Corrección de Serialización
+- [x] **Backend**:
+  - [x] **Modelo `Fase`**: Implementación del accesor `getFaDescAttribute()` para resolver la propiedad `fase` / `fa_desc` en el modelo.
+  - [x] **`PartidoResource`**: Corrección del mapeo de `'fa_desc' => $this->fase_rel->fa_desc ?? $this->fase_rel->fase` para garantizar que la descripción de la fase siempre viaje serializada en la API de partidos.
+- [x] **Frontend Web**:
+  - [x] **Ficha de Detalle (`/partidos/[fecha]`)**: Incorporación de la fase en la barra superior (`Torneo • Fase`), en el badge meta del Hero Scoreboard (`Flag`) y en la tarjeta "Torneo & Fase" dentro de la Ficha Técnica del sidebar.
+- [x] **Frontend Mobile**:
+  - [x] **Modal de Partido (`modal.tsx`)**: Integración de la fase en la cabecera (`Torneo • Fase`) y en la cuadrícula de detalles técnicos (`Fase`).
+
+### 2026-08-26: Optimización de Carga Inicial y Estado en Espera en Consola de Consultas (/consultas)
+- [x] **Frontend Web**:
+  - [x] **Optimización de Carga Inicial**: Eliminación de llamadas pesadas al backend (`/v1/stats/custom-query` y `/v1/partidos`) en la carga inicial cuando no hay filtros activos (`hasActiveFilters = false`), reduciendo el tiempo de respuesta inicial de ~3-5s a <100ms.
+  - [x] **Historial Completo para Usuarios Premium**: Corrección del límite en `/v1/partidos` pasando `limit: -1` para que los usuarios Premium puedan explorar la totalidad de los partidos coincidentes (ej. los 253 partidos vs Boca Juniors) con paginación completa (15 partidos por página).
+  - [x] **Restricción Free a 3 Partidos**: Los usuarios Free visualizan únicamente los primeros 3 partidos con banner informativo de paywall indicando la totalidad de partidos bloqueados.
+  - [x] **Panel de Estado en Espera (Standby State)**: Implementación de pantalla interactiva de bienvenida con estética "Data Console" invitando a configurar filtros multi-variable.
+  - [x] **Consultas Sugeridas Rápidas (Presets)**: Inclusión de 4 accesos rápidos dinámicos (Superclásico vs Boca, Copa Libertadores, Ciclo Gallardo, y En el Monumental de Local).
+  - [x] **Manejo de Estado Sin Resultados**: Implementación de tarjeta explicativa con botón para limpiar filtros cuando una combinación no arroja partidos.
+- [x] **Backend**:
+  - [x] **Soporte de `limit=-1` en Partidos**: Actualización de `PartidoController@index` para devolver todos los registros (`get()`) sin truncamiento de paginación cuando se solicita `limit=-1`.
+  - [x] **Optimización SQL**: Mejora en `customQueryStats` (`PartidoController.php`) para consultar los top scorers utilizando subconsulta SQL en lugar de transferir arrays masivos de fechas en memoria.
+
+### 2026-04-24: Implementación de Consola de Consultas Personalizadas Multi-Variable (Exclusiva Premium)
+- [x] **Backend**:
+  - [x] **API & Analytics**: Nuevo endpoint `GET /v1/stats/custom-query` para cálculo en tiempo real de estadísticas globales (`stats`), top goleadores (`top_scorers`), rachas históricas (`streaks`) e hitos (`last_won_match`, `last_lost_match`) combinando cualquier filtro multidimensional.
+  - [x] **Filtros Dinámicos**: Refactorización de filtrado unificado con helper `applyCustomFilters` soportando DT (`tecnico`), resultado (`resultado`: G, E, P), fase (`fase`), condición, árbitro, estadio, rival, torneo, nivel y rango de fechas.
+  - [x] **Testing**: Suite de tests en `tests/Feature/CustomQueryApiTest.php` (2 tests pasando, 16 tests globales con 143 aserciones).
+  - [x] **OpenAPI**: Esquemas Swagger actualizados y regenerados.
+- [x] **Frontend Web**:
+  - [x] **Navegación**: Inclusión de "Consultas" en `Header.tsx` con icono `SlidersHorizontal` y distintivo de exclusividad con corona dorada.
+  - [x] **Query Builder (`CustomQueryFilters.tsx`)**: Formulario con selects editables/buscables (`SearchableSelect`) para todas las dimensiones (Rival, Torneo, Nivel, Fase, Estadio, Árbitro, DT, Condición, Resultado, Fechas y Búsqueda libre).
+  - [x] **Chips de Filtros Activos**: Etiquetas removibles con conteo interactivo y botón de reseteo rápido.
+  - [x] **Resultados Data Console (`/consultas`)**:
+    - [x] Hero Head con título dinámico de la consulta, 7 métricas clave (PJ, PG, PE, PP, GF, GC, DG) y podio de Artilleros.
+    - [x] 4 Tarjetas de Rendimiento: % Efectividad, Última Victoria (tooltip interactivo), Última Derrota (tooltip interactivo) y Vallas Invictas.
+    - [x] Consola Lateral: Producción de goles (CARP vs Rival), Semáforo de Forma (20 partidos con tooltips) y Rachas Históricas de Invictos y Sequías con badge de vigencia.
+    - [x] Historial Paginado: Componente `CustomQueryMatches.tsx` (15 partidos por página).
+  - [x] **Modelo Freemium Unificado**: Opciones de filtrado 100% idénticas (12 criterios completos) para usuarios Free y Premium en `/partidos` y `/consultas`. El usuario Free puede configurar y consultar con todas las 12 dimensiones, visualizando las estadísticas clave y los primeros 3 partidos, con bloqueos de *blur* y banners de conversión en los módulos avanzados (semáforo, rachas, analítica de goles y paginación completa).
+
 ### 2026-04-23: Implementación Integral de la Sección de Árbitros (Fase 6)
 - [x] **Backend**:
   - [x] **Modelo**: Implementación de `stats` (agregación SQL directa), `top_scorers`, `streaks` (invictos y sequías máximas con vigencia), `last_won_match`, `last_lost_match`, `goles_por_periodo` y `goles_por_tipo` en `Arbitro.php`.

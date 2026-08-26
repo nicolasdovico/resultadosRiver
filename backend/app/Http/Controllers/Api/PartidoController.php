@@ -299,42 +299,7 @@ class PartidoController extends Controller
     public function goalsByPeriod(Request $request)
     {
         $query = Partido::query();
-
-        // Apply filters
-        if ($request->has('q')) {
-            $searchTerm = $request->q;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->whereHas('rival', function ($r) use ($searchTerm) {
-                    $r->where('ri_desc', 'ILIKE', "%{$searchTerm}%");
-                })->orWhereHas('torneo_rel', function ($t) use ($searchTerm) {
-                    $t->where('tor_desc', 'ILIKE', "%{$searchTerm}%");
-                });
-            });
-        }
-
-        if ($request->has('torneo')) {
-            $query->where('torneo', $request->torneo);
-        }
-
-        if ($request->has('adversario')) {
-            $query->where('adversario', $request->adversario);
-        }
-
-        if ($request->has('estadio')) {
-            $query->where('estadio', $request->estadio);
-        }
-
-        if ($request->has('arbitro')) {
-            $query->where('arbitro', $request->arbitro);
-        }
-
-        if ($request->has('fecha_desde')) {
-            $query->where('fecha', '>=', $request->fecha_desde);
-        }
-
-        if ($request->has('fecha_hasta')) {
-            $query->where('fecha', '<=', $request->fecha_hasta);
-        }
+        $this->applyCustomFilters($query, $request);
 
         $matchDates = $query->pluck('fecha');
 
@@ -441,42 +406,7 @@ class PartidoController extends Controller
     public function goalsByType(Request $request)
     {
         $query = Partido::query();
-
-        // Apply filters
-        if ($request->has('q')) {
-            $searchTerm = $request->q;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->whereHas('rival', function ($r) use ($searchTerm) {
-                    $r->where('ri_desc', 'ILIKE', "%{$searchTerm}%");
-                })->orWhereHas('torneo_rel', function ($t) use ($searchTerm) {
-                    $t->where('tor_desc', 'ILIKE', "%{$searchTerm}%");
-                });
-            });
-        }
-
-        if ($request->has('torneo')) {
-            $query->where('torneo', $request->torneo);
-        }
-
-        if ($request->has('adversario')) {
-            $query->where('adversario', $request->adversario);
-        }
-
-        if ($request->has('estadio')) {
-            $query->where('estadio', $request->estadio);
-        }
-
-        if ($request->has('arbitro')) {
-            $query->where('arbitro', $request->arbitro);
-        }
-
-        if ($request->has('fecha_desde')) {
-            $query->where('fecha', '>=', $request->fecha_desde);
-        }
-
-        if ($request->has('fecha_hasta')) {
-            $query->where('fecha', '<=', $request->fecha_hasta);
-        }
+        $this->applyCustomFilters($query, $request);
 
         $matchDates = $query->pluck('fecha');
 
@@ -571,48 +501,7 @@ class PartidoController extends Controller
         $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador', 'goles.tipo_gol_rel', 'goles.periodo_rel']);
         $title = 'Resultados';
 
-        if ($request->filled('q')) {
-            $searchTerm = $request->q;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->whereHas('rival', function ($r) use ($searchTerm) {
-                    $r->where('ri_desc', 'ILIKE', "%{$searchTerm}%");
-                })->orWhereHas('torneo_rel', function ($t) use ($searchTerm) {
-                    $t->where('tor_desc', 'ILIKE', "%{$searchTerm}%");
-                });
-            });
-        }
-
-        if ($request->filled('torneo')) {
-            $query->where('torneo', $request->torneo);
-        }
-
-        if ($request->filled('adversario')) {
-            $query->where('adversario', $request->adversario);
-        }
-
-        if ($request->filled('arbitro')) {
-            $query->where('arbitro', $request->arbitro);
-        }
-
-        if ($request->filled('estadio')) {
-            $query->where('estadio', $request->estadio);
-        }
-
-        if ($request->filled('fase')) {
-            $query->where('fase', $request->fase);
-        }
-
-        if ($request->filled('condicion')) {
-            $query->where('condicion', $request->condicion);
-        }
-
-        if ($request->filled('fecha_desde')) {
-            $query->where('fecha', '>=', $request->fecha_desde);
-        }
-
-        if ($request->filled('fecha_hasta')) {
-            $query->where('fecha', '<=', $request->fecha_hasta);
-        }
+        $this->applyCustomFilters($query, $request);
 
         if ($request->boolean('hoy')) {
             $queryHoy = clone $query;
@@ -626,13 +515,6 @@ class PartidoController extends Controller
                 // Fallback to latest matches overall if nothing for today
                 $title = 'Resultados Recientes';
             }
-        }
-
-        // Filter by Torneo Nivel (requires join or whereHas)
-        if ($request->filled('torneo_nivel')) {
-            $query->whereHas('torneo_rel', function ($q) use ($request) {
-                $q->where('tor_nivel', $request->torneo_nivel);
-            });
         }
 
         // Calculate summary stats for ALL results matching the current filters
@@ -674,7 +556,11 @@ class PartidoController extends Controller
         // Always order by date descending if not specifically searching (or as a tie-breaker)
         $query->orderBy('fecha', 'desc');
 
-        $partidos = $query->paginate($limit);
+        if ($limit == -1) {
+            $partidos = $query->get();
+        } else {
+            $partidos = $query->paginate($limit);
+        }
 
         return PartidoResource::collection($partidos)->additional([
             'meta' => [
@@ -791,5 +677,276 @@ class PartidoController extends Controller
         $partido = Partido::findOrFail($fecha);
         $partido->delete();
         return response()->noContent();
+    }
+
+    #[OA\Get(
+        path: '/v1/stats/custom-query',
+        summary: 'Get full aggregated statistics, top scorers, streaks and hitos for custom query filter',
+        operationId: 'getCustomQueryStats',
+        security: [['sanctum' => []]],
+        tags: ['Stats'],
+        parameters: [
+            new OA\Parameter(name: 'adversario', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'torneo', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'torneo_nivel', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'fase', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'estadio', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'arbitro', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'tecnico', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'condicion', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'resultado', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'fecha_desde', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'fecha_hasta', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'q', in: 'query', schema: new OA\Schema(type: 'string')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Aggregated custom stats',
+                content: new OA\JsonContent(type: 'object')
+            )
+        ]
+    )]
+    public function customQueryStats(Request $request)
+    {
+        $query = Partido::query();
+        $this->applyCustomFilters($query, $request);
+
+        $raw = (clone $query)->selectRaw("
+            COUNT(*) as pj,
+            COALESCE(SUM(go_ri), 0) as gf,
+            COALESCE(SUM(go_ad), 0) as gc,
+            COALESCE(SUM(CASE WHEN go_ri > go_ad THEN 1 ELSE 0 END), 0) as pg,
+            COALESCE(SUM(CASE WHEN go_ri < go_ad THEN 1 ELSE 0 END), 0) as pp,
+            COALESCE(SUM(CASE WHEN go_ri = go_ad THEN 1 ELSE 0 END), 0) as pe,
+            COALESCE(SUM(CASE WHEN go_ad = 0 THEN 1 ELSE 0 END), 0) as vallas_invictas
+        ")->first();
+
+        $pj = (int) ($raw->pj ?? 0);
+        $pg = (int) ($raw->pg ?? 0);
+        $pe = (int) ($raw->pe ?? 0);
+        $pp = (int) ($raw->pp ?? 0);
+        $gf = (int) ($raw->gf ?? 0);
+        $gc = (int) ($raw->gc ?? 0);
+        $vallasInvictas = (int) ($raw->vallas_invictas ?? 0);
+
+        $puntos = ($pg * 3) + $pe;
+        $efectividad = $pj > 0 ? round(($puntos / ($pj * 3)) * 100, 2) : 0;
+
+        $stats = [
+            'pj' => $pj,
+            'pg' => $pg,
+            'pe' => $pe,
+            'pp' => $pp,
+            'gf' => $gf,
+            'gc' => $gc,
+            'dg' => $gf - $gc,
+            'puntos' => $puntos,
+            'vallas_invictas' => $vallasInvictas,
+            'efectividad' => $efectividad,
+        ];
+
+        $matchDatesQuery = (clone $query)->select('fecha');
+
+        // Top Scorers
+        $topScorers = DB::table('goles')
+            ->join('players', 'goles.gol_juga', '=', 'players.pl_id')
+            ->whereIn('goles.gol_fecha', $matchDatesQuery)
+            ->where('goles.gol_parariver', 1)
+            ->where('goles.gol_penal', '!=', 6)
+            ->select(
+                'players.pl_id',
+                'players.pl_apno',
+                'players.pl_foto',
+                DB::raw('count(*) as goals_count')
+            )
+            ->groupBy('players.pl_id', 'players.pl_apno', 'players.pl_foto')
+            ->orderByDesc('goals_count')
+            ->limit(3)
+            ->get()
+            ->map(function ($scorer) {
+                return [
+                    'pl_id' => $scorer->pl_id,
+                    'pl_apno' => trim($scorer->pl_apno),
+                    'pl_foto' => $scorer->pl_foto ? (str_starts_with($scorer->pl_foto, 'http') ? $scorer->pl_foto : config('app.url') . \Illuminate\Support\Facades\Storage::url($scorer->pl_foto)) : null,
+                    'goals_count' => (int) $scorer->goals_count
+                ];
+            });
+
+        // Streaks
+        $matchesChronological = (clone $query)->orderBy('fecha', 'asc')->get(['fecha', 'go_ri', 'go_ad']);
+        $streaks = $this->calculateStreaks($matchesChronological);
+
+        // Hitos
+        $lastWonMatch = (clone $query)->whereRaw('go_ri > go_ad')->with(['torneo_rel', 'condicion_rel', 'rival'])->orderBy('fecha', 'desc')->first();
+        $lastLostMatch = (clone $query)->whereRaw('go_ri < go_ad')->with(['torneo_rel', 'condicion_rel', 'rival'])->orderBy('fecha', 'desc')->first();
+
+        $formatHito = function($match) {
+            if (!$match) return null;
+            $date = \Carbon\Carbon::parse($match->fecha);
+            return [
+                'fecha' => $match->fecha,
+                'torneo' => $match->torneo_rel ? trim($match->torneo_rel->tor_desc) : 'Desconocido',
+                'condicion' => $match->condicion_rel ? trim($match->condicion_rel->descripcion) : 'Desconocido',
+                'rival' => $match->rival ? trim($match->rival->ri_desc) : 'Desconocido',
+                'escudo_url' => $match->rival ? $match->rival->escudo_url : null,
+                'resultado' => "{$match->go_ri} - {$match->go_ad}",
+                'dias_transcurridos' => $date->diffInDays(now()),
+            ];
+        };
+
+        return response()->json([
+            'data' => [
+                'stats' => $stats,
+                'top_scorers' => $topScorers,
+                'streaks' => $streaks,
+                'last_won_match' => $formatHito($lastWonMatch),
+                'last_lost_match' => $formatHito($lastLostMatch),
+            ]
+        ]);
+    }
+
+    /**
+     * Apply custom query filters to any match query.
+     */
+    protected function applyCustomFilters($query, Request $request)
+    {
+        $likeOperator = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+
+        if ($request->filled('q')) {
+            $searchTerm = $request->q;
+            $query->where(function ($q) use ($searchTerm, $likeOperator) {
+                $q->whereHas('rival', function ($r) use ($searchTerm, $likeOperator) {
+                    $r->where('ri_desc', $likeOperator, "%{$searchTerm}%");
+                })->orWhereHas('torneo_rel', function ($t) use ($searchTerm, $likeOperator) {
+                    $t->where('tor_desc', $likeOperator, "%{$searchTerm}%");
+                });
+            });
+        }
+
+        if ($request->filled('torneo')) {
+            $query->where('torneo', $request->torneo);
+        }
+
+        if ($request->filled('adversario')) {
+            $query->where('adversario', $request->adversario);
+        }
+
+        if ($request->filled('arbitro')) {
+            $query->where('arbitro', $request->arbitro);
+        }
+
+        if ($request->filled('estadio')) {
+            $query->where('estadio', $request->estadio);
+        }
+
+        if ($request->filled('fase')) {
+            $query->where('fase', $request->fase);
+        }
+
+        if ($request->filled('condicion')) {
+            $query->where('condicion', $request->condicion);
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('fecha', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->where('fecha', '<=', $request->fecha_hasta);
+        }
+
+        if ($request->filled('torneo_nivel')) {
+            $query->whereHas('torneo_rel', function ($q) use ($request) {
+                $q->where('tor_nivel', $request->torneo_nivel);
+            });
+        }
+
+        if ($request->filled('tecnico')) {
+            $tecnico = \App\Models\Tecnico::find($request->tecnico);
+            if ($tecnico) {
+                $query->where('fecha', '>=', $tecnico->desde);
+                if ($tecnico->hasta) {
+                    $query->where('fecha', '<=', $tecnico->hasta);
+                }
+            }
+        }
+
+        if ($request->filled('resultado')) {
+            $res = strtoupper($request->resultado);
+            if ($res === 'G') {
+                $query->whereRaw('go_ri > go_ad');
+            } elseif ($res === 'E') {
+                $query->whereRaw('go_ri = go_ad');
+            } elseif ($res === 'P') {
+                $query->whereRaw('go_ri < go_ad');
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * Calculate streaks (invincibility and drought) from chronological matches.
+     */
+    protected function calculateStreaks($partidos)
+    {
+        if ($partidos->isEmpty()) {
+            return [
+                'invincibility' => null,
+                'drought' => null
+            ];
+        }
+
+        $maxInv = ['count' => 0, 'start' => null, 'end' => null];
+        $maxDro = ['count' => 0, 'start' => null, 'end' => null];
+        $curInv = ['count' => 0, 'start' => null, 'end' => null];
+        $curDro = ['count' => 0, 'start' => null, 'end' => null];
+
+        foreach ($partidos as $p) {
+            $res = $p->resultado;
+            if ($res === 'G' || $res === 'E') {
+                if ($curInv['count'] === 0) $curInv['start'] = $p->fecha;
+                $curInv['count']++;
+                $curInv['end'] = $p->fecha;
+            } else {
+                if ($curInv['count'] > $maxInv['count']) $maxInv = $curInv;
+                $curInv = ['count' => 0, 'start' => null, 'end' => null];
+            }
+
+            if ($res === 'P' || $res === 'E') {
+                if ($curDro['count'] === 0) $curDro['start'] = $p->fecha;
+                $curDro['count']++;
+                $curDro['end'] = $p->fecha;
+            } else {
+                if ($curDro['count'] > $maxDro['count']) $maxDro = $curDro;
+                $curDro = ['count' => 0, 'start' => null, 'end' => null];
+            }
+        }
+
+        if ($curInv['count'] > $maxInv['count']) $maxInv = $curInv;
+        if ($curDro['count'] > $maxDro['count']) $maxDro = $curDro;
+
+        $lastMatchDate = $partidos->last()->fecha;
+
+        $process = function($streak) use ($lastMatchDate) {
+            if ($streak['count'] === 0) return null;
+            $start = \Carbon\Carbon::parse($streak['start']);
+            $end = \Carbon\Carbon::parse($streak['end']);
+            $isVigente = ($streak['end'] === $lastMatchDate);
+            return [
+                'count' => $streak['count'],
+                'start_date' => $streak['start'],
+                'end_date' => $streak['end'],
+                'duration_days' => $start->diffInDays($end),
+                'is_vigente' => $isVigente,
+                'days_since_end' => $isVigente ? 0 : \Carbon\Carbon::parse($streak['end'])->diffInDays(now())
+            ];
+        };
+
+        return [
+            'invincibility' => $process($maxInv),
+            'drought' => $process($maxDro)
+        ];
     }
 }

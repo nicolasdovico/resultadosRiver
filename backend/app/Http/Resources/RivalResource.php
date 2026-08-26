@@ -48,10 +48,10 @@ class RivalResource extends JsonResource
         // Si es la vista de detalle (relación partidos cargada)
         if ($isDetail) {
             if (!$isPremium) {
-                // Restringimos a los últimos 10 partidos para usuarios free
+                // Restringimos a los últimos 3 partidos para usuarios free
                 $totalPartidos = $partidosCollection->count();
-                if ($totalPartidos > 10) {
-                    $partidosCollection = $partidosCollection->sortByDesc('fecha')->take(10);
+                if ($totalPartidos > 3) {
+                    $partidosCollection = $partidosCollection->sortByDesc('fecha')->take(3);
                     $isRestricted = true;
                 }
             }
