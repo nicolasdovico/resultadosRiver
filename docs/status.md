@@ -45,10 +45,13 @@
         - [x] Rediseño del tablero de estadísticas con estética "Data Console", iconos dinámicos y jerarquía visual mejorada.
     - [x] **Filtros Avanzados en Partidos:** Implementación de selectores para Rival, Estadio, Árbitro, Torneo, Nivel, Condición y rango de fechas con lógica de tiers y etiquetas superiores.
     - [x] **Componente SearchableSelect Mejorado:** Algoritmo de ranking por relevancia (`startsWith` > `wordStartsWith` > `contains`), resaltado visual de términos, scrollbar estilizada visible y navegación por teclado.
-    - [x] **Optimización de Layout:** Rediseño de la grilla de filtros y eliminación de buscadores redundantes.
-    - [x] **Racha de Resultados:** Implementación de visualización cronológica (Form Guide) con restricción Premium (efecto blur).
+    - [x] **Clarificación y Visibilidad de Selects:** Renombramiento a `Tipo de Resultado` con placeholder explicativo (`Ganó, Empató o Perdió`), despliegue de opciones directas con indicadores de color, corrección de recorte por `overflow` y posicionamiento vertical inteligente (*Dropup / Dropdown*) con `z-index` elevado para visualización 100% visible en la última fila.
+    - [x] **Normalización de Nivel de Torneo:** Estandarización a mayúsculas (`NACIONAL` / `INTERNACIONAL`) en base de datos, mutadores de modelos, Filament y API (`/v1/torneos/niveles`), garantizando cobertura completa de los 4.213 partidos.
+    - [x] **Optimización de Layout:** Rediseño de la grilla de filtros a 11 criterios limpios y eliminación de la entrada de texto libre redundante.
+    - [x] **Racha de Resultados (Semáforo Global):** Visualización cronológica de los últimos 20 partidos de la consulta desacoplada del paginador (siempre muestra los 20 más recientes independientemente de la página navegada).
     - [x] **Tablero de Resumen en Partidos:** Implementación de panel de estadísticas globales (PJ, PG, PE, PP, GF, GC, DG) basado en los filtros aplicados, con desglose detallado por condición (Local, Visitante, Neutral) y fondo resaltado (negro), con restricción Premium (efecto blur) en las páginas de Partidos (Web y Mobile).
 - [x] **Robustecimiento Técnico:**
+    - [x] **Optimización Masiva de Rendimiento:** Creación de índices B-Tree en PostgreSQL para todas las FKs (`estadisticas`, `torneos`, `goles`), alivianamiento de relaciones en `PartidoController@index`, optimización de subconsultas en `TorneoController`, caché de catálogos en Node/Redis y paginación en servidor en `/consultas` (reduciendo la latencia de 20s a <700ms).
     - [x] Refactorización de la suite de tests para usar SQLite en memoria (Aislamiento total).
     - [x] Implementación de paginación para búsquedas Premium en el frontend web.
     - [x] Mejora en el análisis y procesamiento de goles.

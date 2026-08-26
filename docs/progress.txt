@@ -1,5 +1,41 @@
 # Log de Progreso de Resultados River
 
+### 2026-08-26: Simplificación de Consola de Filtros (Eliminación de Búsqueda por Texto Redundante)
+- [x] **Frontend Web**:
+  - [x] **Consolidación a 11 Criterios de Selección**: Se eliminó el campo de texto libre `"Búsqueda por texto"` en [CustomQueryFilters.tsx](file:///home/usuario/aplicaciones/resultadosRiver/frontend-web/src/components/CustomQueryFilters.tsx) y [PartidoFilters.tsx](file:///home/usuario/aplicaciones/resultadosRiver/frontend-web/src/components/PartidoFilters.tsx) para evitar redundancias con los selectores especializados de **Rival** y **Torneo**, dejando una cuadrícula limpia y ordenada de 11 filtros directos.
+
+### 2026-08-26: Desacoplamiento de Semáforo de Rachas del Paginador (Últimos 20 Partidos Globales)
+- [x] **Backend**:
+  - [x] **Endpoint `GET /v1/stats/custom-query`**: Se incorporó el campo `last_matches` en la respuesta con los 20 partidos más recientes correspondientes al conjunto de filtros aplicado, independientemente del paginado del listado histórico.
+- [x] **Frontend Web**:
+  - [x] **Semáforo de Racha Reciente**: Se actualizó `/consultas` para consumir `customData.last_matches` en lugar de la porción paginada `matchesList`, asegurando que el semáforo refleje siempre la racha histórica real de los 20 partidos más recientes sin importar qué página (`?page=2`, `?page=5`) se esté navegando.
+
+### 2026-08-26: Corrección de Visibilidad, Desborde (Overflow) y Posicionamiento Inteligente en Selects
+- [x] **Frontend Web**:
+  - [x] **Eliminación de Recorte (`overflow-hidden`)**: Se removió `overflow-hidden` del contenedor de filtros en `/consultas`, permitiendo que los selectores de la última fila floten libremente sin ser cortados por el borde del marco.
+  - [x] **Posicionamiento Vertical Inteligente (Dropup / Dropdown)**: En `SearchableSelect`, el menú detecta si hay espacio vertical insuficiente hacia abajo (`spaceBelow < dropdownHeight`) y se despliega automáticamente hacia arriba (`bottom-full`), garantizando que siempre se vean todas las opciones completas sin importar la posición del scroll o la pantalla.
+  - [x] **Elevación Dinámica de Capas (`z-index`)**: Asignación de `z-[70]` al select activo y `z-[100]` al menú desplegable para superponerse limpiamente sobre cualquier elemento inferior.
+
+### 2026-08-26: Optimización Masiva de Rendimiento en Consultas y Base de Datos (98% Reducción de Latencia)
+- [x] **Base de Datos (PostgreSQL)**:
+  - [x] **Migración de Índices B-Tree (`2026_08_26_000002_add_performance_indexes`)**: Creación de índices en claves foráneas y columnas de filtrado (`estadisticas.torneo`, `estadisticas.adversario`, `estadisticas.estadio`, `estadisticas.arbitro`, `estadisticas.condicion`, `estadisticas.fase`, `torneos.tor_nivel`, `torneos.tor_desc`, `rivales.ri_desc`, `goles.gol_fecha`, `goles.gol_juga`, `goles.gol_parariver`), eliminando escaneos secuenciales completos (Seq Scan).
+- [x] **Backend**:
+  - [x] **Optimización de Eager Loading en Listado**: En `PartidoController@index`, se eliminó la carga profunda innecesaria de `goles.jugador`, `goles.tipo_gol_rel` y `goles.periodo_rel` (más de 10.000 a 60.000 objetos Eloquent en memoria), reduciendo el payload de MBs a KBs.
+  - [x] **Optimización de Consulta de Torneos**: Reemplazo de las 256 subconsultas correlacionadas en `TorneoController@index` por un `leftJoinSub` agregado (reducción de 1.88s a 44ms).
+  - [x] **Caché en Memoria (Redis/Laravel Cache)**: Almacenamiento en caché de los catálogos estáticos de selectores (`rivales`, `torneos`, `niveles`, `estadios`, `arbitros`, `fases`).
+- [x] **Frontend Web**:
+  - [x] **Paginación Real en Servidor (`limit=15&page=X`)**: En `/consultas`, `CustomQueryMatches` pasa de cargar miles de registros en bloque a paginación server-side instantánea conectada por URL query parameters.
+  - [x] **Caché en Node.js Server (`catalogs.ts`)**: Módulo de caché en memoria de 10 minutos para las opciones de catálogos en Next.js SSR, reduciendo las peticiones concurrentes al backend de 9 a solo 2.
+  - [x] **Resultados de Rendimiento**: La carga de consultas complejas (como `torneo_nivel=INTERNACIONAL` o `NACIONAL`) pasó de **20-25+ segundos a ~600-700 milisegundos**.
+
+### 2026-08-26: Normalización de Nivel de Competencia (NACIONAL / INTERNACIONAL)
+- [x] **Backend**:
+  - [x] **Migración de Base de Datos**: Creación y ejecución de la migración `2026_08_26_000001_normalize_torneo_niveles_to_uppercase` que normalizó los 256 torneos existentes a `NACIONAL` (178 torneos) e `INTERNACIONAL` (78 torneos), corrigiendo typos históricos.
+  - [x] **Modelo `Torneo`**: Mutador `setTorNivelAttribute` para estandarizar en mayúsculas cualquier nuevo torneo.
+  - [x] **Panel Administrativo (Filament)**: Opciones de `tor_nivel` actualizadas a `NACIONAL` e `INTERNACIONAL` en `TorneoResource` y `PartidoResource`.
+  - [x] **Endpoint `GET /v1/torneos/niveles`**: Salida sanitizada con `strtoupper`, `unique` y `sort` devolviendo limpiamente `["INTERNACIONAL", "NACIONAL"]`.
+  - [x] **Filtro de Partidos (`applyCustomFilters`)**: Comparación insensible a mayúsculas/minúsculas (`UPPER(tor_nivel)`) garantizando cobertura del 100% de los 4.213 partidos (3.647 nacionales + 566 internacionales).
+
 ### 2026-08-26: Mejora de Ranking Inteligente, Scroll y Búsqueda en SearchableSelect
 - [x] **Frontend Web**:
   - [x] **Algoritmo de Búsqueda por Relevancia**: Reorganización de resultados priorizando coincidencias que inician con el término de búsqueda (`startsWith`), seguidas de palabras internas que inician con el término (`wordStartsWith`) y finalmente coincidencias intermedias (`contains`), permitiendo encontrar rivales compuestos como "INDEPENDIENTE SANTA FE" desde las primeras letras ("i", "indep").

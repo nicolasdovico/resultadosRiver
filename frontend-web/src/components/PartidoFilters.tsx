@@ -15,8 +15,7 @@ import {
   Calendar,
   Award,
   Sparkles,
-  Scale,
-  Search
+  Scale
 } from 'lucide-react';
 import SearchableSelect from './ui/SearchableSelect';
 
@@ -31,8 +30,8 @@ interface PartidoFiltersProps {
   arbitros: Option[];
   torneos: Option[];
   niveles: string[];
-  fases?: Option[];
-  tecnicos?: Option[];
+  fases: Option[];
+  tecnicos: Option[];
   isPremium?: boolean;
 }
 
@@ -43,9 +42,9 @@ const CONDICION_OPTIONS: Option[] = [
 ];
 
 const RESULTADO_OPTIONS: Option[] = [
-  { id: 'G', label: 'Victorias (G)' },
-  { id: 'E', label: 'Empates (E)' },
-  { id: 'P', label: 'Derrotas (P)' },
+  { id: 'G', label: 'Ganó (Victoria)' },
+  { id: 'E', label: 'Empató (Empate)' },
+  { id: 'P', label: 'Perdió (Derrota)' },
 ];
 
 export default function PartidoFilters({ 
@@ -54,8 +53,8 @@ export default function PartidoFilters({
   arbitros, 
   torneos, 
   niveles,
-  fases = [],
-  tecnicos = [],
+  fases,
+  tecnicos,
   isPremium = true 
 }: PartidoFiltersProps) {
   const { replace } = useRouter();
@@ -75,7 +74,6 @@ export default function PartidoFilters({
     resultado: searchParams.get('resultado') || '',
     fecha_desde: searchParams.get('fecha_desde') || '',
     fecha_hasta: searchParams.get('fecha_hasta') || '',
-    q: searchParams.get('q') || '',
   });
 
   const handleFilterChange = (name: string, value: string) => {
@@ -109,7 +107,6 @@ export default function PartidoFilters({
       resultado: '',
       fecha_desde: '',
       fecha_hasta: '',
-      q: '',
     };
     setFilters(resetFilters);
 
@@ -126,14 +123,13 @@ export default function PartidoFilters({
     params.delete('fecha_desde');
     params.delete('fecha_hasta');
     params.delete('page');
-    params.delete('q');
 
     startTransition(() => {
       replace(`${pathname}?${params.toString()}`);
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(v => v !== '') || searchParams.has('q');
+  const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
   return (
     <div className="bg-zinc-50/50 border border-zinc-100 rounded-[40px] p-8 mb-12">
@@ -143,7 +139,7 @@ export default function PartidoFilters({
             <Filter size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight">Filtros Avanzados (12 Criterios)</h3>
+            <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight">Filtros Avanzados (11 Criterios)</h3>
             <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Personaliza tu consulta histórica</p>
           </div>
         </div>
@@ -258,12 +254,12 @@ export default function PartidoFilters({
           />
         </div>
 
-        {/* 9. Resultado */}
+        {/* 9. Tipo de Resultado */}
         <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
-          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">9. Resultado</label>
+          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">9. Tipo de Resultado</label>
           <SearchableSelect
             icon={Sparkles}
-            placeholder="Todos los Resultados"
+            placeholder="Ganó, Empató o Perdió"
             value={filters.resultado}
             onChange={(val) => handleFilterChange('resultado', val)}
             options={RESULTADO_OPTIONS}
@@ -305,28 +301,6 @@ export default function PartidoFilters({
               />
               {filters.fecha_hasta && (
                 <div onClick={() => handleFilterChange('fecha_hasta', '')} className="p-1 hover:text-red-500 transition-colors text-zinc-300 absolute right-2 cursor-pointer z-10 bg-white/80 rounded-full">
-                  <X size={14} />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 12. Búsqueda por texto */}
-        <div className="col-span-1 md:col-span-6 lg:col-span-3 flex flex-col gap-2">
-          <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">12. Búsqueda</label>
-          <div className="relative group">
-            <div className={`w-full bg-white border-2 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold transition-all outline-none flex items-center justify-between min-h-[52px] ${filters.q ? 'border-red-100 bg-red-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
-              <Search className={`absolute left-4 top-1/2 -translate-y-1/2 ${filters.q ? 'text-red-500' : 'text-zinc-400'}`} size={18} />
-              <input 
-                type="text" 
-                placeholder="Rival o torneo..."
-                value={filters.q}
-                onChange={(e) => handleFilterChange('q', e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-zinc-900 text-xs font-bold"
-              />
-              {filters.q && (
-                <div onClick={() => handleFilterChange('q', '')} className="p-1 hover:text-red-500 transition-colors text-zinc-300 absolute right-2 cursor-pointer z-10 bg-white/80 rounded-full">
                   <X size={14} />
                 </div>
               )}

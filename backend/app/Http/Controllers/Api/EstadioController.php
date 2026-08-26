@@ -55,6 +55,11 @@ class EstadioController extends Controller
 
         $limit = $request->query('limit', 50);
         if ($limit == -1) {
+            if (!$request->has('q') && !$request->has('letter')) {
+                return \Illuminate\Support\Facades\Cache::remember('catalog:estadios:all', 3600, function () use ($query) {
+                    return EstadioResource::collection($query->orderBy('es_desc')->get());
+                });
+            }
             return EstadioResource::collection($query->orderBy('es_desc')->get());
         }
 

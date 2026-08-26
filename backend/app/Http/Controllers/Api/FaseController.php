@@ -25,7 +25,9 @@ class FaseController extends Controller
      */
     public function index()
     {
-        return FaseResource::collection(Fase::all());
+        return \Illuminate\Support\Facades\Cache::remember('catalog:fases:all', 3600, function () {
+            return FaseResource::collection(Fase::orderBy('id_fase')->get());
+        });
     }
 
     #[OA\Post(

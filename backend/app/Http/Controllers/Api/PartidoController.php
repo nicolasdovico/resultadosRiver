@@ -498,7 +498,7 @@ class PartidoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel', 'goles.jugador', 'goles.tipo_gol_rel', 'goles.periodo_rel']);
+        $query = Partido::with(['torneo_rel', 'rival', 'arbitro_rel', 'estadio_rel', 'condicion_rel', 'fase_rel']);
         $title = 'Resultados';
 
         $this->applyCustomFilters($query, $request);
@@ -795,6 +795,31 @@ class PartidoController extends Controller
             ];
         };
 
+        // Form Guide: 20 most recent matches matching the query
+        $last20Matches = (clone $query)
+            ->with(['rival', 'torneo_rel'])
+            ->orderBy('fecha', 'desc')
+            ->limit(20)
+            ->get()
+            ->map(function ($m) {
+                $res = 'E';
+                if ($m->go_ri > $m->go_ad) $res = 'G';
+                elseif ($m->go_ri < $m->go_ad) $res = 'P';
+                return [
+                    'fecha' => $m->fecha,
+                    'goles_river' => $m->go_ri,
+                    'goles_rival' => $m->go_ad,
+                    'resultado' => $res,
+                    'rival' => $m->rival ? [
+                        'ri_desc' => trim($m->rival->ri_desc),
+                        'escudo_url' => $m->rival->escudo_url,
+                    ] : null,
+                    'torneo' => $m->torneo_rel ? [
+                        'tor_desc' => trim($m->torneo_rel->tor_desc),
+                    ] : null,
+                ];
+            });
+
         return response()->json([
             'data' => [
                 'stats' => $stats,
@@ -802,6 +827,7 @@ class PartidoController extends Controller
                 'streaks' => $streaks,
                 'last_won_match' => $formatHito($lastWonMatch),
                 'last_lost_match' => $formatHito($lastLostMatch),
+                'last_matches' => $last20Matches,
             ]
         ]);
     }
@@ -857,8 +883,9 @@ class PartidoController extends Controller
         }
 
         if ($request->filled('torneo_nivel')) {
-            $query->whereHas('torneo_rel', function ($q) use ($request) {
-                $q->where('tor_nivel', $request->torneo_nivel);
+            $nivel = strtoupper(trim($request->torneo_nivel));
+            $query->whereHas('torneo_rel', function ($q) use ($nivel) {
+                $q->whereRaw('UPPER(tor_nivel) = ?', [$nivel]);
             });
         }
 

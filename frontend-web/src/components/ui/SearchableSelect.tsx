@@ -17,6 +17,7 @@ interface SearchableSelectProps {
   disabled?: boolean;
   isPremium?: boolean;
   requiredPremium?: boolean;
+  searchable?: boolean;
 }
 
 export default function SearchableSelect({
@@ -28,8 +29,11 @@ export default function SearchableSelect({
   disabled = false,
   isPremium = true,
   requiredPremium = false,
+  searchable,
 }: SearchableSelectProps) {
+  const isSearchable = searchable ?? options.length > 5;
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpwards, setOpenUpwards] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,13 +87,19 @@ export default function SearchableSelect({
   const handleToggle = () => {
     if (disabled || (!isPremium && requiredPremium)) return;
     const nextState = !isOpen;
-    setIsOpen(nextState);
-    if (nextState) {
+    if (nextState && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const estimatedHeight = isSearchable ? 320 : Math.min(filteredOptions.length * 44 + 20, 200);
+      setOpenUpwards(spaceBelow < estimatedHeight && rect.top > estimatedHeight);
       setHighlightedIndex(-1);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      if (isSearchable) {
+        setTimeout(() => inputRef.current?.focus(), 50);
+      }
     } else {
       setSearchTerm('');
     }
+    setIsOpen(nextState);
   };
 
   const handleSelect = (option: Option) => {
@@ -171,7 +181,7 @@ export default function SearchableSelect({
   const isRestricted = !isPremium && requiredPremium;
 
   return (
-    <div className="relative group" ref={containerRef} onKeyDown={handleKeyDown}>
+    <div className={`relative group ${isOpen ? 'z-[70]' : 'z-10'}`} ref={containerRef} onKeyDown={handleKeyDown}>
       {/* Premium Badge Overlay */}
       {isRestricted && (
         <div className="absolute -top-2 -right-1 z-10">
@@ -221,42 +231,48 @@ export default function SearchableSelect({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-zinc-200/80 rounded-2xl shadow-2xl shadow-zinc-900/10 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-          {/* Search Header */}
-          <div className="p-2.5 border-b border-zinc-100 sticky top-0 bg-white z-10">
-            <div className="relative flex items-center">
-              <Search className="absolute left-3 text-zinc-400 pointer-events-none" size={14} />
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setHighlightedIndex(0);
-                }}
-                placeholder="Escribe para buscar..."
-                className="w-full bg-zinc-50 border border-zinc-200/60 rounded-xl py-2 pl-9 pr-16 text-xs font-bold text-zinc-900 placeholder:text-zinc-400 outline-none focus:bg-white focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchTerm('');
-                    inputRef.current?.focus();
+        <div 
+          className={`absolute z-[100] w-full bg-white border border-zinc-200/80 rounded-2xl shadow-2xl shadow-zinc-900/15 overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${
+            openUpwards ? 'bottom-full mb-2' : 'top-full mt-2'
+          }`}
+        >
+          {/* Search Header (Only if searchable) */}
+          {isSearchable && (
+            <div className="p-2.5 border-b border-zinc-100 sticky top-0 bg-white z-10">
+              <div className="relative flex items-center">
+                <Search className="absolute left-3 text-zinc-400 pointer-events-none" size={14} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setHighlightedIndex(0);
                   }}
-                  className="absolute right-2 p-1 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200/60 rounded-full transition-colors"
-                >
-                  <X size={12} />
-                </button>
+                  placeholder="Escribe para buscar..."
+                  className="w-full bg-zinc-50 border border-zinc-200/60 rounded-xl py-2 pl-9 pr-16 text-xs font-bold text-zinc-900 placeholder:text-zinc-400 outline-none focus:bg-white focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm('');
+                      inputRef.current?.focus();
+                    }}
+                    className="absolute right-2 p-1 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200/60 rounded-full transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              {searchTerm && (
+                <div className="flex items-center justify-between px-2 pt-1.5 text-[9px] font-black uppercase text-zinc-400 tracking-wider">
+                  <span>Resultados</span>
+                  <span className="text-zinc-600">{filteredOptions.length} encontrados</span>
+                </div>
               )}
             </div>
-            {searchTerm && (
-              <div className="flex items-center justify-between px-2 pt-1.5 text-[9px] font-black uppercase text-zinc-400 tracking-wider">
-                <span>Resultados</span>
-                <span className="text-zinc-600">{filteredOptions.length} encontrados</span>
-              </div>
-            )}
-          </div>
+          )}
           
           {/* Options List */}
           <div 
@@ -281,7 +297,10 @@ export default function SearchableSelect({
                         : 'text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900'}
                     `}
                   >
-                    <span className="truncate flex-1 mr-2">
+                    <span className="truncate flex-1 mr-2 flex items-center gap-2">
+                      {option.id === 'G' && <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block" />}
+                      {option.id === 'E' && <span className="w-2 h-2 rounded-full bg-zinc-400 shrink-0 inline-block" />}
+                      {option.id === 'P' && <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 inline-block" />}
                       {renderHighlighted(option.label, searchTerm)}
                     </span>
                     {isSelected && (

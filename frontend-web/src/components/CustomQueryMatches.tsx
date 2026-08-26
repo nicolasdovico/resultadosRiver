@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams, usePathname } from 'next/navigation';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { formatLocalDate } from '@/utils/date';
 import ClubShield from '@/components/ClubShield';
@@ -37,27 +37,33 @@ interface Partido {
 
 interface CustomQueryMatchesProps {
   partidos: Partido[];
+  currentPage?: number;
+  totalPages?: number;
   itemsPerPage?: number;
   isPremium?: boolean;
   totalMatchesCount?: number;
 }
 
-export default function CustomQueryMatches({ partidos, itemsPerPage = 15, isPremium = true, totalMatchesCount }: CustomQueryMatchesProps) {
-  const [currentPage, setCurrentPage] = useState(1);
+export default function CustomQueryMatches({
+  partidos,
+  currentPage = 1,
+  totalPages = 1,
+  isPremium = true,
+  totalMatchesCount,
+}: CustomQueryMatchesProps) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const displayedPartidos = !isPremium ? partidos.slice(0, 3) : partidos;
   const totalCount = totalMatchesCount ?? partidos.length;
 
-  // Sort matches by date descending
-  const sortedMatches = [...displayedPartidos].sort(
-    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-  );
+  const createPageURL = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+  };
 
-  const totalPages = Math.ceil(sortedMatches.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentMatches = sortedMatches.slice(startIndex, startIndex + itemsPerPage);
-
-  if (sortedMatches.length === 0) {
+  if (displayedPartidos.length === 0) {
     return (
       <div className="bg-white rounded-[48px] p-24 text-center border-2 border-dashed border-zinc-100">
         <p className="text-zinc-400 font-black uppercase text-xs tracking-[0.2em]">
@@ -70,7 +76,7 @@ export default function CustomQueryMatches({ partidos, itemsPerPage = 15, isPrem
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 gap-4">
-        {currentMatches.map((p) => (
+        {displayedPartidos.map((p) => (
           <Link
             key={p.fecha}
             href={`/partidos/${p.fecha}`}
@@ -185,39 +191,45 @@ export default function CustomQueryMatches({ partidos, itemsPerPage = 15, isPrem
       {/* Pagination Controls */}
       {totalPages > 1 && isPremium && (
         <div className="flex justify-center items-center space-x-2">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 border rounded-xl font-black text-sm transition-all ${
-              currentPage === 1
-                ? 'bg-zinc-50 border-zinc-100 text-zinc-400 cursor-not-allowed opacity-50'
-                : 'bg-white border-zinc-200 text-zinc-600 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center">
+          {currentPage > 1 ? (
+            <Link
+              href={createPageURL(currentPage - 1)}
+              scroll={false}
+              className="px-4 py-2 border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white rounded-xl font-black text-sm transition-all"
+            >
+              <div className="flex items-center">
+                <ChevronLeft size={16} className="mr-1" />
+                Anterior
+              </div>
+            </Link>
+          ) : (
+            <div className="px-4 py-2 border rounded-xl font-black text-sm bg-zinc-50 border-zinc-100 text-zinc-400 cursor-not-allowed opacity-50 flex items-center">
               <ChevronLeft size={16} className="mr-1" />
               Anterior
             </div>
-          </button>
+          )}
 
           <div className="px-6 py-2 bg-zinc-900 text-white rounded-xl font-black text-sm italic shadow-lg">
             {currentPage} / {totalPages}
           </div>
 
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 border rounded-xl font-black text-sm transition-all ${
-              currentPage === totalPages
-                ? 'bg-zinc-50 border-zinc-100 text-zinc-400 cursor-not-allowed opacity-50'
-                : 'bg-white border-zinc-200 text-zinc-600 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center">
+          {currentPage < totalPages ? (
+            <Link
+              href={createPageURL(currentPage + 1)}
+              scroll={false}
+              className="px-4 py-2 border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white rounded-xl font-black text-sm transition-all"
+            >
+              <div className="flex items-center">
+                Siguiente
+                <ChevronRight size={16} className="ml-1" />
+              </div>
+            </Link>
+          ) : (
+            <div className="px-4 py-2 border rounded-xl font-black text-sm bg-zinc-50 border-zinc-100 text-zinc-400 cursor-not-allowed opacity-50 flex items-center">
               Siguiente
               <ChevronRight size={16} className="ml-1" />
             </div>
-          </button>
+          )}
         </div>
       )}
     </div>

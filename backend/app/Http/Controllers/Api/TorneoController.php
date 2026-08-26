@@ -60,7 +60,15 @@ class TorneoController extends Controller
     )]
     public function niveles()
     {
-        return Torneo::distinct()->pluck('tor_nivel')->filter()->values();
+        return \Illuminate\Support\Facades\Cache::remember('catalog:torneos:niveles', 3600, function () {
+            return Torneo::distinct()
+                ->pluck('tor_nivel')
+                ->filter()
+                ->map(fn($n) => strtoupper(trim($n)))
+                ->unique()
+                ->sort()
+                ->values();
+        });
     }
 
     /**
@@ -71,13 +79,16 @@ class TorneoController extends Controller
         $user = $request->user('sanctum');
         $isPremium = $user && $user->isPremium();
         
-        $query = Torneo::query();
+        $query = Torneo::query()->select('torneos.*');
 
-        // Subquery to get the latest match year for each tournament
-        $query->addSelect([
-            'ultimo_anio' => Partido::selectRaw('EXTRACT(YEAR FROM MAX(fecha))')
-                ->whereColumn('torneo', 'torneos.tor_id')
-        ]);
+        // Optimized join to get the latest match year for each tournament
+        $query->leftJoinSub(
+            Partido::selectRaw('torneo as t_id, EXTRACT(YEAR FROM MAX(fecha)) as ultimo_anio')->groupBy('torneo'),
+            'max_years',
+            'torneos.tor_id',
+            '=',
+            'max_years.t_id'
+        );
 
         if ($request->has('q')) {
             $query->where('tor_desc', 'like', '%' . mb_strtoupper($request->q, 'UTF-8') . '%');
@@ -89,12 +100,17 @@ class TorneoController extends Controller
             });
         }
 
-        $query->orderBy('ultimo_anio', 'desc')->orderBy('tor_desc', 'asc');
+        $query->orderBy('max_years.ultimo_anio', 'desc')->orderBy('tor_desc', 'asc');
 
         // Pagination logic
         $perPage = $request->query('limit', 15);
         
         if ($perPage == -1) {
+            if (!$request->has('q') && !$request->has('año')) {
+                return \Illuminate\Support\Facades\Cache::remember('catalog:torneos:all', 3600, function () use ($query) {
+                    return TorneoResource::collection($query->get());
+                });
+            }
             return TorneoResource::collection($query->get());
         }
 

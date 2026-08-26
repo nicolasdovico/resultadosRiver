@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 
 use OpenApi\Attributes as OA;
 
+use Illuminate\Support\Facades\Cache;
+
 class RivalController extends Controller
 {
     #[OA\Get(
@@ -55,6 +57,11 @@ class RivalController extends Controller
 
         $limit = $request->query('limit', 50);
         if ($limit == -1) {
+            if (!$request->has('q') && !$request->has('letter')) {
+                return Cache::remember('catalog:rivales:all', 3600, function () use ($query) {
+                    return RivalResource::collection($query->orderBy('ri_desc')->get());
+                });
+            }
             return RivalResource::collection($query->orderBy('ri_desc')->get());
         }
 

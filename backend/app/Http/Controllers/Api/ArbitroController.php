@@ -55,6 +55,11 @@ class ArbitroController extends Controller
 
         $limit = $request->query('limit', 50);
         if ($limit == -1) {
+            if (!$request->has('q') && !$request->has('letter')) {
+                return \Illuminate\Support\Facades\Cache::remember('catalog:arbitros:all', 3600, function () use ($query) {
+                    return ArbitroResource::collection($query->orderBy('ar_apno')->get());
+                });
+            }
             return ArbitroResource::collection($query->orderBy('ar_apno')->get());
         }
 

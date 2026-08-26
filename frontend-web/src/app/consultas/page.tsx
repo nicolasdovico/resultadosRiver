@@ -31,6 +31,7 @@ import GoalsAnalysis from "@/components/GoalsAnalysis";
 import GoalMethodAnalysis from "@/components/GoalMethodAnalysis";
 import ClubShield from "@/components/ClubShield";
 import AccessControl from "@/components/AccessControl";
+import { getCachedCatalogs } from "@/lib/catalogs";
 
 interface Option {
   id: string | number;
@@ -81,6 +82,19 @@ interface CustomStatsData {
   };
   last_won_match: HitoMatch | null;
   last_lost_match: HitoMatch | null;
+  last_matches?: Array<{
+    fecha: string;
+    goles_river: number;
+    goles_rival: number;
+    resultado: string;
+    rival?: {
+      ri_desc: string;
+      escudo_url?: string;
+    };
+    torneo?: {
+      tor_desc: string;
+    };
+  }>;
 }
 
 export default async function ConsultasPage({
@@ -99,44 +113,8 @@ export default async function ConsultasPage({
 
   const fetchOptions = { headers: token ? { "Authorization": `Bearer ${token}` } : {} } as any;
 
-  // 1. Fetch filter catalog options in parallel (lightweight)
-  let rivales: Option[] = [];
-  let torneos: Option[] = [];
-  let niveles: string[] = [];
-  let fases: Option[] = [];
-  let estadios: Option[] = [];
-  let arbitros: Option[] = [];
-  let tecnicos: Option[] = [];
-
-  try {
-    const [
-      rivalesRes,
-      torneosRes,
-      nivelesRes,
-      fasesRes,
-      estadiosRes,
-      arbitrosRes,
-      tecnicosRes
-    ] = await Promise.all([
-      customInstance<{ data: any[] }>({ url: '/v1/rivales', method: 'GET', params: { limit: -1 }, ...fetchOptions }),
-      customInstance<{ data: any[] }>({ url: '/v1/torneos', method: 'GET', params: { limit: -1 }, ...fetchOptions }),
-      customInstance<string[]>({ url: '/v1/torneos/niveles', method: 'GET', ...fetchOptions }),
-      customInstance<{ data: any[] }>({ url: '/v1/fases', method: 'GET', ...fetchOptions }),
-      customInstance<{ data: any[] }>({ url: '/v1/estadios', method: 'GET', params: { limit: -1 }, ...fetchOptions }),
-      customInstance<{ data: any[] }>({ url: '/v1/arbitros', method: 'GET', params: { limit: -1 }, ...fetchOptions }),
-      customInstance<{ data: any[] }>({ url: '/v1/tecnicos', method: 'GET', params: { limit: 100 }, ...fetchOptions }),
-    ]);
-
-    rivales = (rivalesRes.data || []).map((r: any) => ({ id: r.ri_id, label: r.ri_desc }));
-    torneos = (torneosRes.data || []).map((t: any) => ({ id: t.tor_id, label: t.tor_desc }));
-    niveles = Array.isArray(nivelesRes) ? nivelesRes : [];
-    fases = (fasesRes.data || []).map((f: any) => ({ id: f.id_fase, label: f.fa_desc }));
-    estadios = (estadiosRes.data || []).map((e: any) => ({ id: e.es_id, label: e.es_desc }));
-    arbitros = (arbitrosRes.data || []).map((a: any) => ({ id: a.ar_id, label: a.ar_apno || a.ar_desc }));
-    tecnicos = (tecnicosRes.data || []).map((tc: any) => ({ id: tc.id_tecnicos, label: tc.tec_ape_nom || tc.te_desc }));
-  } catch (error) {
-    console.error("Error fetching filter catalogs:", error);
-  }
+  // 1. Fetch filter catalog options (cached in memory)
+  const { rivales, torneos, niveles, fases, estadios, arbitros, tecnicos } = await getCachedCatalogs(fetchOptions);
 
   // 2. Identify active filters
   const queryParams: Record<string, any> = {};
@@ -151,13 +129,15 @@ export default async function ConsultasPage({
   if (typeof params.resultado === 'string' && params.resultado) queryParams.resultado = params.resultado;
   if (typeof params.fecha_desde === 'string' && params.fecha_desde) queryParams.fecha_desde = params.fecha_desde;
   if (typeof params.fecha_hasta === 'string' && params.fecha_hasta) queryParams.fecha_hasta = params.fecha_hasta;
-  if (typeof params.q === 'string' && params.q) queryParams.q = params.q;
 
   const hasActiveFilters = Object.keys(queryParams).length > 0;
 
   // 3. Only fetch custom aggregated stats & matches when at least one filter is configured
   let customData: CustomStatsData | null = null;
   let matchesList: any[] = [];
+  const page = typeof params.page === 'string' ? Math.max(1, parseInt(params.page, 10) || 1) : 1;
+  const perPage = 15;
+  let totalPages = 1;
 
   if (hasActiveFilters) {
     try {
@@ -168,16 +148,18 @@ export default async function ConsultasPage({
           params: queryParams,
           ...fetchOptions
         }),
-        customInstance<{ data: any[] }>({
+        customInstance<{ data: any[]; meta?: { total?: number; last_page?: number; current_page?: number } }>({
           url: '/v1/partidos',
           method: 'GET',
-          params: { ...queryParams, limit: -1 },
+          params: { ...queryParams, limit: perPage, page },
           ...fetchOptions
         }),
       ]);
 
       customData = statsRes.data;
       matchesList = matchesRes.data || [];
+      const totalMatches = (matchesRes as any)?.meta?.total ?? customData?.stats?.pj ?? matchesList.length;
+      totalPages = (matchesRes as any)?.meta?.last_page ?? Math.ceil(totalMatches / perPage) ?? 1;
     } catch (error) {
       console.error("Error fetching custom query results:", error);
     }
@@ -196,7 +178,9 @@ export default async function ConsultasPage({
     efectividad: 0,
   };
 
-  const last20Matches = [...matchesList].slice(0, 20).reverse();
+  const last20Matches = customData?.last_matches 
+    ? [...customData.last_matches].reverse() 
+    : [...matchesList].slice(0, 20).reverse();
 
   const formatStreakDate = (date: string) => {
     return new Date(date + 'T12:00:00').toLocaleDateString('es-AR', { 
@@ -681,7 +665,9 @@ export default async function ConsultasPage({
 
                   <CustomQueryMatches 
                     partidos={matchesList} 
-                    itemsPerPage={15} 
+                    currentPage={page}
+                    totalPages={totalPages}
+                    itemsPerPage={perPage} 
                     isPremium={isPremium} 
                     totalMatchesCount={stats.pj}
                   />

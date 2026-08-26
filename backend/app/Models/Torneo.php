@@ -17,6 +17,18 @@ class Torneo extends Model
     public $timestamps = false;
     protected $guarded = [];
 
+    public function setTorNivelAttribute($value): void
+    {
+        $val = strtoupper(trim((string) $value));
+        if (str_starts_with($val, 'INTER')) {
+            $this->attributes['tor_nivel'] = 'INTERNACIONAL';
+        } elseif (str_starts_with($val, 'NAC')) {
+            $this->attributes['tor_nivel'] = 'NACIONAL';
+        } else {
+            $this->attributes['tor_nivel'] = $val;
+        }
+    }
+
     public function partidos(): HasMany
     {
         return $this->hasMany(Partido::class, 'torneo', 'tor_id');

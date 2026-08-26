@@ -13,7 +13,6 @@ import {
   SlidersHorizontal,
   Home,
   Calendar,
-  Search,
   Scale,
   Sparkles,
   Award
@@ -43,9 +42,9 @@ const CONDICION_OPTIONS: Option[] = [
 ];
 
 const RESULTADO_OPTIONS: Option[] = [
-  { id: 'G', label: 'Victorias (G)' },
-  { id: 'E', label: 'Empates (E)' },
-  { id: 'P', label: 'Derrotas (P)' },
+  { id: 'G', label: 'Ganó (Victoria)' },
+  { id: 'E', label: 'Empató (Empate)' },
+  { id: 'P', label: 'Perdió (Derrota)' },
 ];
 
 export default function CustomQueryFilters({
@@ -75,7 +74,6 @@ export default function CustomQueryFilters({
     resultado: searchParams.get('resultado') || '',
     fecha_desde: searchParams.get('fecha_desde') || '',
     fecha_hasta: searchParams.get('fecha_hasta') || '',
-    q: searchParams.get('q') || '',
   });
 
   useEffect(() => {
@@ -91,7 +89,6 @@ export default function CustomQueryFilters({
       resultado: searchParams.get('resultado') || '',
       fecha_desde: searchParams.get('fecha_desde') || '',
       fecha_hasta: searchParams.get('fecha_hasta') || '',
-      q: searchParams.get('q') || '',
     });
   }, [searchParams]);
 
@@ -125,7 +122,6 @@ export default function CustomQueryFilters({
       resultado: '',
       fecha_desde: '',
       fecha_hasta: '',
-      q: '',
     };
     setFilters(resetFilters);
 
@@ -156,13 +152,12 @@ export default function CustomQueryFilters({
       case 'resultado': return `Resultado: ${RESULTADO_OPTIONS.find(r => r.id === value)?.label || value}`;
       case 'fecha_desde': return `Desde: ${value}`;
       case 'fecha_hasta': return `Hasta: ${value}`;
-      case 'q': return `Búsqueda: "${value}"`;
       default: return `${key}: ${value}`;
     }
   };
 
   return (
-    <div className="bg-white border border-zinc-200/80 rounded-[40px] p-6 md:p-8 mb-12 shadow-xl shadow-zinc-900/5 relative overflow-hidden">
+    <div className="bg-white border border-zinc-200/80 rounded-[40px] p-6 md:p-8 mb-12 shadow-xl shadow-zinc-900/5 relative">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-6 border-b border-zinc-100">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-red-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-red-600/20">
@@ -308,14 +303,14 @@ export default function CustomQueryFilters({
           />
         </div>
 
-        {/* 9. Resultado */}
+        {/* 9. Tipo de Resultado */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-2 flex items-center gap-1.5">
-            <Sparkles size={12} className="text-red-500" /> Resultado
+            <Sparkles size={12} className="text-red-500" /> Tipo de Resultado
           </label>
           <SearchableSelect
             icon={Sparkles}
-            placeholder="Todos los Resultados"
+            placeholder="Ganó, Empató o Perdió"
             value={filters.resultado}
             onChange={(val) => handleFilterChange('resultado', val)}
             options={RESULTADO_OPTIONS}
@@ -349,31 +344,6 @@ export default function CustomQueryFilters({
               onChange={(e) => handleFilterChange('fecha_hasta', e.target.value)}
               className="w-full bg-white border-2 border-zinc-100 hover:border-zinc-200 focus:border-red-400 focus:ring-4 focus:ring-red-50 rounded-2xl py-3 px-4 text-xs font-bold text-zinc-800 transition-all outline-none min-h-[52px]"
             />
-          </div>
-        </div>
-
-        {/* 12. Búsqueda libre */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-2 flex items-center gap-1.5">
-            <Search size={12} className="text-red-500" /> Búsqueda por texto
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={filters.q}
-              onChange={(e) => handleFilterChange('q', e.target.value)}
-              placeholder="Buscar por rival o torneo..."
-              className="w-full bg-white border-2 border-zinc-100 hover:border-zinc-200 focus:border-red-400 focus:ring-4 focus:ring-red-50 rounded-2xl py-3 pl-10 pr-4 text-xs font-bold text-zinc-800 transition-all outline-none min-h-[52px]"
-            />
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
-            {filters.q && (
-              <button
-                onClick={() => handleFilterChange('q', '')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500"
-              >
-                <X size={14} />
-              </button>
-            )}
           </div>
         </div>
       </div>

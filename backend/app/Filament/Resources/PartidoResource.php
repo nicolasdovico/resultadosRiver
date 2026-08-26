@@ -48,8 +48,8 @@ class PartidoResource extends Resource
                                                 Forms\Components\Select::make('tor_nivel')
                                                     ->label('Nivel')
                                                     ->options([
-                                                        'Nacional' => 'Nacional',
-                                                        'Internacional' => 'Internacional',
+                                                        'NACIONAL' => 'NACIONAL',
+                                                        'INTERNACIONAL' => 'INTERNACIONAL',
                                                     ])
                                                     ->required(),
                                             ]),
