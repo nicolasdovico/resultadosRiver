@@ -59,7 +59,9 @@ export default function PartidoModal() {
           <Ionicons name="close" size={28} color="#0f172a" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerTorneo}>{partido.torneo?.tor_desc}</Text>
+          <Text style={styles.headerTorneo}>
+            {partido.torneo?.tor_desc}{partido.fase?.fa_desc ? ` • ${partido.fase.fa_desc}` : ''}
+          </Text>
           <Text style={styles.headerFecha}>{formatLocalDate(partido.fecha || '')}</Text>
         </View>
         <View style={{ width: 40 }} />
@@ -106,6 +108,16 @@ export default function PartidoModal() {
 
         {/* Detalles */}
         <View style={styles.detailsGrid}>
+          {partido.fase?.fa_desc && (
+            <View style={styles.detailItem}>
+              <Ionicons name="flag-outline" size={20} color="#64748b" />
+              <View>
+                <Text style={styles.detailLabel}>Fase</Text>
+                <Text style={styles.detailValue}>{partido.fase.fa_desc}</Text>
+              </View>
+            </View>
+          )}
+
           <View style={styles.detailItem}>
             <Ionicons name="location-outline" size={20} color="#64748b" />
             <View>
@@ -126,7 +138,7 @@ export default function PartidoModal() {
             <Ionicons name="people-outline" size={20} color="#64748b" />
             <View>
               <Text style={styles.detailLabel}>Condición</Text>
-              <Text style={styles.detailValue}>{partido.condicion?.con_desc || 'No informado'}</Text>
+              <Text style={styles.detailValue}>{partido.condicion?.co_desc || (partido.condicion as any)?.con_desc || 'No informado'}</Text>
             </View>
           </View>
 

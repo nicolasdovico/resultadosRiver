@@ -90,7 +90,7 @@ class PartidoResource extends JsonResource
             'fase' => $this->whenLoaded('fase_rel', function() {
                 return [
                     'id_fase' => $this->fase_rel->id_fase,
-                    'fa_desc' => $this->fase_rel->fa_desc,
+                    'fa_desc' => $this->fase_rel->fa_desc ?? $this->fase_rel->fase,
                 ];
             }),
             'tecnico' => [

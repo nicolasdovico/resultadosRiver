@@ -15,6 +15,11 @@ class Fase extends Model
     public $timestamps = false;
     protected $guarded = [];
 
+    public function getFaDescAttribute(): ?string
+    {
+        return $this->attributes['fase'] ?? $this->attributes['fa_desc'] ?? null;
+    }
+
     public function partidos(): HasMany
     {
         return $this->hasMany(Partido::class, 'fase', 'id_fase');

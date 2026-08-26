@@ -110,7 +110,7 @@ export default async function PartidoDetailPage({
           <GoBack />
           <div className="flex flex-col items-center">
             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
-              {partido.torneo?.tor_desc}
+              {partido.torneo?.tor_desc}{partido.fase?.fa_desc ? ` • ${partido.fase.fa_desc}` : ''}
             </span>
           </div>
           <div className="w-20"></div>
@@ -309,6 +309,23 @@ export default async function PartidoDetailPage({
 
           <AccessControl tier={currentTier} requiredTier="premium" className="rounded-[40px] overflow-hidden shadow-xl border border-zinc-100">
             <div className="bg-white p-8 space-y-8 relative">
+              {/* Competition & Phase */}
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-400 shrink-0 border border-zinc-100">
+                  <Trophy size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Torneo & Fase</p>
+                  <p className="font-black text-zinc-900 text-sm uppercase leading-tight">{partido.torneo?.tor_desc || 'Torneo Oficial'}</p>
+                  {partido.fase?.fa_desc && (
+                    <p className="text-[10px] font-bold text-blue-600 mt-1 uppercase tracking-tight flex items-center">
+                      <Flag size={11} className="mr-1 inline text-blue-600" />
+                      {partido.fase.fa_desc}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               {/* Stadium */}
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center text-zinc-400 shrink-0 border border-zinc-100">
