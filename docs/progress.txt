@@ -1,9 +1,10 @@
 # Log de Progreso de Resultados River
 
 ### 2026-08-27: Enriquecimiento e Interactividad en Historial de Goles de Jugadores
-- [x] **Backend & API (`GolResource`, `JugadorController`)**:
-  - [x] Carga ansiosa (`eager loading`) en `JugadorController::show` de las relaciones `partido.torneo`, `partido.fase`, `partido.condicion` y `partido.estadio`.
+- [x] **Backend & API (`GolResource`, `JugadorController`, `Partido`)**:
+  - [x] Corrección de alias de relaciones en el modelo `Partido` (`torneo()`, `arbitro()`, `estadio()`, `condicion()`, `fase()`) y uso de relaciones ansiosas `partido.torneo_rel`, `partido.fase_rel`, `partido.condicion_rel`, `partido.estadio_rel` en `JugadorController::show` para evitar errores 500 por colisión de nombres de columnas.
   - [x] Actualización de `GolResource` para serializar la información completa del encuentro (`fecha`, `fecha_nro`, `torneo`, `fase`, `condicion`, `estadio`).
+  - [x] Incorporación de suite de tests en `tests/Feature/JugadorApiTest.php` (21 tests pasando globalmente).
   - [x] Regeneración de especificación OpenAPI Swagger (`l5-swagger:generate`).
 - [x] **Frontend Web (`/jugadores/[id]`)**:
   - [x] Inclusión de insignias visuales en cada gol del historial: Torneo (`torneo.tor_desc`), Fase (`fase.fa_desc`), N° de Fecha (`fecha_nro`), Condición (`condicion.co_desc`) y fecha formateada.
