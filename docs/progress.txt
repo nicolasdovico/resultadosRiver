@@ -1,5 +1,11 @@
 # Log de Progreso de Resultados River
 
+### 2026-08-27: Desacople de Caché de PostgreSQL a Redis (Aligeramiento de Backups)
+- [x] **Infraestructura & Backend**:
+  - [x] **Migración a Redis (`CACHE_STORE=redis`)**: Configuración de Laravel para utilizar el contenedor `river-redis` (`predis`) como almacén de caché en memoria de alta velocidad, en lugar de la tabla `cache` de PostgreSQL.
+  - [x] **Saneamiento de Base de Datos**: Vaciado y truncado de las tablas `cache` y `cache_locks` en PostgreSQL (981 registros y 1.7 MB de datos serializados eliminados de la BD relacional).
+  - [x] **Reducción de Backups**: Los backups generados por `pg_dump` vuelven a su peso óptimo original (~800 KB), evitando la duplicación de datos de caché temporal en los archivos `.sql`.
+
 ### 2026-08-27: Normalización de Base de Datos y Soporte Multi-Ciclo para Técnicos (Fase 6)
 - [x] **Base de Datos (PostgreSQL)**:
   - [x] **Migración `2026_08_27_000001_create_tecnico_ciclos_and_normalize_tecnicos`**:

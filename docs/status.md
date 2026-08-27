@@ -123,6 +123,9 @@
         - [x] **Panel Administrativo (Filament):** Integración de Repeater de Ciclos en `TecnicoResource` para dar de alta y editar etapas históricas de forma ágil sin crear registros duplicados.
         - [x] **Frontend Web:** Directorio A-Z actualizado con badges de ciclos (`2 Ciclos`, `3 Ciclos`), y rediseño interactivo de `/tecnicos/[id]` con selector de pestañas para alternar entre "Trayectoria Global" y cada ciclo individual con actualización dinámica de métricas, artilleros, analítica de goles y partidos. Incorporación del cómputo exacto de tiempo de conducción en la tarjeta Hero: desglose en Años, Meses y Días (ej: `8 años, 5 meses y 5 días`) y cómputo de Días Totales en el cargo (ej: `3.080 días en total`).
         - [x] **Testing:** Suite completa de tests en `tests/Feature/TecnicoApiTest.php` (4 tests pasando, 20 tests globales con 179 aserciones).
+    - [x] **Optimización de Infraestructura y Caché (Migración a Redis):**
+        - [x] **Backend & Docker:** Migración de `CACHE_STORE` de `database` a `redis` utilizando el cliente `predis` sobre el contenedor `river-redis`.
+        - [x] **Aligeramiento de PostgreSQL:** Truncado de las tablas `cache` y `cache_locks` de PostgreSQL, reduciendo el tamaño de futuros backups (`pg_dump`) en más de un 65% (de ~2.6 MB a ~800 KB) al desacoplar los datos serializados de la persistencia relacional.
     - [x] **Sección de Técnicos (Fix):** Resolución de error `Cannot read properties of undefined (reading 'charAt')` mediante la actualización de `TecnicoResource` y adición de safety checks en el frontend.
     - [x] **Sección de Técnicos (Stats Fix):** Corrección de valores hardcodeados en la ficha de detalle y rediseño del "Resumen de Ciclo" para mostrar estadísticas reales (PG, PE, PP, Puntos, GF, GC) y efectividad dinámica.
 - [x] **Sección de Rivales:**
