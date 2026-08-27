@@ -372,6 +372,62 @@ export default async function TecnicoDetailPage({
                   </span>
                 </div>
               </div>
+
+              {/* Top 3 Goleadores del Ciclo / Trayectoria Global (Estilo Torneos) */}
+              {tecnico.top_scorers && tecnico.top_scorers.length > 0 && (
+                <div className="mt-8 pt-8 border-t border-zinc-800/80 flex flex-col md:flex-row items-center justify-between gap-6 bg-zinc-800/30 p-6 rounded-[32px] border border-zinc-700/40">
+                  <div className="flex flex-col items-center md:items-start">
+                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] flex items-center italic mb-1">
+                      <Star size={14} className="mr-2 text-yellow-500 fill-yellow-500" />
+                      {activeCiclo ? `Artilleros del Ciclo #${activeCiclo.numero_ciclo}` : "Artilleros de la Trayectoria"}
+                    </h3>
+                    <p className="text-xs font-bold text-zinc-400">
+                      {activeCiclo ? `Top 3 máximos goleadores durante esta etapa` : `Top 3 goleadores acumulados en todos sus ciclos`}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center -space-x-4 hover:space-x-3 transition-all duration-500">
+                    {tecnico.top_scorers.map((scorer, idx) => (
+                      <Link 
+                        key={scorer.pl_id} 
+                        href={`/jugadores/${scorer.pl_id}`}
+                        className="group relative"
+                        title={scorer.name}
+                      >
+                        <div 
+                          className={`w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-zinc-900 bg-zinc-800 shadow-2xl group-hover:scale-110 group-hover:z-30 transition-all duration-500 relative ring-4 ring-transparent group-hover:ring-red-600/50 ${
+                            idx === 0 ? 'z-20 ring-yellow-500/30' : idx === 1 ? 'z-10' : 'z-0'
+                          }`}
+                        >
+                          {scorer.pl_foto ? (
+                            <Image 
+                              src={sanitizeImageUrl(scorer.pl_foto)} 
+                              alt={scorer.name}
+                              fill
+                              unoptimized
+                              className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-600">
+                              <UserRound size={32} />
+                            </div>
+                          )}
+                          
+                          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 px-1">
+                            <span className="text-[9px] font-black text-white uppercase tracking-tighter text-center leading-none italic truncate">
+                              {scorer.name.split(',')[0]}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full border-2 border-zinc-900 shadow-xl z-40 transform group-hover:scale-110 transition-transform">
+                          {scorer.goals} <span className="text-[7px] ml-0.5 opacity-70">GOLS</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
