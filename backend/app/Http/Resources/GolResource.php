@@ -56,11 +56,18 @@ class GolResource extends JsonResource
         $user = auth("sanctum")->user();
         $isPremium = $user && $user->isPremium();
 
+        $partido = $this->partido;
         $esGolVictoria = null;
-        if ($isPremium && $this->partido) {
-            $winningGoalId = GoalAnalysisService::getWinningGoalId($this->partido);
+        if ($isPremium && $partido) {
+            $winningGoalId = GoalAnalysisService::getWinningGoalId($partido);
             $esGolVictoria = $winningGoalId === $this->gol_id;
         }
+
+        $torneo = $partido?->torneo_rel;
+        $fase = $partido?->fase_rel;
+        $condicion = $partido?->condicion_rel;
+        $estadio = $partido?->estadio_rel;
+        $rival = $partido?->rival;
 
         return [
             'gol_id' => $this->gol_id,
@@ -74,26 +81,26 @@ class GolResource extends JsonResource
             'gol_parariver' => $this->gol_parariver,
             'es_gol_victoria' => $esGolVictoria,
             'partido' => [
-                'fecha' => $this->partido?->fecha,
-                'fecha_nro' => $this->partido?->fecha_nro,
-                'go_ri' => $this->partido?->go_ri,
-                'go_ad' => $this->partido?->go_ad,
-                'rival' => new RivalResource($this->partido?->rival),
-                'torneo' => $this->partido?->torneo ? [
-                    'tor_id' => $this->partido->torneo->tor_id,
-                    'tor_desc' => trim($this->partido->torneo->tor_desc),
+                'fecha' => $partido?->fecha,
+                'fecha_nro' => $partido?->fecha_nro,
+                'go_ri' => $partido?->go_ri,
+                'go_ad' => $partido?->go_ad,
+                'rival' => new RivalResource($rival),
+                'torneo' => $torneo ? [
+                    'tor_id' => $torneo->tor_id,
+                    'tor_desc' => trim($torneo->tor_desc),
                 ] : null,
-                'fase' => $this->partido?->fase ? [
-                    'id_fase' => $this->partido->fase->id_fase,
-                    'fa_desc' => trim($this->partido->fase->fa_desc),
+                'fase' => $fase ? [
+                    'id_fase' => $fase->id_fase,
+                    'fa_desc' => trim($fase->fase ?? $fase->fa_desc),
                 ] : null,
-                'condicion' => $this->partido?->condicion ? [
-                    'id_condicion' => $this->partido->condicion->id_condicion,
-                    'co_desc' => trim($this->partido->condicion->co_desc),
+                'condicion' => $condicion ? [
+                    'id_condicion' => $condicion->id_condicion,
+                    'co_desc' => trim($condicion->descripcion ?? $condicion->co_desc),
                 ] : null,
-                'estadio' => $this->partido?->estadio ? [
-                    'es_id' => $this->partido->estadio->es_id,
-                    'es_desc' => trim($this->partido->estadio->es_desc),
+                'estadio' => $estadio ? [
+                    'es_id' => $estadio->es_id,
+                    'es_desc' => trim($estadio->es_desc),
                 ] : null,
             ],
             'jugador' => [

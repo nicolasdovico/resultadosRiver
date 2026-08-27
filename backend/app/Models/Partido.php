@@ -39,6 +39,11 @@ class Partido extends Model
         return $this->belongsTo(Torneo::class, 'torneo', 'tor_id');
     }
 
+    public function torneo(): BelongsTo
+    {
+        return $this->torneo_rel();
+    }
+
     public function rival(): BelongsTo
     {
         return $this->belongsTo(Rival::class, 'adversario', 'ri_id');
@@ -49,9 +54,19 @@ class Partido extends Model
         return $this->belongsTo(Arbitro::class, 'arbitro', 'ar_id');
     }
 
+    public function arbitro(): BelongsTo
+    {
+        return $this->arbitro_rel();
+    }
+
     public function estadio_rel(): BelongsTo
     {
         return $this->belongsTo(Estadio::class, 'estadio', 'es_id');
+    }
+
+    public function estadio(): BelongsTo
+    {
+        return $this->estadio_rel();
     }
 
     public function condicion_rel(): BelongsTo
@@ -59,9 +74,19 @@ class Partido extends Model
         return $this->belongsTo(Condicion::class, 'condicion', 'id_condicion');
     }
 
+    public function condicion(): BelongsTo
+    {
+        return $this->condicion_rel();
+    }
+
     public function fase_rel(): BelongsTo
     {
         return $this->belongsTo(Fase::class, 'fase', 'id_fase');
+    }
+
+    public function fase(): BelongsTo
+    {
+        return $this->fase_rel();
     }
 
     public function getTecnicoAttribute()

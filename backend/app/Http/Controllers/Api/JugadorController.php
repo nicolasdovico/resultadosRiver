@@ -115,10 +115,10 @@ class JugadorController extends Controller
                 "tipo_gol_rel",
                 "periodo_rel",
                 "partido.rival",
-                "partido.torneo",
-                "partido.fase",
-                "partido.condicion",
-                "partido.estadio"
+                "partido.torneo_rel",
+                "partido.fase_rel",
+                "partido.condicion_rel",
+                "partido.estadio_rel"
             ])
             ->orderBy("gol_fecha", "desc")
             ->paginate(10);
