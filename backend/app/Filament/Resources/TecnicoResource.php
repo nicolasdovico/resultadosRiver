@@ -11,13 +11,16 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TecnicoResource extends Resource
 {
     protected static ?string $model = Tecnico::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationGroup = 'Archivo Histórico';
+    protected static ?string $navigationLabel = 'Técnicos';
+    protected static ?string $modelLabel = 'Técnico';
+    protected static ?string $pluralModelLabel = 'Técnicos';
 
     public static function form(Form $form): Form
     {
@@ -27,7 +30,7 @@ class TecnicoResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('tec_ape_nom')
                             ->label('Nombre Completo')
-                            ->maxLength(50)
+                            ->maxLength(100)
                             ->required(),
                         Forms\Components\FileUpload::make('tec_foto')
                             ->label('Foto del Técnico')
@@ -43,18 +46,50 @@ class TecnicoResource extends Resource
                             ->extraAttributes([
                                 'style' => 'object-position: top !important;',
                             ]),
-                        Forms\Components\Grid::make(2)
+                    ]),
+
+                Forms\Components\Section::make('Ciclos / Etapas de Conducción')
+                    ->description('Administre los distintos ciclos o periodos en los que el técnico dirigió al club.')
+                    ->schema([
+                        Forms\Components\Repeater::make('ciclos')
+                            ->relationship('ciclos')
                             ->schema([
+                                Forms\Components\TextInput::make('numero_ciclo')
+                                    ->label('N° Ciclo')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->columnSpan(1),
                                 Forms\Components\DatePicker::make('desde')
-                                    ->label('Desde'),
+                                    ->label('Fecha Desde')
+                                    ->required()
+                                    ->columnSpan(1),
                                 Forms\Components\DatePicker::make('hasta')
-                                    ->label('Hasta'),
-                            ]),
-                        Forms\Components\TextInput::make('cargo')
-                            ->label('Cargo')
-                            ->maxLength(30)
-                            ->default('Entrenador'),
-                    ])
+                                    ->label('Fecha Hasta (Vacío = Actual)')
+                                    ->columnSpan(1),
+                                Forms\Components\Select::make('cargo')
+                                    ->label('Cargo')
+                                    ->options([
+                                        'TITULAR' => 'TITULAR',
+                                        'INTERINO' => 'INTERINO',
+                                    ])
+                                    ->default('TITULAR')
+                                    ->required()
+                                    ->columnSpan(1),
+                                Forms\Components\TextInput::make('observaciones')
+                                    ->label('Observaciones')
+                                    ->maxLength(255)
+                                    ->columnSpan(2),
+                            ])
+                            ->columns(6)
+                            ->defaultItems(1)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => 
+                                isset($state['desde']) 
+                                    ? "Ciclo #" . ($state['numero_ciclo'] ?? '1') . ": " . $state['desde'] . " a " . ($state['hasta'] ?? 'Actualidad') . " (" . ($state['cargo'] ?? 'TITULAR') . ")"
+                                    : 'Nuevo Ciclo'
+                            ),
+                    ]),
             ]);
     }
 
@@ -70,18 +105,20 @@ class TecnicoResource extends Resource
                     ]),
                 Tables\Columns\TextColumn::make('tec_ape_nom')
                     ->label('Nombre')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('desde')
-                    ->label('Desde')
-                    ->date()
+                    ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('hasta')
-                    ->label('Hasta')
-                    ->date()
+                Tables\Columns\TextColumn::make('ciclos_count')
+                    ->counts('ciclos')
+                    ->label('Ciclos')
+                    ->badge()
+                    ->color('danger')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('cargo')
-                    ->label('Cargo')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('ciclos_resumen')
+                    ->label('Periodos Históricos')
+                    ->state(function (Tecnico $record) {
+                        return $record->ciclos->map(fn($c) => "{$c->desde} a " . ($c->hasta ?? 'Actual') . " (" . trim($c->cargo) . ")")->join(' | ');
+                    })
+                    ->wrap(),
             ])
             ->defaultSort('tec_ape_nom')
             ->filters([
