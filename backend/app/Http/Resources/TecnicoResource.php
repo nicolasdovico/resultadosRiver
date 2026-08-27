@@ -100,6 +100,7 @@ class TecnicoResource extends JsonResource
 
         if ($isDetail) {
             $allMatches = $partidosQuery->orderBy('fecha', 'desc')->get();
+            $partidosIds = $allMatches->pluck('fecha')->toArray();
             $isRestricted = false;
 
             if (!$isPremium) {
@@ -114,8 +115,6 @@ class TecnicoResource extends JsonResource
                 $partidosCollection = $allMatches;
 
                 // Analítica de Goles para Premium (scoped to selected cycle or all cycles)
-                $partidosIds = $allMatches->pluck('fecha')->toArray();
-                
                 if (!empty($partidosIds)) {
                     $intervals = [
                         ['label' => "0' - 10'", 'min' => 0, 'max' => 10],
@@ -167,28 +166,32 @@ class TecnicoResource extends JsonResource
                         )
                         ->groupBy('tipo_gol.tipo_gol_descripcion')
                         ->get();
-
-                    // Top 3 Goleadores del Ciclo / Período
-                    $topScorersRaw = DB::table('goles')
-                        ->whereIn('gol_fecha', $partidosIds)
-                        ->where('gol_parariver', 1)
-                        ->where('gol_penal', '!=', 6)
-                        ->select('gol_juga', DB::raw('count(*) as total'))
-                        ->groupBy('gol_juga')
-                        ->orderBy('total', 'desc')
-                        ->limit(3)
-                        ->get();
-
-                    $topScorers = $topScorersRaw->map(function ($item) {
-                        $player = \App\Models\Jugador::find($item->gol_juga);
-                        return [
-                            'pl_id' => $player?->pl_id,
-                            'name' => $player?->pl_apno ?? 'Desconocido',
-                            'goals' => (int) $item->total,
-                            'pl_foto' => ($player && $player->pl_foto) ? Storage::disk('public')->url($player->pl_foto) : null
-                        ];
-                    });
                 }
+            }
+
+            // Top 3 Goleadores del Ciclo / Trayectoria Global
+            if (!empty($partidosIds)) {
+                $topScorersRaw = DB::table('goles')
+                    ->whereIn('gol_fecha', $partidosIds)
+                    ->where('gol_parariver', 1)
+                    ->where('gol_penal', '!=', 6)
+                    ->select('gol_juga', DB::raw('count(*) as total'))
+                    ->groupBy('gol_juga')
+                    ->orderBy('total', 'desc')
+                    ->limit(3)
+                    ->get();
+
+                $topScorers = $topScorersRaw->map(function ($item) {
+                    $player = \App\Models\Jugador::find($item->gol_juga);
+                    return [
+                        'pl_id' => $player?->pl_id,
+                        'name' => $player?->pl_apno ?? 'Desconocido',
+                        'pl_apno' => $player?->pl_apno ?? 'Desconocido',
+                        'goals' => (int) $item->total,
+                        'goals_count' => (int) $item->total,
+                        'pl_foto' => ($player && $player->pl_foto) ? Storage::disk('public')->url($player->pl_foto) : null
+                    ];
+                });
             }
             
             $partidos = PartidoResource::collection($partidosCollection);
