@@ -89,6 +89,7 @@
             - [x] **Puestos 6-20:** Cuadrícula compacta de 8 columnas (2 filas) con indicadores de posición.
         - [x] **Paywall Reforzado:** Bloqueo con efecto `blur` en secciones de Hitos, Racha, Resumen de Carrera y Analítica Avanzada.
         - [x] Sistema de paginación dinámica (10 por página) con numeración histórica descendente.
+        - [x] **Historial de Goles Enriquecido e Interactivo:** Incorporación de insignias de Torneo (`tor_desc`), Fase (`fa_desc`), N° de Fecha (`fecha_nro`), Condición (`co_desc`) en cada gol del historial de `/jugadores/[id]`, y conversión de cada tarjeta en un enlace interactivo directo al detalle completo del partido (`/partidos/[fecha]`).
         - [x] **Mejora de Encuadre:** Ajuste de contenedores verticales y alineación `object-top` para evitar cabezas recortadas.
         - [x] **Analítica de Resultados:** Integración de gráficos de torta y barras de progreso para el análisis de goles (Premium).
     - [x] **Frontend Mobile:**

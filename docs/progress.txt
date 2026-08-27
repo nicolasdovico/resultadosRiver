@@ -1,5 +1,14 @@
 # Log de Progreso de Resultados River
 
+### 2026-08-27: Enriquecimiento e Interactividad en Historial de Goles de Jugadores
+- [x] **Backend & API (`GolResource`, `JugadorController`)**:
+  - [x] Carga ansiosa (`eager loading`) en `JugadorController::show` de las relaciones `partido.torneo`, `partido.fase`, `partido.condicion` y `partido.estadio`.
+  - [x] Actualización de `GolResource` para serializar la información completa del encuentro (`fecha`, `fecha_nro`, `torneo`, `fase`, `condicion`, `estadio`).
+  - [x] Regeneración de especificación OpenAPI Swagger (`l5-swagger:generate`).
+- [x] **Frontend Web (`/jugadores/[id]`)**:
+  - [x] Inclusión de insignias visuales en cada gol del historial: Torneo (`torneo.tor_desc`), Fase (`fase.fa_desc`), N° de Fecha (`fecha_nro`), Condición (`condicion.co_desc`) y fecha formateada.
+  - [x] Navegación interactiva completa: cada tarjeta de gol se convirtió en un enlace directo (`/partidos/[fecha]`) con indicador de flecha (`ChevronRight`), permitiendo acceder a los detalles del partido al tocarla.
+
 ### 2026-08-27: Desacople de Caché de PostgreSQL a Redis (Aligeramiento de Backups)
 - [x] **Infraestructura & Backend**:
   - [x] **Migración a Redis (`CACHE_STORE=redis`)**: Configuración de Laravel para utilizar el contenedor `river-redis` (`predis`) como almacén de caché en memoria de alta velocidad, en lugar de la tabla `cache` de PostgreSQL.
