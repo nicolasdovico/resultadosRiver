@@ -22,11 +22,26 @@ interface Gol {
   tipo_gol_desc?: string;
   periodo_desc?: string;
   partido?: {
+    fecha?: string;
+    fecha_nro?: number;
     go_ri: number;
     go_ad: number;
     rival: {
       ri_desc: string;
       escudo?: string;
+      escudo_url?: string;
+    };
+    torneo?: {
+      tor_desc: string;
+    };
+    fase?: {
+      fa_desc: string;
+    };
+    condicion?: {
+      co_desc: string;
+    };
+    estadio?: {
+      es_desc: string;
     };
   };
 }
@@ -418,23 +433,27 @@ export default async function JugadorDetailPage({
                   : null;
 
                 return (
-                  <div key={index} className={`bg-white p-6 rounded-[40px] border flex items-center justify-between shadow-sm group transition-all duration-300 ${
-                    isParaRiver ? 'border-zinc-100 hover:border-red-600' : 
-                    isAutogolCarp ? 'border-amber-200 bg-amber-50/30 hover:border-amber-500' :
-                    isAutogolRival ? 'border-emerald-200 bg-emerald-50/30 hover:border-emerald-500' :
-                    'border-zinc-300 opacity-80 hover:border-zinc-900 bg-zinc-50/50'
-                  }`}>
-                    <div className="flex items-center space-x-6">
+                  <Link
+                    key={index}
+                    href={`/partidos/${gol.gol_fecha}`}
+                    className={`bg-white p-6 rounded-[40px] border flex items-center justify-between shadow-sm group transition-all duration-300 ${
+                      isParaRiver ? 'border-zinc-100 hover:border-red-600 hover:shadow-md' : 
+                      isAutogolCarp ? 'border-amber-200 bg-amber-50/30 hover:border-amber-500' :
+                      isAutogolRival ? 'border-emerald-200 bg-emerald-50/30 hover:border-emerald-500' :
+                      'border-zinc-300 opacity-80 hover:border-zinc-900 bg-zinc-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-6 flex-1 min-w-0">
                       {/* Shield Display */}
-                      <div className={`w-16 h-16 rounded-3xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform overflow-hidden relative p-2 ${
+                      <div className={`w-16 h-16 rounded-3xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform overflow-hidden relative p-2 shrink-0 ${
                         isAutogolCarp ? 'bg-amber-100' : 
                         isAutogolRival ? 'bg-emerald-100' : 
                         'bg-zinc-50 border border-zinc-100'
                       }`}>
                         {isParaRiver || isAutogolRival ? (
-                          gol.partido?.rival?.escudo ? (
+                          (gol.partido?.rival?.escudo || gol.partido?.rival?.escudo_url) ? (
                             <Image 
-                              src={sanitizeImageUrl(gol.partido.rival.escudo)} 
+                              src={sanitizeImageUrl(gol.partido.rival.escudo || gol.partido.rival.escudo_url || '')} 
                               alt="" 
                               fill 
                               unoptimized
@@ -452,8 +471,8 @@ export default async function JugadorDetailPage({
                         )}
                       </div>
 
-                      <div className="flex flex-col">
-                        <div className="flex items-center space-x-2 mb-1">
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
                           <span className={`text-[10px] font-black uppercase tracking-widest ${
                             isParaRiver ? 'text-red-600' : 
                             isAutogolCarp ? 'text-amber-600' : 
@@ -465,19 +484,44 @@ export default async function JugadorDetailPage({
                              isAutogolRival ? 'Beneficio CARP (Autogol Rival)' :
                              'Anotación vs CARP'}
                           </span>
-                          <span className="w-1 h-1 bg-zinc-300 rounded-full" />
-                          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{formatLocalDate(gol.gol_fecha)}</span>
+                          
+                          <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
+                            {formatLocalDate(gol.gol_fecha)}
+                          </span>
+
+                          {gol.partido?.torneo?.tor_desc && (
+                            <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight line-clamp-1">
+                              {gol.partido.torneo.tor_desc}
+                            </span>
+                          )}
+
+                          {gol.partido?.fase?.fa_desc && (
+                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">
+                              {gol.partido.fase.fa_desc}
+                            </span>
+                          )}
+
+                          {gol.partido?.fecha_nro && (
+                            <span className="text-[10px] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
+                              Fecha {gol.partido.fecha_nro}
+                            </span>
+                          )}
+
+                          {gol.partido?.condicion?.co_desc && (
+                            <span className="text-[10px] bg-amber-50 text-yellow-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">
+                              {gol.partido.condicion.co_desc}
+                            </span>
+                          )}
+
                           {gol.es_gol_victoria && (
-                            <>
-                              <span className="w-1 h-1 bg-zinc-300 rounded-full" />
-                              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter flex items-center animate-pulse">
-                                <Trophy size={8} className="mr-1 fill-current" />
-                                Gol de la Victoria
-                              </span>
-                            </>
+                            <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter flex items-center animate-pulse">
+                              <Trophy size={8} className="mr-1 fill-current" />
+                              Gol de la Victoria
+                            </span>
                           )}
                         </div>
-                        <h4 className={`font-black text-lg uppercase tracking-tight transition-colors ${
+
+                        <h4 className={`font-black text-lg uppercase tracking-tight transition-colors truncate ${
                           isParaRiver ? 'text-zinc-900 group-hover:text-red-600' : 
                           isAutogolCarp ? 'text-amber-900 group-hover:text-amber-600' :
                           isAutogolRival ? 'text-emerald-900 group-hover:text-emerald-600' :
@@ -492,6 +536,7 @@ export default async function JugadorDetailPage({
                                 : `vs River Plate (jugando para ${gol.partido?.rival?.ri_desc || "Rival"})`
                           }
                         </h4>
+
                         <div className="flex items-center space-x-3 mt-1">
                           <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
                             isAutogolCarp ? "bg-amber-100 text-amber-700" :
@@ -516,26 +561,32 @@ export default async function JugadorDetailPage({
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end">
-                      <div className={`flex items-center space-x-2 ${
-                        isParaRiver ? 'text-zinc-900' : 
-                        isAutogolCarp ? 'text-amber-700' : 
-                        isAutogolRival ? 'text-emerald-700' :
-                        'text-zinc-400'
-                      }`}>
-                        <span className="text-3xl font-black tabular-nums">{gol.minutos}<span className="text-sm ml-0.5">'</span></span>
-                        <Timer size={18} className={
-                          isParaRiver ? 'text-red-600' : 
-                          isAutogolCarp ? 'text-amber-500' : 
-                          isAutogolRival ? 'text-emerald-500' :
+                    <div className="flex items-center space-x-4 ml-4 shrink-0">
+                      <div className="flex flex-col items-end">
+                        <div className={`flex items-center space-x-2 ${
+                          isParaRiver ? 'text-zinc-900' : 
+                          isAutogolCarp ? 'text-amber-700' : 
+                          isAutogolRival ? 'text-emerald-700' :
                           'text-zinc-400'
-                        } />
+                        }`}>
+                          <span className="text-3xl font-black tabular-nums">{gol.minutos}<span className="text-sm ml-0.5">'</span></span>
+                          <Timer size={18} className={
+                            isParaRiver ? 'text-red-600' : 
+                            isAutogolCarp ? 'text-amber-500' : 
+                            isAutogolRival ? 'text-emerald-500' :
+                            'text-zinc-400'
+                          } />
+                        </div>
+                        <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-1">
+                          {gol.periodo_desc || "Tiempo Regular"}
+                        </span>
                       </div>
-                      <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-1">
-                        {gol.periodo_desc || "Tiempo Regular"}
-                      </span>
+
+                      <div className="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-red-50 group-hover:text-red-600 transition-all">
+                        <ChevronRight size={18} />
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
 
