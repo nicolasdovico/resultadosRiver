@@ -99,26 +99,22 @@ class TecnicoResource extends JsonResource
         });
 
         if ($isDetail) {
-            $perPage = 10;
-            $partidosPaginator = $partidosQuery->paginate($perPage);
-            $partidosCollection = $partidosPaginator->getCollection();
-
-            $partidosMeta = [
-                "current_page" => $partidosPaginator->currentPage(),
-                "last_page" => $partidosPaginator->lastPage(),
-                "total" => $partidosPaginator->total(),
-            ];
+            $allMatches = $partidosQuery->orderBy('fecha', 'desc')->get();
+            $isRestricted = false;
 
             if (!$isPremium) {
-                $isRestricted = true;
-                if ($partidosPaginator->currentPage() === 1) {
-                    $partidosCollection = $partidosCollection->take(5);
+                $totalPartidos = $allMatches->count();
+                if ($totalPartidos > 3) {
+                    $partidosCollection = $allMatches->take(3);
+                    $isRestricted = true;
                 } else {
-                    $partidosCollection = collect([]);
+                    $partidosCollection = $allMatches;
                 }
             } else {
+                $partidosCollection = $allMatches;
+
                 // Analítica de Goles para Premium (scoped to selected cycle or all cycles)
-                $partidosIds = $this->getPartidosQuery($cicloId)->pluck('fecha')->toArray();
+                $partidosIds = $allMatches->pluck('fecha')->toArray();
                 
                 if (!empty($partidosIds)) {
                     $intervals = [
@@ -218,7 +214,6 @@ class TecnicoResource extends JsonResource
             'goles_por_tipo' => $golesPorTipo,
             'top_scorers' => $topScorers,
             'partidos' => $this->when($isDetail, $partidos ?? []),
-            'partidos_meta' => $this->when($partidosMeta !== null, $partidosMeta),
         ];
     }
 }
