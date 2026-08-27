@@ -116,6 +116,13 @@
         - [x] **Frontend Web (UI Fixes):** Corrección de visualización de escudos de rivales (`escudo_url`), instancia real del torneo (`fa_desc`) y reemplazo de leyenda estática por campo dinámico `cargo` (Titular/Interino).
         - [x] **Sección Analítica:** Nueva sección "Analítica de Resultados" con gráficos de rendimiento y paywall reforzado.
         - [x] **Optimización:** Ajuste de paginación del historial a 10 partidos por página para mejorar la UX.
+    - [x] **Sección de Técnicos (Normalización de Base de Datos y Multi-Ciclos):**
+        - [x] **Base de Datos & Migración:** Creación de la tabla `tecnico_ciclos` (`tecnico_id`, `numero_ciclo`, `desde`, `hasta`, `cargo`, `observaciones`, `foto_ciclo`) y normalización de la tabla `tecnicos` eliminando duplicados (consolidación de 46 registros a 34 directores técnicos únicos), saneamiento de nombres (eliminación de sufijos temporales) y preservación del 100% de la historia y partidos sin pérdida de datos.
+        - [x] **Modelos Eloquent:** Implementación del modelo `TecnicoCiclo` y actualización de `Tecnico` (`hasMany(TecnicoCiclo::class)`) con cálculo de estadísticas globales acumuladas y estadísticas individuales por ciclo.
+        - [x] **API & Endpoints:** `TecnicoResource` y `TecnicoController` actualizados con soporte de parámetro `?ciclo_id=X` para consultas acotadas o globales, y actualización de `PartidoController` para abarcar todas las etapas del DT en búsquedas y consultas personalizadas (`/consultas`).
+        - [x] **Panel Administrativo (Filament):** Integración de Repeater de Ciclos en `TecnicoResource` para dar de alta y editar etapas históricas de forma ágil sin crear registros duplicados.
+        - [x] **Frontend Web:** Directorio A-Z actualizado con badges de ciclos (`2 Ciclos`, `3 Ciclos`), y rediseño interactivo de `/tecnicos/[id]` con selector de pestañas para alternar entre "Trayectoria Global" y cada ciclo individual con actualización dinámica de métricas, artilleros, analítica de goles y partidos.
+        - [x] **Testing:** Suite completa de tests en `tests/Feature/TecnicoApiTest.php` (4 tests pasando, 20 tests globales con 179 aserciones).
     - [x] **Sección de Técnicos (Fix):** Resolución de error `Cannot read properties of undefined (reading 'charAt')` mediante la actualización de `TecnicoResource` y adición de safety checks en el frontend.
     - [x] **Sección de Técnicos (Stats Fix):** Corrección de valores hardcodeados en la ficha de detalle y rediseño del "Resumen de Ciclo" para mostrar estadísticas reales (PG, PE, PP, Puntos, GF, GC) y efectividad dinámica.
 - [x] **Sección de Rivales:**

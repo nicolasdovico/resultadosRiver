@@ -1,5 +1,26 @@
 # Log de Progreso de Resultados River
 
+### 2026-08-27: Normalización de Base de Datos y Soporte Multi-Ciclo para Técnicos (Fase 6)
+- [x] **Base de Datos (PostgreSQL)**:
+  - [x] **Migración `2026_08_27_000001_create_tecnico_ciclos_and_normalize_tecnicos`**:
+    - [x] Creación de la tabla `tecnico_ciclos` (`id`, `tecnico_id`, `numero_ciclo`, `desde`, `hasta`, `cargo`, `observaciones`, `foto_ciclo`, `timestamps`) con clave foránea en cascada hacia `tecnicos` e índices en `tecnico_id` y `(desde, hasta)`.
+    - [x] Consolidación y saneamiento de 46 registros a **34 técnicos únicos** en la tabla `tecnicos`, eliminando duplicados históricos (Gallardo, Ramón Díaz, Labruna, Passarella, Gallego, Merlo, Astrada, Zapata, Escudero, Rossi) y limpiando sufijos temporales como `TRANSFERMARKET` y `(REVISAR...)`.
+    - [x] Migración de los 46 periodos de conducción a `tecnico_ciclos` con su número de ciclo cronológico, preservando fotos y el 100% de la historia de los 4.214 partidos.
+    - [x] Eliminación de las columnas redundantes `desde`, `hasta` y `cargo` de la tabla maestra `tecnicos`.
+- [x] **Backend**:
+  - [x] **Modelo `TecnicoCiclo`**: Creación de modelo Eloquent con relación `belongsTo(Tecnico::class)`, helpers de consulta de partidos por rango y cálculo de estadísticas individuales del ciclo (`stats`).
+  - [x] **Modelo `Tecnico`**: Relación `hasMany(TecnicoCiclo::class)`, accesor `stats` para cómputo de estadísticas globales combinando todos los ciclos, y método `getPartidosQuery(?int $cicloId = null)` con soporte para consultas globales o por ciclo específico.
+  - [x] **Modelo `Partido`**: Accesores `tecnico` y `ciclo` actualizados para resolver a través del ciclo activo en la fecha del encuentro.
+  - [x] **Controlador `TecnicoController`**: Soporte de búsqueda insensible a mayúsculas/minúsculas (`likeOperator` driver-aware), carga ansiosa de `ciclos` y soporte para parámetro `?ciclo_id=X`.
+  - [x] **Controlador `PartidoController`**: Actualización de `applyCustomFilters` para que el filtro `tecnico` abarque automáticamente todos los ciclos del DT en `/partidos` y `/consultas`, con soporte adicional para filtro `ciclo_id`.
+  - [x] **Recursos API (`TecnicoResource`, `PartidoResource`)**: Serialización de `total_ciclos`, listado de `ciclos` con estadísticas y detalles del ciclo activo.
+  - [x] **Panel Administrativo (Filament)**: `TecnicoResource` actualizado con un `Repeater` de ciclos permitiendo agregar nuevas etapas de conducción de manera ágil sin generar registros duplicados.
+  - [x] **Testing**: Suite de pruebas completa en `tests/Feature/TecnicoApiTest.php` (4 tests nuevos pasando, 20 tests globales con 179 aserciones).
+- [x] **Frontend Web**:
+  - [x] **Listado de Técnicos (`/tecnicos`)**: Visualización limpia de los 34 técnicos únicos, visualización de partidos totales y badges de ciclos (`2 Ciclos`, `3 Ciclos`).
+  - [x] **Ficha de Detalle (`/tecnicos/[id]`)**: Implementación de selector interactivo de ciclos (Tabs) que permite alternar entre "Trayectoria Global" y cada ciclo particular, actualizando instantáneamente las métricas, artilleros del ciclo/históricos, analítica de goles y partidos paginados.
+  - [x] **Catálogos y Filtros (`catalogs.ts`)**: Carga de los 34 directores técnicos únicos con `limit=-1` para los selectores de búsqueda.
+
 ### 2026-08-26: Simplificación de Consola de Filtros (Eliminación de Búsqueda por Texto Redundante)
 - [x] **Frontend Web**:
   - [x] **Consolidación a 11 Criterios de Selección**: Se eliminó el campo de texto libre `"Búsqueda por texto"` en [CustomQueryFilters.tsx](file:///home/usuario/aplicaciones/resultadosRiver/frontend-web/src/components/CustomQueryFilters.tsx) y [PartidoFilters.tsx](file:///home/usuario/aplicaciones/resultadosRiver/frontend-web/src/components/PartidoFilters.tsx) para evitar redundancias con los selectores especializados de **Rival** y **Torneo**, dejando una cuadrícula limpia y ordenada de 11 filtros directos.
