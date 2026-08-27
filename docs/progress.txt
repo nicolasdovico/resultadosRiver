@@ -18,7 +18,7 @@
   - [x] **Testing**: Suite de pruebas completa en `tests/Feature/TecnicoApiTest.php` (4 tests nuevos pasando, 20 tests globales con 179 aserciones).
 - [x] **Frontend Web**:
   - [x] **Listado de Técnicos (`/tecnicos`)**: Visualización limpia de los 34 técnicos únicos, visualización de partidos totales y badges de ciclos (`2 Ciclos`, `3 Ciclos`).
-  - [x] **Ficha de Detalle (`/tecnicos/[id]`)**: Implementación de selector interactivo de ciclos (Tabs) que permite alternar entre "Trayectoria Global" y cada ciclo particular, actualizando instantáneamente las métricas, artilleros del ciclo/históricos, analítica de goles y partidos paginados.
+  - [x] **Ficha de Detalle (`/tecnicos/[id]`)**: Implementación de selector interactivo de ciclos (Tabs) que permite alternar entre "Trayectoria Global" y cada ciclo particular, actualizando instantáneamente las métricas, artilleros del ciclo/históricos, analítica de goles y partidos paginados. Incorporación de métricas de tiempo de conducción en el Hero: cálculo exacto de años, meses y días (ej. `8 años, 5 meses y 5 días`) y cómputo de días totales acumulados (ej. `3.080 días`).
   - [x] **Catálogos y Filtros (`catalogs.ts`)**: Carga de los 34 directores técnicos únicos con `limit=-1` para los selectores de búsqueda.
 
 ### 2026-08-26: Simplificación de Consola de Filtros (Eliminación de Búsqueda por Texto Redundante)
