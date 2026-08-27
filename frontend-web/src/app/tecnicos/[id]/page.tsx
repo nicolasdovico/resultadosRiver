@@ -1,5 +1,5 @@
-import { formatLocalDate } from "@/utils/date";
-import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight, Lock, Info, Percent, Award, UserRound, Layers } from "lucide-react";
+import { formatLocalDate, calculateDateDuration, calculateMultipleCyclesDuration } from "@/utils/date";
+import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight, Lock, Info, Percent, Award, UserRound, Layers, Clock } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
@@ -139,6 +139,17 @@ export default async function TecnicoDetailPage({
   // Best photo: specific cycle photo if available, or coach master photo
   const currentPhoto = activeCiclo?.foto_ciclo || tecnico.tec_foto;
 
+  // Duration calculation
+  const singleDuration = activeCiclo 
+    ? calculateDateDuration(activeCiclo.desde, activeCiclo.hasta)
+    : (tecnico.ciclos && tecnico.ciclos.length === 1)
+      ? calculateDateDuration(tecnico.ciclos[0].desde, tecnico.ciclos[0].hasta)
+      : null;
+
+  const multiDuration = (!activeCiclo && tecnico.ciclos && tecnico.ciclos.length > 1)
+    ? calculateMultipleCyclesDuration(tecnico.ciclos)
+    : null;
+
   return (
     <div className="min-h-screen bg-zinc-50/30 pb-24">
       {/* Navigation */}
@@ -262,61 +273,105 @@ export default async function TecnicoDetailPage({
               </h1>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Activity size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                      {activeCiclo ? "Partidos en este Ciclo" : "Partidos Totales"}
+                {/* Card 1: Partidos */}
+                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Activity size={14} className="text-red-500" />
+                      <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                        {activeCiclo ? "Partidos en este Ciclo" : "Partidos Totales"}
+                      </span>
+                    </div>
+                    <span className="block text-4xl font-black text-white tabular-nums">
+                      {tecnico.partidos_count}
                     </span>
                   </div>
-                  <span className="block text-4xl font-black text-white tabular-nums">
-                    {tecnico.partidos_count}
-                  </span>
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">
-                    {activeCiclo ? `Ciclo #${activeCiclo.numero_ciclo}` : `${tecnico.total_ciclos || 1} ciclos combinados`}
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter pt-3 border-t border-zinc-700/60 mt-3">
+                    {activeCiclo ? `Ciclo #${activeCiclo.numero_ciclo} oficial` : `${tecnico.total_ciclos || 1} ciclos combinados`}
                   </span>
                 </div>
 
-                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Calendar size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                      {activeCiclo ? `Periodo Ciclo #${activeCiclo.numero_ciclo}` : "Trayectoria Total"}
-                    </span>
+                {/* Card 2: Periodo y Duración Detallada */}
+                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Calendar size={14} className="text-red-500" />
+                      <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                        {activeCiclo ? `Periodo Ciclo #${activeCiclo.numero_ciclo}` : "Trayectoria Total"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col mb-3">
+                      {activeCiclo ? (
+                        <div className="flex items-center justify-between text-xs font-black text-white">
+                          <span>{activeCiclo.desde ? activeCiclo.desde.split('-').reverse().join('/') : 'N/A'}</span>
+                          <span className="text-zinc-500 text-[10px] uppercase font-bold mx-1.5">al</span>
+                          <span className={!activeCiclo.hasta ? "text-emerald-400 font-black" : "text-white"}>
+                            {activeCiclo.hasta ? activeCiclo.hasta.split('-').reverse().join('/') : 'Actualidad'}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between text-xs font-black text-white">
+                          <span>{tecnico.desde ? tecnico.desde.split('-').reverse().join('/') : 'N/A'}</span>
+                          <span className="text-zinc-500 text-[10px] uppercase font-bold mx-1.5">al</span>
+                          <span className={!tecnico.hasta ? "text-emerald-400 font-black" : "text-white"}>
+                            {tecnico.hasta ? tecnico.hasta.split('-').reverse().join('/') : 'Actualidad'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    {activeCiclo ? (
+
+                  {/* Detalle de Duración y Días Totales */}
+                  <div className="pt-2.5 border-t border-zinc-700/60 flex flex-col gap-1.5">
+                    {singleDuration && (
                       <>
-                        <span className="block text-sm font-black text-white uppercase truncate">
-                          Desde: {activeCiclo.desde ? activeCiclo.desde.split('-').reverse().join('/') : 'N/A'}
-                        </span>
-                        <span className="block text-sm font-black text-zinc-400 uppercase truncate">
-                          Hasta: {activeCiclo.hasta ? activeCiclo.hasta.split('-').reverse().join('/') : 'Actualidad'}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Duración:</span>
+                          <span className="text-xs font-black text-yellow-400 text-right">
+                            {singleDuration.formatted}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Total Días:</span>
+                          <span className="text-xs font-black text-white tabular-nums">
+                            {singleDuration.totalDays.toLocaleString('es-AR')} días
+                          </span>
+                        </div>
                       </>
-                    ) : (
+                    )}
+
+                    {multiDuration && (
                       <>
-                        <span className="block text-sm font-black text-white uppercase truncate">
-                          Inicio: {tecnico.desde ? tecnico.desde.split('-').reverse().join('/') : 'N/A'}
-                        </span>
-                        <span className="block text-sm font-black text-zinc-400 uppercase truncate">
-                          Cierre: {tecnico.hasta ? tecnico.hasta.split('-').reverse().join('/') : 'Actualidad'}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Tiempo Activo:</span>
+                          <span className="text-xs font-black text-yellow-400 text-right">
+                            {multiDuration.formatted}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Total Días:</span>
+                          <span className="text-xs font-black text-white tabular-nums">
+                            {multiDuration.totalDays.toLocaleString('es-AR')} días <span className="text-[9px] text-zinc-500 font-bold">({tecnico.total_ciclos} ciclos)</span>
+                          </span>
+                        </div>
                       </>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <TrendingUp size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Efectividad</span>
+                {/* Card 3: Efectividad */}
+                <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <TrendingUp size={14} className="text-red-500" />
+                      <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Efectividad</span>
+                    </div>
+                    <span className="block text-4xl font-black text-white tabular-nums">
+                      {tecnico.stats?.efectividad !== undefined ? `${tecnico.stats.efectividad}%` : '---'}
+                    </span>
                   </div>
-                  <span className="block text-4xl font-black text-white tabular-nums">
-                    {tecnico.stats?.efectividad !== undefined ? `${tecnico.stats.efectividad}%` : '---'}
-                  </span>
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">
-                    {activeCiclo ? "Rendimiento del ciclo" : "Métrica histórica global"}
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter pt-3 border-t border-zinc-700/60 mt-3">
+                    {activeCiclo ? `Rendimiento Ciclo #${activeCiclo.numero_ciclo}` : "Métrica histórica global"}
                   </span>
                 </div>
               </div>
