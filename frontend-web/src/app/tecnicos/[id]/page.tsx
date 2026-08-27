@@ -8,15 +8,19 @@ import { cookies } from "next/headers";
 import { sanitizeImageUrl } from "@/utils/image";
 import PlayerGoalsAnalysis from "@/components/player/PlayerGoalsAnalysis";
 import PlayerGoalMethodAnalysis from "@/components/player/PlayerGoalMethodAnalysis";
+import TecnicoMatches from "@/components/TecnicoMatches";
 
 interface Partido {
   fecha: string;
+  fecha_nro?: number;
   goles_river: number;
   goles_rival: number;
-  resultado: 'G' | 'E' | 'P';
+  resultado: string;
+  rival?: { ri_desc: string; escudo_url?: string };
   torneo?: { tor_desc: string };
-  rival?: { ri_desc: string, escudo_url?: string };
   fase?: { fa_desc: string };
+  condicion?: { co_desc: string };
+  estadio?: { es_desc: string };
 }
 
 interface TecnicoCiclo {
@@ -71,11 +75,6 @@ interface Tecnico {
     pl_foto: string | null;
   }[];
   partidos: Partido[];
-  partidos_meta?: {
-    current_page: number;
-    last_page: number;
-    total: number;
-  } | null;
   is_premium_restricted?: boolean;
 }
 
@@ -88,7 +87,6 @@ export default async function TecnicoDetailPage({
 }) {
   const { id } = await params;
   const sParams = await searchParams;
-  const currentPage = typeof sParams.page === "string" ? parseInt(sParams.page, 10) : 1;
   const cicloId = typeof sParams.ciclo_id === "string" ? sParams.ciclo_id : "";
   
   const cookieStore = await cookies();
@@ -107,7 +105,6 @@ export default async function TecnicoDetailPage({
       url: `/v1/tecnicos/${id}`,
       method: "GET",
       params: { 
-        page: currentPage,
         ...(cicloId ? { ciclo_id: cicloId } : {})
       },
       ...fetchOptions
@@ -380,124 +377,44 @@ export default async function TecnicoDetailPage({
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
+          {/* Columna Izquierda: Historial de Partidos */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase italic flex items-center">
-                <Activity className="mr-4 text-red-600" size={24} />
+              <h2 className="text-2xl font-black text-zinc-900 tracking-tight uppercase italic flex items-center">
+                <Calendar className="mr-3 text-red-600" size={24} />
                 Historial de Partidos
               </h2>
-              {tecnico.is_premium_restricted && (
-                <span className="bg-zinc-100 text-zinc-500 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-zinc-200">
-                  Vista Limitada
-                </span>
-              )}
+              <div className="h-px flex-1 bg-zinc-200 ml-8" />
             </div>
 
-            <div className="space-y-4">
-              {(tecnico.partidos || []).map((partido, index) => (
-                <div key={index} className="bg-white p-6 rounded-[40px] border border-zinc-100 flex items-center justify-between shadow-sm group hover:border-red-600 transition-all duration-300">
-                  <div className="flex items-center space-x-6">
-                    <div className="w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center border border-zinc-100 shadow-inner group-hover:scale-110 transition-transform overflow-hidden relative p-2">
-                      {partido.rival?.escudo_url ? (
-                        <Image 
-                          src={sanitizeImageUrl(partido.rival.escudo_url)} 
-                          alt="" 
-                          fill 
-                          unoptimized
-                          className="object-contain p-2" 
-                        />
-                      ) : (
-                        <Shield size={20} className="text-zinc-200" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">{formatLocalDate(partido.fecha)}</span>
-                        <span className="w-1 h-1 bg-zinc-300 rounded-full" />
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{partido.torneo?.tor_desc || 'Amistoso'}</span>
-                      </div>
-                      <h4 className="font-black text-lg text-zinc-900 uppercase tracking-tight group-hover:text-red-600 transition-colors">
-                        vs {partido.rival?.ri_desc || 'Rival'}
-                      </h4>
-                      <div className="flex items-center space-x-2 mt-1">
-                         <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                           partido.resultado === 'G' ? "bg-green-100 text-green-700" : 
-                           partido.resultado === 'P' ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
-                         }`}>
-                           {partido.goles_river} - {partido.goles_rival}
-                         </span>
-                         <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">• {partido.fase?.fa_desc || 'Fase No Definida'}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-zinc-50 w-12 h-12 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-red-50 group-hover:text-red-600 transition-all">
-                    <ChevronRight size={18} />
-                  </div>
-                </div>
-              ))}
+            <div className="relative">
+              <div className={`${tecnico.is_premium_restricted ? 'mask-fade-bottom' : ''}`}>
+                <TecnicoMatches partidos={tecnico.partidos || []} itemsPerPage={15} />
+              </div>
 
+              {/* Premium Restriction for Matches */}
               {tecnico.is_premium_restricted && (
-                <div className="mt-8 relative overflow-hidden rounded-[48px] border-4 border-white shadow-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black opacity-95" />
-                  <div className="relative z-10 p-12 text-center">
-                    <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl rotate-3">
-                      <Lock size={32} className="text-white" />
+                <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end h-64 bg-gradient-to-t from-zinc-50 via-zinc-50/95 to-transparent pb-8">
+                  <div className="bg-white p-8 rounded-[40px] shadow-2xl border border-zinc-100 max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Lock size={28} />
                     </div>
-                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">
-                      Archivo Restringido
-                    </h3>
-                    <p className="text-zinc-400 font-medium mb-10 max-w-md mx-auto leading-relaxed text-sm">
-                      Estás viendo los últimos encuentros. Los socios <span className="text-white font-bold">Premium</span> pueden navegar por el historial completo de cada ciclo.
+                    <h3 className="text-xl font-black text-zinc-900 mb-2 uppercase italic">Historial Restringido</h3>
+                    <p className="text-zinc-500 text-sm mb-8 font-medium leading-relaxed">
+                      Estás viendo una versión limitada del archivo. 
+                      Los socios <span className="text-zinc-900 font-black">Premium</span> acceden a los {tecnico.partidos_count} encuentros históricos disputados bajo esta conducción.
                     </p>
-                    <Link href="/premium" className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl inline-block">
-                      Hacerme Premium Ahora
+                    <Link href="/premium" className="bg-zinc-900 text-white w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center">
+                      <Star className="mr-2 fill-yellow-400 text-yellow-400" size={14} />
+                      Desbloquear Todo el Historial
                     </Link>
                   </div>
-                </div>
-              )}
-              
-              {!tecnico.is_premium_restricted && (tecnico.partidos_meta?.last_page || 1) > 1 && (
-                <div className="flex justify-center items-center space-x-2 mt-12">
-                  {currentPage > 1 ? (
-                    <Link 
-                      href={`/tecnicos/${id}?${new URLSearchParams({
-                        ...(cicloId ? { ciclo_id: cicloId } : {}),
-                        page: (currentPage - 1).toString()
-                      }).toString()}`}
-                      className="px-6 py-3 bg-white border border-zinc-200 rounded-2xl text-zinc-600 font-black text-xs uppercase tracking-widest hover:border-zinc-900 hover:text-white transition-all shadow-sm"
-                    >
-                      Anterior
-                    </Link>
-                  ) : (
-                    <span className="px-6 py-3 bg-zinc-50 border border-zinc-100 rounded-2xl text-zinc-300 font-black text-xs uppercase tracking-widest cursor-not-allowed">
-                      Anterior
-                    </span>
-                  )}
-                  <div className="bg-zinc-100 px-6 py-3 rounded-2xl">
-                    <span className="text-zinc-600 font-black text-xs uppercase tracking-widest">
-                      Página {currentPage} de {tecnico.partidos_meta?.last_page}
-                    </span>
-                  </div>
-                  {currentPage < (tecnico.partidos_meta?.last_page || 1) ? (
-                    <Link 
-                      href={`/tecnicos/${id}?${new URLSearchParams({
-                        ...(cicloId ? { ciclo_id: cicloId } : {}),
-                        page: (currentPage + 1).toString()
-                      }).toString()}`}
-                      className="px-6 py-3 bg-white border border-zinc-200 rounded-2xl text-zinc-600 font-black text-xs uppercase tracking-widest hover:border-zinc-900 hover:text-white transition-all shadow-sm"
-                    >
-                      Siguiente
-                    </Link>
-                  ) : (
-                    <span className="px-6 py-3 bg-zinc-50 border border-zinc-100 rounded-2xl text-zinc-300 font-black text-xs uppercase tracking-widest cursor-not-allowed">
-                      Siguiente
-                    </span>
-                  )}
                 </div>
               )}
             </div>
           </div>
 
+          {/* Columna Derecha: Resumen y Métricas */}
           <div className="lg:col-span-1">
              <div className="bg-zinc-900 rounded-[48px] p-10 text-white shadow-2xl relative overflow-hidden border-4 border-white flex flex-col min-h-[400px]">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
