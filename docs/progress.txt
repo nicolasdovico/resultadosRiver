@@ -1,5 +1,13 @@
 # Log de Progreso de Resultados River
 
+### 2026-08-27: Top 3 de Goleadores por Ciclo y Trayectoria en Ficha de Técnicos
+- [x] **Backend & API (`TecnicoResource`)**:
+  - [x] Desacople del cálculo de `top_scorers` de la condición de pago para que esté disponible en la vista de detalle de todos los usuarios.
+  - [x] Cómputo dinámico de máximos artilleros (`pl_id`, `name`, `goals_count`, `pl_foto`) acotado al ciclo seleccionado (`?ciclo_id=X`) o al consolidado de todos los ciclos de la trayectoria.
+- [x] **Frontend Web (`/tecnicos/[id]`)**:
+  - [x] Integración en el Hero de la sección visual de Artilleros Millonarios (estilo Torneos) con avatares circulares superpuestos, fotos reales de los jugadores, medallas de posición, píldoras de goles y enlaces interactivos hacia `/jugadores/[id]`.
+  - [x] Etiquetas dinámicas indicativas: "Artilleros Ciclo #X" (cuando se filtra por ciclo) y "Artilleros de la Trayectoria" (en la vista global).
+
 ### 2026-08-27: Enriquecimiento e Interactividad en Historial de Goles de Jugadores
 - [x] **Backend & API (`GolResource`, `JugadorController`, `Partido`)**:
   - [x] Corrección de alias de relaciones en el modelo `Partido` (`torneo()`, `arbitro()`, `estadio()`, `condicion()`, `fase()`) y uso de relaciones ansiosas `partido.torneo_rel`, `partido.fase_rel`, `partido.condicion_rel`, `partido.estadio_rel` en `JugadorController::show` para evitar errores 500 por colisión de nombres de columnas.
