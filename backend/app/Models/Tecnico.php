@@ -14,22 +14,64 @@ class Tecnico extends Model
     protected $primaryKey = 'id_tecnicos';
     public $timestamps = false;
     protected $guarded = [];
-    protected $fillable = ['tec_ape_nom', 'desde', 'hasta', 'cargo', 'tec_foto'];
+    protected $fillable = ['id_tecnicos', 'tec_ape_nom', 'tec_foto'];
 
-    public function getPartidosQuery()
+    public function ciclos(): HasMany
     {
-        $query = Partido::query()
-            ->where('fecha', '>=', $this->desde);
+        return $this->hasMany(TecnicoCiclo::class, 'tecnico_id', 'id_tecnicos')->orderBy('desde', 'asc');
+    }
 
-        if ($this->hasta) {
-            $query->where('fecha', '<=', $this->hasta);
+    public function getDesdeAttribute(): ?string
+    {
+        return $this->ciclos->min('desde');
+    }
+
+    public function getHastaAttribute(): ?string
+    {
+        $hasActive = $this->ciclos->contains(fn($c) => is_null($c->hasta));
+        if ($hasActive) {
+            return null;
         }
+        return $this->ciclos->max('hasta');
+    }
 
-        return $query;
+    public function getCargoAttribute(): string
+    {
+        $latestCiclo = $this->ciclos->sortByDesc('desde')->first();
+        return $latestCiclo ? trim($latestCiclo->cargo) : 'TITULAR';
     }
 
     /**
-     * Get aggregate statistics for the technical director's cycle.
+     * Get partidos query for a specific cycle or all cycles combined.
+     */
+    public function getPartidosQuery(?int $cicloId = null)
+    {
+        if ($cicloId !== null) {
+            $ciclo = $this->ciclos->firstWhere('id', $cicloId) ?? TecnicoCiclo::find($cicloId);
+            if ($ciclo) {
+                return $ciclo->getPartidosQuery();
+            }
+        }
+
+        $ciclos = $this->ciclos;
+        if ($ciclos->isEmpty()) {
+            return Partido::query()->whereRaw('1 = 0');
+        }
+
+        return Partido::query()->where(function ($q) use ($ciclos) {
+            foreach ($ciclos as $c) {
+                $q->orWhere(function ($sub) use ($c) {
+                    $sub->where('fecha', '>=', $c->desde);
+                    if ($c->hasta) {
+                        $sub->where('fecha', '<=', $c->hasta);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Get aggregate statistics for all cycles of the technical director.
      */
     public function getStatsAttribute(): array
     {
@@ -76,17 +118,6 @@ class Tecnico extends Model
 
     public static function getForFecha($fecha)
     {
-        static $tecnicos = null;
-
-        if ($tecnicos === null) {
-            $tecnicos = self::all();
-        }
-
-        return $tecnicos->first(function ($tecnico) use ($fecha) {
-            $desde = $tecnico->desde;
-            $hasta = $tecnico->hasta ?? '9999-12-31';
-
-            return $fecha >= $desde && $fecha <= $hasta;
-        });
+        return TecnicoCiclo::getForFecha($fecha)?->tecnico;
     }
 }

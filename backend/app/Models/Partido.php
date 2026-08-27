@@ -69,6 +69,11 @@ class Partido extends Model
         return Tecnico::getForFecha($this->fecha);
     }
 
+    public function getCicloAttribute()
+    {
+        return TecnicoCiclo::getForFecha($this->fecha);
+    }
+
     public function goles(): HasMany
     {
         return $this->hasMany(Gol::class, 'gol_fecha', 'fecha')->orderBy('periodo')->orderBy('minutos');

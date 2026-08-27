@@ -1397,6 +1397,13 @@
                         }
                     },
                     {
+                        "name": "ciclo_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
                         "name": "condicion",
                         "in": "query",
                         "schema": {
@@ -1765,6 +1772,40 @@
                 "summary": "List all tecnicos",
                 "description": "Display a listing of the resource.",
                 "operationId": "getTecnicos",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "letter",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -1808,6 +1849,14 @@
                         "name": "id",
                         "in": "path",
                         "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "ciclo_id",
+                        "in": "query",
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
@@ -2683,6 +2732,51 @@
                     "cargo": {
                         "type": "string",
                         "nullable": true
+                    },
+                    "total_ciclos": {
+                        "type": "integer"
+                    },
+                    "active_ciclo_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "ciclos": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "numero_ciclo": {
+                                    "type": "integer"
+                                },
+                                "desde": {
+                                    "type": "string",
+                                    "format": "date"
+                                },
+                                "hasta": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "nullable": true
+                                },
+                                "cargo": {
+                                    "type": "string"
+                                },
+                                "observaciones": {
+                                    "type": "string",
+                                    "nullable": true
+                                },
+                                "foto_ciclo": {
+                                    "type": "string",
+                                    "nullable": true
+                                },
+                                "stats": {
+                                    "type": "object",
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        }
                     },
                     "partidos_count": {
                         "type": "integer"

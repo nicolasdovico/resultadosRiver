@@ -105,8 +105,13 @@ class CustomQueryApiTest extends TestCase
         $tecnico = Tecnico::create([
             'id_tecnicos' => 1,
             'tec_ape_nom' => 'GALLARDO, MARCELO',
+        ]);
+        \App\Models\TecnicoCiclo::create([
+            'tecnico_id' => 1,
+            'numero_ciclo' => 1,
             'desde' => '2014-06-01',
-            'hasta' => '2022-12-31'
+            'hasta' => '2022-12-31',
+            'cargo' => 'TITULAR'
         ]);
 
         Partido::create([

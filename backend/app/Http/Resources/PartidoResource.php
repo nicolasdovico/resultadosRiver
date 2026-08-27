@@ -98,6 +98,13 @@ class PartidoResource extends JsonResource
                 'tec_ape_nom' => $this->tecnico?->tec_ape_nom,
                 'te_desc' => $this->tecnico?->tec_ape_nom,
                 'cargo' => $this->tecnico?->cargo,
+                'ciclo' => $this->ciclo ? [
+                    'id' => $this->ciclo->id,
+                    'numero_ciclo' => $this->ciclo->numero_ciclo,
+                    'cargo' => $this->ciclo->cargo,
+                    'desde' => $this->ciclo->desde,
+                    'hasta' => $this->ciclo->hasta,
+                ] : null,
             ],
             'goles' => GolResource::collection($this->whenLoaded('goles')),
         ];

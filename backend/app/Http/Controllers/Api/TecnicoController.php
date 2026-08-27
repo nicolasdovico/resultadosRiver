@@ -17,6 +17,12 @@ class TecnicoController extends Controller
         operationId: 'getTecnicos',
         security: [['sanctum' => []]],
         tags: ['Tecnicos'],
+        parameters: [
+            new OA\Parameter(name: 'q', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'letter', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Successful operation')
         ]
@@ -26,14 +32,15 @@ class TecnicoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Tecnico::query();
+        $likeOperator = \DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+        $query = Tecnico::with('ciclos');
         
         if ($request->has('q')) {
-            $query->where('tec_ape_nom', 'ILIKE', "%{$request->q}%");
+            $query->where('tec_ape_nom', $likeOperator, "%{$request->q}%");
         }
 
         if ($request->has('letter')) {
-            $query->where('tec_ape_nom', 'ILIKE', "{$request->letter}%");
+            $query->where('tec_ape_nom', $likeOperator, "{$request->letter}%");
         }
 
         $query->orderBy('tec_ape_nom', 'asc');
@@ -62,7 +69,7 @@ class TecnicoController extends Controller
     public function store(Request $request)
     {
         $record = Tecnico::create($request->all());
-        return new TecnicoResource($record);
+        return new TecnicoResource($record->load('ciclos'));
     }
 
     #[OA\Get(
@@ -72,7 +79,8 @@ class TecnicoController extends Controller
         security: [['sanctum' => []]],
         tags: ['Tecnicos'],
         parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'ciclo_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
             new OA\Response(response: 200, description: 'Successful operation')
@@ -83,7 +91,7 @@ class TecnicoController extends Controller
      */
     public function show(string $id)
     {
-        return new TecnicoResource(Tecnico::findOrFail($id));
+        return new TecnicoResource(Tecnico::with('ciclos')->findOrFail($id));
     }
 
     #[OA\Put(
@@ -106,7 +114,7 @@ class TecnicoController extends Controller
     {
         $record = Tecnico::findOrFail($id);
         $record->update($request->all());
-        return new TecnicoResource($record);
+        return new TecnicoResource($record->load('ciclos'));
     }
 
     #[OA\Delete(

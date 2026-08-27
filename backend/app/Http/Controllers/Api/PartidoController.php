@@ -693,6 +693,7 @@ class PartidoController extends Controller
             new OA\Parameter(name: 'estadio', in: 'query', schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'arbitro', in: 'query', schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'tecnico', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'ciclo_id', in: 'query', schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'condicion', in: 'query', schema: new OA\Schema(type: 'integer')),
             new OA\Parameter(name: 'resultado', in: 'query', schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'fecha_desde', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
@@ -890,11 +891,28 @@ class PartidoController extends Controller
         }
 
         if ($request->filled('tecnico')) {
-            $tecnico = \App\Models\Tecnico::find($request->tecnico);
-            if ($tecnico) {
-                $query->where('fecha', '>=', $tecnico->desde);
-                if ($tecnico->hasta) {
-                    $query->where('fecha', '<=', $tecnico->hasta);
+            $tecnico = \App\Models\Tecnico::with('ciclos')->find($request->tecnico);
+            if ($tecnico && $tecnico->ciclos->isNotEmpty()) {
+                $ciclos = $tecnico->ciclos;
+                $query->where(function ($q) use ($ciclos) {
+                    foreach ($ciclos as $c) {
+                        $q->orWhere(function ($sub) use ($c) {
+                            $sub->where('fecha', '>=', $c->desde);
+                            if ($c->hasta) {
+                                $sub->where('fecha', '<=', $c->hasta);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        if ($request->filled('ciclo_id')) {
+            $ciclo = \App\Models\TecnicoCiclo::find($request->ciclo_id);
+            if ($ciclo) {
+                $query->where('fecha', '>=', $ciclo->desde);
+                if ($ciclo->hasta) {
+                    $query->where('fecha', '<=', $ciclo->hasta);
                 }
             }
         }

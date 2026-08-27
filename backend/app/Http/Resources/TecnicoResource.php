@@ -21,6 +21,25 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'desde', type: 'string', format: 'date', nullable: true),
         new OA\Property(property: 'hasta', type: 'string', format: 'date', nullable: true),
         new OA\Property(property: 'cargo', type: 'string', nullable: true),
+        new OA\Property(property: 'total_ciclos', type: 'integer'),
+        new OA\Property(property: 'active_ciclo_id', type: 'integer', nullable: true),
+        new OA\Property(
+            property: 'ciclos',
+            type: 'array',
+            items: new OA\Items(
+                properties: [
+                    new OA\Property(property: 'id', type: 'integer'),
+                    new OA\Property(property: 'numero_ciclo', type: 'integer'),
+                    new OA\Property(property: 'desde', type: 'string', format: 'date'),
+                    new OA\Property(property: 'hasta', type: 'string', format: 'date', nullable: true),
+                    new OA\Property(property: 'cargo', type: 'string'),
+                    new OA\Property(property: 'observaciones', type: 'string', nullable: true),
+                    new OA\Property(property: 'foto_ciclo', type: 'string', nullable: true),
+                    new OA\Property(property: 'stats', type: 'object', nullable: true),
+                ],
+                type: 'object'
+            )
+        ),
         new OA\Property(property: 'partidos_count', type: 'integer'),
         new OA\Property(property: 'is_premium_restricted', type: 'boolean'),
         new OA\Property(property: 'stats', type: 'object'),
@@ -43,18 +62,41 @@ class TecnicoResource extends JsonResource
         $user = auth("sanctum")->user();
         $isPremium = $user && $user->isPremium();
         
-        $stats = $this->stats;
+        $isDetail = $request->routeIs('*.show') || $request->is('*/tecnicos/*');
+        $cicloId = $request->filled('ciclo_id') ? (int) $request->input('ciclo_id') : null;
+
         $partidosMeta = null;
         $isRestricted = false;
         $periodStats = [];
         $golesPorTipo = [];
         $topScorers = [];
 
-        $partidosQuery = $this->getPartidosQuery()
+        // Scoped query for selected cycle or all cycles
+        $partidosQuery = $this->getPartidosQuery($cicloId)
             ->with(['rival', 'torneo_rel', 'fase_rel'])
             ->orderBy('fecha', 'desc');
 
-        $isDetail = $request->routeIs('*.show') || $request->is('*/tecnicos/*');
+        // Scoped stats
+        if ($cicloId !== null) {
+            $selectedCiclo = $this->ciclos->firstWhere('id', $cicloId);
+            $stats = $selectedCiclo ? $selectedCiclo->stats : $this->stats;
+        } else {
+            $stats = $this->stats;
+        }
+
+        // Map all cycles
+        $ciclosData = $this->ciclos->map(function ($ciclo) use ($isDetail) {
+            return [
+                'id' => $ciclo->id,
+                'numero_ciclo' => $ciclo->numero_ciclo,
+                'desde' => $ciclo->desde,
+                'hasta' => $ciclo->hasta,
+                'cargo' => trim($ciclo->cargo),
+                'observaciones' => $ciclo->observaciones,
+                'foto_ciclo' => $ciclo->foto_ciclo ? Storage::disk('public')->url($ciclo->foto_ciclo) : null,
+                'stats' => $isDetail ? $ciclo->stats : null,
+            ];
+        });
 
         if ($isDetail) {
             $perPage = 10;
@@ -75,8 +117,8 @@ class TecnicoResource extends JsonResource
                     $partidosCollection = collect([]);
                 }
             } else {
-                // Analítica de Goles para Premium
-                $partidosIds = $this->getPartidosQuery()->pluck('fecha')->toArray();
+                // Analítica de Goles para Premium (scoped to selected cycle or all cycles)
+                $partidosIds = $this->getPartidosQuery($cicloId)->pluck('fecha')->toArray();
                 
                 if (!empty($partidosIds)) {
                     $intervals = [
@@ -130,7 +172,7 @@ class TecnicoResource extends JsonResource
                         ->groupBy('tipo_gol.tipo_gol_descripcion')
                         ->get();
 
-                    // Top 3 Goleadores del Ciclo
+                    // Top 3 Goleadores del Ciclo / Período
                     $topScorersRaw = DB::table('goles')
                         ->whereIn('gol_fecha', $partidosIds)
                         ->where('gol_parariver', 1)
@@ -166,6 +208,9 @@ class TecnicoResource extends JsonResource
             'desde' => $this->desde,
             'hasta' => $this->hasta,
             'cargo' => trim($this->cargo),
+            'total_ciclos' => $this->ciclos->count(),
+            'active_ciclo_id' => $cicloId,
+            'ciclos' => $ciclosData,
             'partidos_count' => $stats['pj'],
             'stats' => $stats,
             'is_premium_restricted' => $isRestricted,
