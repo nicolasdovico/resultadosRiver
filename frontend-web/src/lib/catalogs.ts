@@ -41,7 +41,7 @@ export async function getCachedCatalogs(fetchOptions: any = {}): Promise<Catalog
       customInstance<{ data: any[] }>({ url: '/v1/fases', method: 'GET', ...fetchOptions }),
       customInstance<{ data: any[] }>({ url: '/v1/estadios', method: 'GET', params: { limit: -1 }, ...fetchOptions }),
       customInstance<{ data: any[] }>({ url: '/v1/arbitros', method: 'GET', params: { limit: -1 }, ...fetchOptions }),
-      customInstance<{ data: any[] }>({ url: '/v1/tecnicos', method: 'GET', params: { limit: 100 }, ...fetchOptions }),
+      customInstance<{ data: any[] }>({ url: '/v1/tecnicos', method: 'GET', params: { limit: -1 }, ...fetchOptions }),
     ]);
 
     cachedCatalogs = {

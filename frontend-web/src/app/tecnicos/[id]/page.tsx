@@ -1,5 +1,5 @@
 import { formatLocalDate } from "@/utils/date";
-import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight, Lock, Info, Percent, Award, UserRound } from "lucide-react";
+import { ChevronLeft, Trophy, Star, TrendingUp, Calendar, Hash, Timer, Target, Shield, Zap, Activity, ChevronRight, Lock, Info, Percent, Award, UserRound, Layers } from "lucide-react";
 import Link from "next/link";
 import AccessControl from "@/components/AccessControl";
 import { customInstance } from "@/api/custom-instance";
@@ -19,6 +19,27 @@ interface Partido {
   fase?: { fa_desc: string };
 }
 
+interface TecnicoCiclo {
+  id: number;
+  numero_ciclo: number;
+  desde: string;
+  hasta: string | null;
+  cargo: string;
+  observaciones?: string | null;
+  foto_ciclo?: string | null;
+  stats?: {
+    pj: number;
+    pg: number;
+    pe: number;
+    pp: number;
+    gf: number;
+    gc: number;
+    dg: number;
+    puntos: number;
+    efectividad: number;
+  } | null;
+}
+
 interface Tecnico {
   id_tecnicos: number;
   tec_ape_nom: string;
@@ -26,6 +47,9 @@ interface Tecnico {
   desde: string;
   hasta: string;
   cargo: string;
+  total_ciclos?: number;
+  active_ciclo_id?: number | null;
+  ciclos?: TecnicoCiclo[];
   partidos_count: number;
   stats?: {
     pj: number;
@@ -65,6 +89,7 @@ export default async function TecnicoDetailPage({
   const { id } = await params;
   const sParams = await searchParams;
   const currentPage = typeof sParams.page === "string" ? parseInt(sParams.page, 10) : 1;
+  const cicloId = typeof sParams.ciclo_id === "string" ? sParams.ciclo_id : "";
   
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
@@ -81,10 +106,12 @@ export default async function TecnicoDetailPage({
     const response = await customInstance<{ data: Tecnico }>({
       url: `/v1/tecnicos/${id}`,
       method: "GET",
-      params: { page: currentPage },
+      params: { 
+        page: currentPage,
+        ...(cicloId ? { ciclo_id: cicloId } : {})
+      },
       ...fetchOptions
     });
-    // Laravel resources wrap the response in a 'data' property
     tecnico = response.data;
   } catch (error) {
     console.error("Error fetching tecnico:", error);
@@ -104,10 +131,18 @@ export default async function TecnicoDetailPage({
     );
   }
 
+  const hasMultipleCiclos = (tecnico.ciclos?.length || 0) > 1;
+  const activeCiclo = cicloId && tecnico.ciclos 
+    ? tecnico.ciclos.find(c => c.id.toString() === cicloId) 
+    : null;
+
+  // Best photo: specific cycle photo if available, or coach master photo
+  const currentPhoto = activeCiclo?.foto_ciclo || tecnico.tec_foto;
+
   return (
     <div className="min-h-screen bg-zinc-50/30 pb-24">
       {/* Navigation */}
-      <div className="bg-white border-b border-zinc-100 mb-12">
+      <div className="bg-white border-b border-zinc-100 mb-8">
         <div className="container mx-auto px-4 py-6 max-w-6xl">
           <Link href="/tecnicos" className="flex items-center text-zinc-400 hover:text-red-600 font-black text-[10px] uppercase tracking-[0.2em] transition-colors group">
             <ChevronLeft size={14} className="mr-1 group-hover:-translate-x-1 transition-transform" />
@@ -117,6 +152,54 @@ export default async function TecnicoDetailPage({
       </div>
 
       <div className="container mx-auto px-4 max-w-6xl">
+        {/* Selector de Ciclos (Tabs Interactivas) */}
+        {hasMultipleCiclos && (
+          <div className="mb-8 bg-white border border-zinc-200/80 rounded-[32px] p-3 shadow-md shadow-zinc-900/5">
+            <div className="flex items-center justify-between px-4 py-2 mb-2 border-b border-zinc-100">
+              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                <Layers size={12} className="text-red-500" />
+                Ciclos de Conducción ({tecnico.ciclos?.length} etapas registradas)
+              </span>
+              <span className="text-[10px] font-bold text-zinc-500">
+                Selecciona una etapa para filtrar estadísticas
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Tab Global */}
+              <Link
+                href={`/tecnicos/${id}`}
+                className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+                  !cicloId 
+                    ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20" 
+                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+                }`}
+              >
+                <Trophy size={14} className={!cicloId ? "text-yellow-400" : "text-zinc-400"} />
+                Trayectoria Global (Todos los ciclos)
+              </Link>
+
+              {/* Tabs por cada Ciclo */}
+              {tecnico.ciclos?.map((c) => {
+                const isActive = cicloId === c.id.toString();
+                return (
+                  <Link
+                    key={c.id}
+                    href={`/tecnicos/${id}?ciclo_id=${c.id}`}
+                    className={`px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+                      isActive 
+                        ? "bg-red-600 text-white shadow-lg shadow-red-600/20" 
+                        : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-white' : 'bg-red-500'}`} />
+                    Ciclo #{c.numero_ciclo}: {c.desde.split('-')[0]} - {c.hasta ? c.hasta.split('-')[0] : 'Actual'} ({c.cargo})
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Hero Profile - Estética Data Console */}
         <section className="bg-zinc-900 rounded-[48px] p-8 md:p-16 shadow-2xl relative overflow-hidden mb-16 border-4 border-white">
           <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none rotate-12">
@@ -126,10 +209,10 @@ export default async function TecnicoDetailPage({
           <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
             <div className="relative">
               <div className="w-48 h-64 md:w-64 md:h-80 bg-zinc-800 rounded-[40px] flex items-center justify-center text-white font-black text-8xl shadow-2xl border-4 border-zinc-700 relative group overflow-hidden">
-                {tecnico.tec_foto ? (
+                {currentPhoto ? (
                   <>
                     <Image 
-                      src={sanitizeImageUrl(tecnico.tec_foto)} 
+                      src={sanitizeImageUrl(currentPhoto)} 
                       alt="" 
                       fill 
                       unoptimized
@@ -156,9 +239,24 @@ export default async function TecnicoDetailPage({
             
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
-                <span className="bg-red-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20">Director Técnico</span>
-                <span className="bg-zinc-800 text-zinc-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-zinc-700">{tecnico.cargo || 'Entrenador'}</span>
+                <span className="bg-red-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-900/20">
+                  Director Técnico
+                </span>
+                {activeCiclo ? (
+                  <span className="bg-yellow-400 text-yellow-950 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                    Ciclo #{activeCiclo.numero_ciclo} • {activeCiclo.cargo}
+                  </span>
+                ) : hasMultipleCiclos ? (
+                  <span className="bg-zinc-800 text-yellow-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-zinc-700">
+                    Trayectoria Global ({tecnico.total_ciclos} Ciclos)
+                  </span>
+                ) : (
+                  <span className="bg-zinc-800 text-zinc-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-zinc-700">
+                    {tecnico.cargo || 'Entrenador'}
+                  </span>
+                )}
               </div>
+
               <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-10 italic">
                 {tecnico.tec_ape_nom}
               </h1>
@@ -167,26 +265,45 @@ export default async function TecnicoDetailPage({
                 <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
                   <div className="flex items-center space-x-2 mb-2">
                     <Activity size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Partidos Dirigidos</span>
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                      {activeCiclo ? "Partidos en este Ciclo" : "Partidos Totales"}
+                    </span>
                   </div>
                   <span className="block text-4xl font-black text-white tabular-nums">
                     {tecnico.partidos_count}
                   </span>
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Total de encuentros oficiales</span>
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">
+                    {activeCiclo ? `Ciclo #${activeCiclo.numero_ciclo}` : `${tecnico.total_ciclos || 1} ciclos combinados`}
+                  </span>
                 </div>
 
                 <div className="bg-zinc-800/50 backdrop-blur-sm p-6 rounded-[32px] border border-zinc-700/50">
                   <div className="flex items-center space-x-2 mb-2">
                     <Calendar size={14} className="text-red-500" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Periodo del Ciclo</span>
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                      {activeCiclo ? `Periodo Ciclo #${activeCiclo.numero_ciclo}` : "Trayectoria Total"}
+                    </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="block text-sm font-black text-white uppercase truncate">
-                      Desde: {tecnico.desde ? tecnico.desde.split('-').reverse().join('-') : 'N/A'}
-                    </span>
-                    <span className="block text-sm font-black text-zinc-400 uppercase truncate">
-                      Hasta: {tecnico.hasta ? tecnico.hasta.split('-').reverse().join('-') : 'Actualidad'}
-                    </span>
+                    {activeCiclo ? (
+                      <>
+                        <span className="block text-sm font-black text-white uppercase truncate">
+                          Desde: {activeCiclo.desde ? activeCiclo.desde.split('-').reverse().join('/') : 'N/A'}
+                        </span>
+                        <span className="block text-sm font-black text-zinc-400 uppercase truncate">
+                          Hasta: {activeCiclo.hasta ? activeCiclo.hasta.split('-').reverse().join('/') : 'Actualidad'}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="block text-sm font-black text-white uppercase truncate">
+                          Inicio: {tecnico.desde ? tecnico.desde.split('-').reverse().join('/') : 'N/A'}
+                        </span>
+                        <span className="block text-sm font-black text-zinc-400 uppercase truncate">
+                          Cierre: {tecnico.hasta ? tecnico.hasta.split('-').reverse().join('/') : 'Actualidad'}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -198,7 +315,9 @@ export default async function TecnicoDetailPage({
                   <span className="block text-4xl font-black text-white tabular-nums">
                     {tecnico.stats?.efectividad !== undefined ? `${tecnico.stats.efectividad}%` : '---'}
                   </span>
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Métrica de rendimiento</span>
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">
+                    {activeCiclo ? "Rendimiento del ciclo" : "Métrica histórica global"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -286,7 +405,10 @@ export default async function TecnicoDetailPage({
                 <div className="flex justify-center items-center space-x-2 mt-12">
                   {currentPage > 1 ? (
                     <Link 
-                      href={`/tecnicos/${id}?page=${currentPage - 1}`}
+                      href={`/tecnicos/${id}?${new URLSearchParams({
+                        ...(cicloId ? { ciclo_id: cicloId } : {}),
+                        page: (currentPage - 1).toString()
+                      }).toString()}`}
                       className="px-6 py-3 bg-white border border-zinc-200 rounded-2xl text-zinc-600 font-black text-xs uppercase tracking-widest hover:border-zinc-900 hover:text-white transition-all shadow-sm"
                     >
                       Anterior
@@ -303,7 +425,10 @@ export default async function TecnicoDetailPage({
                   </div>
                   {currentPage < (tecnico.partidos_meta?.last_page || 1) ? (
                     <Link 
-                      href={`/tecnicos/${id}?page=${currentPage + 1}`}
+                      href={`/tecnicos/${id}?${new URLSearchParams({
+                        ...(cicloId ? { ciclo_id: cicloId } : {}),
+                        page: (currentPage + 1).toString()
+                      }).toString()}`}
                       className="px-6 py-3 bg-white border border-zinc-200 rounded-2xl text-zinc-600 font-black text-xs uppercase tracking-widest hover:border-zinc-900 hover:text-white transition-all shadow-sm"
                     >
                       Siguiente
@@ -337,7 +462,9 @@ export default async function TecnicoDetailPage({
                   </div>
                 )}
 
-                <h3 className="font-black text-xs uppercase tracking-[0.3em] mb-10 text-red-500 italic">Resumen de Ciclo</h3>
+                <h3 className="font-black text-xs uppercase tracking-[0.3em] mb-10 text-red-500 italic">
+                  {activeCiclo ? `Resumen Ciclo #${activeCiclo.numero_ciclo}` : "Resumen Global"}
+                </h3>
                 
                 <div className={`space-y-4 relative z-10 ${!isPremium ? 'opacity-20 blur-sm pointer-events-none' : ''}`}>
                    <div className="grid grid-cols-2 gap-4">
@@ -381,7 +508,11 @@ export default async function TecnicoDetailPage({
         <section className="mt-20">
           <div className="flex flex-col mb-10">
             <h2 className="text-3xl font-black text-zinc-900 mb-2 tracking-tight uppercase italic">Analítica de Resultados</h2>
-            <p className="text-zinc-500 font-medium uppercase text-xs tracking-widest">Distribución de goles (a favor y en contra) durante el ciclo.</p>
+            <p className="text-zinc-500 font-medium uppercase text-xs tracking-widest">
+              {activeCiclo 
+                ? `Distribución de goles durante el Ciclo #${activeCiclo.numero_ciclo}` 
+                : "Distribución de goles a lo largo de toda la trayectoria."}
+            </p>
           </div>
 
           <div className="relative">
@@ -390,7 +521,7 @@ export default async function TecnicoDetailPage({
                 <Shield size={48} className="text-red-600 mb-4" />
                 <h4 className="font-black text-zinc-900 uppercase tracking-tighter text-3xl mb-4 italic">Análisis Exclusivo para Socios</h4>
                 <p className="text-zinc-500 text-lg font-medium mb-10 max-w-md">
-                  El desglose por tiempo y método de definición del ciclo completo está disponible solo para socios Premium.
+                  El desglose por tiempo y método de definición está disponible solo para socios Premium.
                 </p>
                 <Link href="/premium" className="bg-zinc-900 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl">
                   Quiero ser Premium
@@ -414,12 +545,16 @@ export default async function TecnicoDetailPage({
                   <div className="bg-zinc-900 p-8 md:p-12 border-t border-white/5">
                     <div className="flex items-center justify-between mb-8">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] bg-red-500/10 px-3 py-1 rounded-full w-fit mb-2">Artilleros del Ciclo</span>
+                        <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] bg-red-500/10 px-3 py-1 rounded-full w-fit mb-2">
+                          {activeCiclo ? `Artilleros del Ciclo #${activeCiclo.numero_ciclo}` : "Artilleros Históricos"}
+                        </span>
                         <h4 className="text-2xl font-black tracking-tight text-white">Máximos Goleadores</h4>
                       </div>
                       <div className="flex items-center text-zinc-400">
                         <Award size={16} className="mr-2 text-yellow-500" />
-                        <span className="text-xs font-bold uppercase tracking-widest">Podio del Ciclo</span>
+                        <span className="text-xs font-bold uppercase tracking-widest">
+                          {activeCiclo ? `Podio Ciclo #${activeCiclo.numero_ciclo}` : "Podio Histórico"}
+                        </span>
                       </div>
                     </div>
 

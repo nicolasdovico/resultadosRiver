@@ -1,11 +1,21 @@
 import Link from "next/link";
-import { UserRound, ChevronRight, Award, Percent, Users, Search, X, Info, Star, Activity, Lock, Shield } from "lucide-react";
+import { UserRound, ChevronRight, Award, Percent, Users, Search, X, Info, Star, Activity, Lock, Shield, Layers } from "lucide-react";
 import AccessControl from "@/components/AccessControl";
 import SearchBar from "@/components/SearchBar";
 import { customInstance } from "@/api/custom-instance";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import { sanitizeImageUrl } from "@/utils/image";
+
+interface TecnicoCiclo {
+  id: number;
+  numero_ciclo: number;
+  desde: string;
+  hasta: string | null;
+  cargo: string;
+  observaciones?: string | null;
+  foto_ciclo?: string | null;
+}
 
 interface Tecnico {
   id_tecnicos: number;
@@ -14,6 +24,8 @@ interface Tecnico {
   desde: string;
   hasta: string;
   cargo: string;
+  total_ciclos?: number;
+  ciclos?: TecnicoCiclo[];
   partidos_count?: number;
 }
 
@@ -130,9 +142,9 @@ export default async function TecnicosPage({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { name: 'GALLARDO, MARCELO', period: '2014 - 2022', titles: 14, winRate: '54%' },
-                { name: 'RAMÓN DÍAZ', period: '1995 - 2014', titles: 9, winRate: '51%' },
-                { name: 'LABRUNA, ÁNGEL', period: '1975 - 1981', titles: 6, winRate: '48%' },
+                { name: 'GALLARDO, MARCELO', period: '2014 - 2026 (2 Ciclos)', titles: 14, winRate: '62%' },
+                { name: 'RAMÓN DÍAZ', period: '1995 - 2014 (3 Ciclos)', titles: 9, winRate: '57%' },
+                { name: 'LABRUNA, ÁNGEL', period: '1963 - 1981 (3 Ciclos)', titles: 6, winRate: '54%' },
               ].map((cycle) => (
                 <div key={cycle.name} className="bg-zinc-900 p-8 rounded-[40px] text-white relative overflow-hidden group hover:-translate-y-2 transition-all duration-500 border border-zinc-800 hover:border-red-600 shadow-2xl">
                   <Award className="absolute -right-4 -bottom-4 text-white/5 group-hover:text-red-600/20 transition-colors" size={160} />
@@ -218,62 +230,81 @@ export default async function TecnicosPage({
               {visibleTecnicos.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {visibleTecnicos.map((tecnico) => (
-                      <Link 
-                        key={tecnico.id_tecnicos}
-                        href={`/tecnicos/${tecnico.id_tecnicos}`}
-                        className="bg-white p-8 rounded-[40px] border border-zinc-100 flex flex-col group hover:border-zinc-900 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-zinc-900/5 overflow-hidden"
-                      >
-                        <div className="flex items-start justify-between mb-8">
-                          <div className="w-24 h-32 md:w-32 md:h-40 bg-zinc-900 text-white rounded-[24px] flex items-center justify-center font-black text-2xl uppercase group-hover:bg-red-600 transition-all duration-500 shadow-lg relative overflow-hidden shrink-0">
-                            {tecnico.tec_foto ? (
-                              <>
-                                <Image 
-                                  src={sanitizeImageUrl(tecnico.tec_foto)} 
-                                  alt="" 
-                                  fill 
-                                  unoptimized
-                                  className={`object-cover object-top transition-all duration-700 ${!isPremium ? 'blur-xl grayscale scale-110' : 'group-hover:scale-110'}`} 
-                                />
-                                {!isPremium && (
-                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 backdrop-blur-sm">
-                                    <Lock size={20} className="text-red-500" />
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <span className="group-hover:scale-110 transition-transform duration-500">{tecnico.tec_ape_nom?.[0] || "?"}</span>
-                            )}
-                          </div>
-                          <div className="flex flex-col text-right">
-                             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Partidos</span>
-                             <span className="text-xl font-black text-zinc-900 tabular-nums">{tecnico.partidos_count || 0}</span>
-                             
-                             <div className="mt-4 bg-zinc-50 rounded-2xl p-3 border border-zinc-100 group-hover:bg-red-50 group-hover:border-red-100 transition-colors">
-                                <span className="block text-[8px] font-black text-zinc-400 uppercase tracking-tighter mb-1">Cargo</span>
-                                <span className="block text-[10px] font-black text-zinc-900 uppercase italic">{tecnico.cargo || 'Oficial'}</span>
-                             </div>
-                          </div>
-                        </div>
-                        
-                        <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-xl uppercase leading-tight mb-6">
-                          {tecnico.tec_ape_nom}
-                        </h3>
-                        
-                        <div className="mt-auto pt-6 border-t border-zinc-50 flex items-center justify-between">
-                          <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Periodo del Ciclo</span>
-                            <div className="flex flex-col">
-                              <span className="text-[10px] font-bold text-zinc-600">Desde: {tecnico.desde ? tecnico.desde.split('-').reverse().join('-') : 'N/A'}</span>
-                              <span className="text-[10px] font-bold text-zinc-600">Hasta: {tecnico.hasta ? tecnico.hasta.split('-').reverse().join('-') : 'Actualidad'}</span>
+                    {visibleTecnicos.map((tecnico) => {
+                      const hasMultipleCiclos = (tecnico.total_ciclos || 1) > 1;
+                      return (
+                        <Link 
+                          key={tecnico.id_tecnicos}
+                          href={`/tecnicos/${tecnico.id_tecnicos}`}
+                          className="bg-white p-8 rounded-[40px] border border-zinc-100 flex flex-col group hover:border-zinc-900 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-zinc-900/5 overflow-hidden"
+                        >
+                          <div className="flex items-start justify-between mb-8">
+                            <div className="w-24 h-32 md:w-32 md:h-40 bg-zinc-900 text-white rounded-[24px] flex items-center justify-center font-black text-2xl uppercase group-hover:bg-red-600 transition-all duration-500 shadow-lg relative overflow-hidden shrink-0">
+                              {tecnico.tec_foto ? (
+                                <>
+                                  <Image 
+                                    src={sanitizeImageUrl(tecnico.tec_foto)} 
+                                    alt="" 
+                                    fill 
+                                    unoptimized
+                                    className={`object-cover object-top transition-all duration-700 ${!isPremium ? 'blur-xl grayscale scale-110' : 'group-hover:scale-110'}`} 
+                                  />
+                                  {!isPremium && (
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 backdrop-blur-sm">
+                                      <Lock size={20} className="text-red-500" />
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="group-hover:scale-110 transition-transform duration-500">{tecnico.tec_ape_nom?.[0] || "?"}</span>
+                              )}
+                            </div>
+                            <div className="flex flex-col text-right">
+                               <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Partidos Totales</span>
+                               <span className="text-2xl font-black text-zinc-900 tabular-nums">{tecnico.partidos_count || 0}</span>
+                               
+                               <div className="mt-3 flex flex-col items-end gap-1.5">
+                                  {hasMultipleCiclos ? (
+                                    <span className="bg-red-600 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider shadow-sm flex items-center gap-1">
+                                      <Layers size={10} />
+                                      {tecnico.total_ciclos} Ciclos
+                                    </span>
+                                  ) : (
+                                    <span className="bg-zinc-100 text-zinc-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
+                                      {tecnico.cargo || 'Titular'}
+                                    </span>
+                                  )}
+                               </div>
                             </div>
                           </div>
-                          <div className="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-zinc-900 group-hover:text-white transition-all">
-                            <ChevronRight size={18} />
+                          
+                          <h3 className="font-black text-zinc-900 tracking-tight group-hover:text-red-600 transition-colors text-xl uppercase leading-tight mb-6">
+                            {tecnico.tec_ape_nom}
+                          </h3>
+                          
+                          <div className="mt-auto pt-6 border-t border-zinc-50 flex items-center justify-between">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">
+                                {hasMultipleCiclos ? "Trayectoria Histórica" : "Periodo del Ciclo"}
+                              </span>
+                              <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-zinc-700">
+                                  {tecnico.desde ? tecnico.desde.split('-')[0] : 'N/A'} - {tecnico.hasta ? tecnico.hasta.split('-')[0] : 'Actualidad'}
+                                </span>
+                                {hasMultipleCiclos && (
+                                  <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tight">
+                                    {tecnico.total_ciclos} etapas registradas
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300 group-hover:bg-zinc-900 group-hover:text-white transition-all">
+                              <ChevronRight size={18} />
+                            </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      );
+                    })}
                   </div>
 
                   {/* Pagination - Only for Premium */}
@@ -339,48 +370,6 @@ export default async function TecnicosPage({
               <AccessControl tier={currentTier} requiredTier="registered" className="h-64 rounded-[38px]" />
             </div>
           )}
-        </section>
-
-        {/* Premium Analysis Section */}
-        <section className="mt-32">
-          <div className="flex flex-col mb-12">
-            <h2 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase italic">Análisis de Eficacia</h2>
-            <p className="text-zinc-500 font-medium text-lg">Comparativa histórica de efectividad por ciclos de conducción.</p>
-          </div>
-
-          <AccessControl tier={currentTier} requiredTier="premium" className="rounded-[48px] overflow-hidden shadow-2xl border border-zinc-100">
-            <div className="bg-white p-12 min-h-[400px]">
-              <div className="flex items-center space-x-6 mb-16">
-                <div className="w-16 h-16 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center shadow-inner">
-                  <Percent size={32} />
-                </div>
-                <div>
-                  <h3 className="font-black text-2xl text-zinc-900 tracking-tight uppercase italic">Ranking Histórico</h3>
-                  <p className="text-zinc-500 font-medium">Top 5 de directores técnicos por porcentaje de efectividad.</p>
-                </div>
-              </div>
-              
-              <div className="space-y-10">
-                {[
-                  { name: 'EMERICO HIRSCHL', rate: 68, color: 'bg-red-600' },
-                  { name: 'RENATO CESARINI', rate: 64, color: 'bg-red-500' },
-                  { name: 'MINNELLA, JOSÉ MARÍA', rate: 61, color: 'bg-red-400' },
-                  { name: 'DAPUENTE, FRANCISCO', rate: 59, color: 'bg-zinc-400' },
-                  { name: 'GALLARDO, MARCELO', rate: 54, color: 'bg-zinc-300' },
-                ].map((dt) => (
-                  <div key={dt.name} className="group">
-                    <div className="flex justify-between text-xs font-black text-zinc-400 uppercase tracking-widest mb-3 group-hover:text-zinc-900 transition-colors">
-                      <span className="uppercase italic">{dt.name}</span>
-                      <span className="text-red-600">{dt.rate}%</span>
-                    </div>
-                    <div className="w-full h-3 bg-zinc-50 rounded-full overflow-hidden shadow-inner p-0.5">
-                      <div className={`h-full ${dt.color} rounded-full transition-all duration-1000 group-hover:brightness-110 shadow-sm`} style={{ width: `${dt.rate}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </AccessControl>
         </section>
       </div>
     </div>
