@@ -109,9 +109,17 @@ class JugadorController extends Controller
             }])
             ->findOrFail($id);
 
-        // Paginamos los goles (10 por página)
+        // Paginamos los goles (10 por página) con todas sus relaciones de partido
         $goles = $jugador->goles()
-            ->with(["tipo_gol_rel", "periodo_rel", "partido.rival"])
+            ->with([
+                "tipo_gol_rel",
+                "periodo_rel",
+                "partido.rival",
+                "partido.torneo",
+                "partido.fase",
+                "partido.condicion",
+                "partido.estadio"
+            ])
             ->orderBy("gol_fecha", "desc")
             ->paginate(10);
 

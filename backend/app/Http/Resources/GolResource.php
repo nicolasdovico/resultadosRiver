@@ -23,9 +23,15 @@ use OpenApi\Attributes as OA;
             property: 'partido',
             type: 'object',
             properties: [
+                new OA\Property(property: 'fecha', type: 'string', format: 'date'),
+                new OA\Property(property: 'fecha_nro', type: 'integer', nullable: true),
                 new OA\Property(property: 'go_ri', type: 'integer'),
                 new OA\Property(property: 'go_ad', type: 'integer'),
-                new OA\Property(property: 'rival', ref: '#/components/schemas/RivalResource')
+                new OA\Property(property: 'rival', ref: '#/components/schemas/RivalResource'),
+                new OA\Property(property: 'torneo', type: 'object', nullable: true),
+                new OA\Property(property: 'fase', type: 'object', nullable: true),
+                new OA\Property(property: 'condicion', type: 'object', nullable: true),
+                new OA\Property(property: 'estadio', type: 'object', nullable: true),
             ]
         ),
         new OA\Property(
@@ -68,9 +74,27 @@ class GolResource extends JsonResource
             'gol_parariver' => $this->gol_parariver,
             'es_gol_victoria' => $esGolVictoria,
             'partido' => [
+                'fecha' => $this->partido?->fecha,
+                'fecha_nro' => $this->partido?->fecha_nro,
                 'go_ri' => $this->partido?->go_ri,
                 'go_ad' => $this->partido?->go_ad,
                 'rival' => new RivalResource($this->partido?->rival),
+                'torneo' => $this->partido?->torneo ? [
+                    'tor_id' => $this->partido->torneo->tor_id,
+                    'tor_desc' => trim($this->partido->torneo->tor_desc),
+                ] : null,
+                'fase' => $this->partido?->fase ? [
+                    'id_fase' => $this->partido->fase->id_fase,
+                    'fa_desc' => trim($this->partido->fase->fa_desc),
+                ] : null,
+                'condicion' => $this->partido?->condicion ? [
+                    'id_condicion' => $this->partido->condicion->id_condicion,
+                    'co_desc' => trim($this->partido->condicion->co_desc),
+                ] : null,
+                'estadio' => $this->partido?->estadio ? [
+                    'es_id' => $this->partido->estadio->es_id,
+                    'es_desc' => trim($this->partido->estadio->es_desc),
+                ] : null,
             ],
             'jugador' => [
                 'pl_id' => $this->jugador?->pl_id,

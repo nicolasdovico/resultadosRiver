@@ -2437,6 +2437,14 @@
                     },
                     "partido": {
                         "properties": {
+                            "fecha": {
+                                "type": "string",
+                                "format": "date"
+                            },
+                            "fecha_nro": {
+                                "type": "integer",
+                                "nullable": true
+                            },
                             "go_ri": {
                                 "type": "integer"
                             },
@@ -2445,6 +2453,22 @@
                             },
                             "rival": {
                                 "$ref": "#/components/schemas/RivalResource"
+                            },
+                            "torneo": {
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "fase": {
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "condicion": {
+                                "type": "object",
+                                "nullable": true
+                            },
+                            "estadio": {
+                                "type": "object",
+                                "nullable": true
                             }
                         },
                         "type": "object"
