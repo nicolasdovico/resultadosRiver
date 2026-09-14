@@ -1,5 +1,11 @@
 # Log de Progreso de Resultados River
 
+### 2026-09-14: Corrección de Preservación de Puerto en Nginx y Redirecciones de Filament
+- [x] **Infraestructura & Nginx**:
+  - [x] **Preservación de Puerto (`fastcgi_param HTTP_HOST $http_host`)**: Se incorporó el parámetro `HTTP_HOST` explícito tras `include fastcgi_params` en `backend/nginx.conf` para evitar que Nginx descarte el puerto `:8000` (comportamiento por defecto del paquete Nginx en Debian que define `$host` sin puerto).
+  - [x] **Montaje en Docker Compose**: Se añadió el volumen `- ./backend/nginx.conf:/etc/nginx/sites-available/default` en `docker-compose.yml` para garantizar sincronización directa de la configuración web sin requerir reconstrucciones de imagen.
+  - [x] **Resolución de Redirección y Assets**: Se corrigió la generación de URLs absolutas en Laravel/Filament (Livewire, CSS y redirecciones de login), eliminando la redirección accidental a Apache (`http://localhost/admin` en puerto 80) y restaurando la carga correcta de hojas de estilo en `http://localhost:8000/admin`.
+
 ### 2026-08-27: Top 3 de Goleadores por Ciclo y Trayectoria en Ficha de Técnicos
 - [x] **Backend & API (`TecnicoResource`)**:
   - [x] Desacople del cálculo de `top_scorers` de la condición de pago para que esté disponible en la vista de detalle de todos los usuarios.
