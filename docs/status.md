@@ -230,6 +230,7 @@
     - [x] Corrección de error `Award is not defined` en el detalle de técnicos (`/tecnicos/[id]`) por falta de importación de componentes de `lucide-react`.
     - [x] Corrección de error 500 (Maximum execution time of 30 seconds exceeded) y optimización de rendimiento extrema en el detalle de estadios (`/estadios/[id]`): se eliminó la cascada de consultas N+1 en recursos de partidos anidados (`PartidoResource`, `RivalResource`, `TorneoResource`), se implementó agregación SQL directa en `Estadio.php` (`getStatsAttribute`, `getGolesPorPeriodoAttribute`) y cache estático en `Setting::get`. Los tiempos de respuesta para sedes masivas pasaron de >2.5s a ~300ms.
     - [x] Corrección de redirección y carga de assets en panel Filament: adición de `fastcgi_param HTTP_HOST $http_host` en la configuración de Nginx y montaje de volumen en Docker Compose para preservar el puerto del cliente (`:8000`), solucionando la pérdida de estilos CSS y la redirección errónea al servidor Apache del host (`http://localhost/admin` en puerto 80).
+    - [x] Corrección de colisión de relaciones y columnas en `Partido`: eliminación de métodos alias (`torneo()`, `arbitro()`, `estadio()`, `condicion()`, `fase()`) en `App\Models\Partido` que colisionaban con los nombres de las columnas en la base de datos, resolviendo la excepción `Undefined property: App\Models\Partido::$torneo` en el panel administrativo de Filament (`/admin/partidos`).
 
 - [ ] Sistema de notificaciones push para recordatorios históricos.
 - [ ] Refactorización de visualizaciones de estadísticas dinámicas.

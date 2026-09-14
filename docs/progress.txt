@@ -1,5 +1,11 @@
 # Log de Progreso de Resultados River
 
+### 2026-09-14: Corrección de Colisión de Nombres en Modelo Partido (Filament /admin/partidos)
+- [x] **Backend & Filament**:
+  - [x] **Eliminación de Alias Conflictivos en `Partido.php`**: Se removieron los métodos `torneo()`, `arbitro()`, `estadio()`, `condicion()` y `fase()` que duplicaban las relaciones `*_rel`. Estos métodos causaban colisión directa con las columnas del mismo nombre de la tabla `estadisticas`.
+  - [x] **Resolución de Excepción en Filament**: Al inicializar la tabla y el formulario de partidos en Filament (`/admin/partidos`), Eloquent intentaba evaluar recursivamente la relación mágica sobre instancias vacías, disparando la excepción `ErrorException: Undefined property: App\Models\Partido::$torneo`.
+  - [x] **Verificación**: Conexión y renderizado HTTP 200 en `GET /admin/partidos`, resolución de relaciones nulas limpiamente y paso del 100% de la suite de tests (`./test.sh`).
+
 ### 2026-09-14: Corrección de Preservación de Puerto en Nginx y Redirecciones de Filament
 - [x] **Infraestructura & Nginx**:
   - [x] **Preservación de Puerto (`fastcgi_param HTTP_HOST $http_host`)**: Se incorporó el parámetro `HTTP_HOST` explícito tras `include fastcgi_params` en `backend/nginx.conf` para evitar que Nginx descarte el puerto `:8000` (comportamiento por defecto del paquete Nginx en Debian que define `$host` sin puerto).
