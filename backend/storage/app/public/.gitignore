@@ -1,2 +1,10 @@
 *
 !.gitignore
+!fotos-tecnicos/
+!fotos-tecnicos/**
+!players-photos/
+!players-photos/**
+!rivales/
+!rivales/**
+!settings/
+!settings/**
