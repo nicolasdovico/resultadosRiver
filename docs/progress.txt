@@ -1,5 +1,13 @@
 # Log de Progreso de Resultados River
 
+### 2026-10-21: Corrección de Permisos de Escritura en Storage y Vistas Compiladas (Filament /admin/login)
+- [x] **Infraestructura & Backend**:
+  - [x] **Inicialización Automática de Permisos (`docker-entrypoint.sh`)**: Se incorporó la creación y asignación de permisos de escritura (`chmod -R 777 storage bootstrap/cache`) al iniciar el contenedor `river-backend`, evitando que el montaje del volumen del host bloquee al usuario `www-data` (`php-fpm`) al compilar vistas Blade en `storage/framework/views`.
+  - [x] **Unificación de Usuario en Supervisor (`supervisor.conf`)**: Se cambió el usuario de `laravel-worker` de `root` a `www-data` para evitar que los procesos en segundo plano generen archivos de log o caché con propietario `root` inaccesibles para `php-fpm`.
+  - [x] **Permisos de Logs (`config/logging.php`) y Tests (`test.sh`)**: Se configuró `'permission' => 0666` en los canales `single` y `daily` de Monolog y se aseguró la preservación de permisos tras correr `./test.sh`.
+  - [x] **Restauración y Versionado de Multimedia (`storage/app/public`)**: Se restauraron los directorios `players-photos`, `fotos-tecnicos`, `rivales` y `settings` dentro de `backend/storage/app/public/` y se actualizó `backend/storage/app/public/.gitignore` para versionarlos en Git (~3.1 MB totales).
+  - [x] **Verificación**: Respuesta HTTP 200 en `http://localhost:8000/admin/login`, activos de imágenes sirviéndose con HTTP 200 y 21 tests pasando (190 aserciones).
+
 ### 2026-09-14: Corrección de Colisión de Nombres en Modelo Partido (Filament /admin/partidos)
 - [x] **Backend & Filament**:
   - [x] **Eliminación de Alias Conflictivos en `Partido.php`**: Se removieron los métodos `torneo()`, `arbitro()`, `estadio()`, `condicion()` y `fase()` que duplicaban las relaciones `*_rel`. Estos métodos causaban colisión directa con las columnas del mismo nombre de la tabla `estadisticas`.
